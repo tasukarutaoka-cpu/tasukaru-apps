@@ -207,6 +207,16 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 .phase-step.now{border-color:var(--accent);background:var(--accent-soft);}
 .phase-step.ph{font-weight:700;}
 </style>
+
+<style>
+.prep-item{display:flex;gap:10px;align-items:flex-start;border:1.5px solid #d7e6f2;border-radius:14px;padding:12px;margin:8px 0;background:#fff;}
+.prep-item input[type=checkbox]{width:22px;height:22px;margin-top:2px;flex:none;}
+.prep-item .pi-name{font-weight:700;}
+.prep-item .pi-role{font-size:12px;color:#5a7a94;}
+.prep-item .pi-price{font-size:13px;color:#b3541e;font-weight:700;}
+.prep-item a.pi-buy{display:inline-block;margin-top:6px;background:#ff9900;color:#fff;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;}
+#startBtn:disabled{opacity:.45;}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -229,6 +239,14 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <span class="p-name">標準版（効果最大ねらい）</span>　<span class="p-price">約7,000〜7,500円／月</span>
 <div class="small">最小版＋ビタミンC（朝）＋レチノール（夜・段階導入）。朝3分・夜5分。シワ・ハリへの効果が最も期待できる組み合わせ。</div>
 </button>
+
+<h2>使う製品の準備チェック</h2>
+<p class="small">選んだプランに必要な製品です。各製品のリンクから購入できます。全部にチェックが入るとスタートできます。（チェックはこの端末に保存されます）</p>
+<div id="prepList"></div>
+<p class="small" id="prepStatus"></p>
+<h3 class="mt">任意（あると良い・内側ケアのサプリ）</h3>
+<p class="small">サプリは必須ではありません。食事が土台で、こちらは補助です。スタートの条件にも含まれません。</p>
+<div id="prepOptList"></div>
 
 <label class="f" for="startDate">開始日</label>
 <input type="date" id="startDate" />
@@ -905,17 +923,55 @@ reader.readAsDataURL(file);
 
 /* ---------- 製品リスト ---------- */
 var PRODUCTS=[
-{ role:"オールインワン（主役・朝晩）", name:"グレイスワン リンクルケア モイストジェルクリーム（コーセーコスメポート）", desc:"ナイアシンアミド。1品7役。保湿寄りで51歳向き。", price:"100g 3,300円／詰替90g 2,860円", url:"https://lipscosme.com/products/380162/review?rate=2.0", src:"LIPS"},
+{ role:"オールインワン（主役・朝晩）", name:"グレイスワン リンクルケア モイストジェルクリーム（コーセーコスメポート）", desc:"ナイアシンアミド。1品7役。保湿寄りで51歳向き。", price:"100g 3,300円／詰替90g 2,860円", url:"https://www.amazon.co.jp/dp/B0G6T4DWRQ", src:"Amazon"},
 { role:"オールインワン（さっぱり派・安価）", name:"無印良品 エイジングケア 薬用リンクルケア美容液", desc:"ナイアシンアミド配合。", price:"30g 1,490円", url:"https://fortune-girl.com/skincare/SrOZv", src:"FORTUNE"},
 { role:"メンズ専用オールインワン的選択肢", name:"オルビス ミスター エッセンスローション", desc:"ローション単体でオールインワン使用可と公式案内。無香料・アルコールフリー。", price:"180mL 2,420円", url:"https://corp.orbis.co.jp/wp-content/uploads/2024/11/20241129_ORBIS-Mr._survey.pdf", src:"ORBIS公式資料"},
-{ role:"レチノール（本命）", name:"資生堂 エリクシール レチノパワー リンクルクリーム ba", desc:"純粋レチノール（シワ改善有効成分）。光・酸素を遮断する容器設計。", price:"S 15g 6,490円（約1ヶ月）／L 22g 8,800円（約1.5ヶ月）", url:"https://onecosme.jp/92586", src:"ワンコスメ"},
+{ role:"レチノール（本命）", name:"資生堂 エリクシール レチノパワー リンクルクリーム ba", desc:"純粋レチノール（シワ改善有効成分）。光・酸素を遮断する容器設計。", price:"S 15g 6,490円（約1ヶ月）／L 22g 8,800円（約1.5ヶ月）", url:"https://www.amazon.co.jp/dp/B0CJLJZPKS", src:"Amazon（L・限定セット）"},
 { role:"レチノール（コスパ型）", name:"トゥヴェール レチノショット 0.1（化粧品）", desc:"純粋レチノール0.1%＋レチノール類計5種。価格は情報源で3,300円（旧）／3,980円が併存するため購入時要確認。", price:"30g 3,980円", url:"https://onecosme.jp/77900", src:"ワンコスメ"},
 { role:"ビタミンC（安価・少量設計）", name:"ロート メラノCC 薬用しみ集中対策 プレミアム美容液", desc:"活性型ビタミンC等。1回4〜5滴・1日1回で1本約5〜6ヶ月。", price:"20mL 約1,424〜1,499円", url:"https://www.amazon.co.jp/dp/B08WMJB5WV/ref=cm_sw_r_as_gl_api_gl_i_CWTZR502Q6EY46H8HTR0", src:"Amazon"},
 { role:"ビタミンC（高濃度・本格派）", name:"ロート オバジC25セラム ネオ（入門はC10）", desc:"ピュアビタミンC。朝晩4〜5滴。", price:"C25 12mL 11,000円／C10 12mL 4,400円", url:"https://maquia.hpplus.jp/cosme/153254/", src:"MAQUIA"},
 { role:"ナイアシンアミド部分用", name:"ONE BY KOSÉ ザ リンクレス S", desc:"額・口元に厚塗りしたい人向け。価格はAmazonストア表示の調査値で、公式定価は未確認。", price:"20g 約5,350〜5,800円", url:"", src:"Amazonストア表示"},
 { role:"保湿クリーム（土台・敏感時）", name:"キュレル 潤浸保湿 フェイスクリーム（花王）", desc:"セラミド機能成分＋アラントイン。無香料。", price:"40g 2,970円（約1.5ヶ月）", url:"https://onecosme.jp/93381", src:"ワンコスメ"},
-{ role:"日焼け止め", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", desc:"SPF50+／PA++++、石けんで落とせる、ベタつき少なめ。", price:"70g 約1,011円〜（販売店で変動）", url:"https://lohaco.yahoo.co.jp/store/h-lohaco/item/rw00411/?sc_e=zb_pwpr_aas_blh_cias_dps_item_kao_bioreuv", src:"LOHACO"}
+{ role:"日焼け止め", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", desc:"SPF50+／PA++++、石けんで落とせる、ベタつき少なめ。", price:"70g 約1,011円〜（販売店で変動）", url:"https://www.amazon.co.jp/dp/B0DS7WX8QS", src:"Amazon（限定100g）"}
 ];
+var PREP_KEY="facecare.browser.prep.v1";
+var PREP_ITEMS=[
+{id:"graceone", plan:"all", role:"オールインワン（主役・朝晩）", name:"グレイスワン リンクルケア モイストジェルクリーム（コーセーコスメポート）", price:"100g 3,300円（定価）", url:"https://www.amazon.co.jp/dp/B0G6T4DWRQ", shop:"Amazonで見る"},
+{id:"biore", plan:"all", role:"日焼け止め（朝・最重要）", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", price:"70g 約1,011円〜（リンク先はAmazon限定100g）", url:"https://www.amazon.co.jp/dp/B0DS7WX8QS", shop:"Amazonで見る"},
+{id:"cleanser", plan:"all", role:"洗顔（朝晩）", name:"洗顔料", price:"今お使いのものでOK。無い場合はドラッグストアで", url:"", shop:""},
+{id:"melano", plan:"std", role:"ビタミンC（朝）", name:"メラノCC 薬用しみ集中対策 プレミアム美容液（ロート製薬）", price:"20mL 約1,450円（1本で約5〜6ヶ月）", url:"https://www.amazon.co.jp/dp/B08WMJB5WV", shop:"Amazonで見る"},
+{id:"elixir", plan:"std", role:"レチノール（夜・段階導入）", name:"エリクシール レチノパワー リンクルクリーム ba（資生堂）", price:"S 15g 6,490円／L 22g 8,800円", url:"https://www.amazon.co.jp/dp/B0CJLJZPKS", shop:"Amazonで見る（L・限定セット）"}
+];
+var PREP_OPT=[
+{id:"collagen", role:"コラーゲンペプチド（内側・任意）", name:"明治 アミノコラーゲン プレミアム 196g（約28日分）", price:"約2,900円〜", url:"https://www.amazon.co.jp/dp/B0070SUSC0", shop:"Amazonで見る"},
+{id:"vitc", role:"ビタミンC（内側・任意）", name:"DHC 持続型ビタミンC 60日分", price:"価格は販売ページで確認", url:"https://www.amazon.co.jp/dp/B09FL527SL", shop:"Amazonで見る"}
+];
+var prepState={};
+try{ prepState=JSON.parse(localStorage.getItem(PREP_KEY)||"{}")||{}; }catch(e){ prepState={}; }
+function savePrep(){ try{ localStorage.setItem(PREP_KEY, JSON.stringify(prepState)); }catch(e){} }
+function prepRequired(){ return PREP_ITEMS.filter(function(it){ return it.plan==="all" || it.plan===setupPlan; }); }
+function renderPrep(){
+  function build(listEl, items){
+    var el=$(listEl); if(!el) return; el.innerHTML="";
+    items.forEach(function(it){
+      var d=document.createElement("div"); d.className="prep-item";
+      var chk=document.createElement("input"); chk.type="checkbox"; chk.checked=!!prepState[it.id];
+      chk.addEventListener("change", function(){ prepState[it.id]=chk.checked; savePrep(); renderPrep(); });
+      var body=document.createElement("div");
+      var buy = it.url? '<br><a class="pi-buy" href="'+it.url+'" target="_blank" rel="noopener">'+it.shop+'</a>' : '';
+      body.innerHTML='<div class="pi-role">'+it.role+'</div><div class="pi-name">'+it.name+'</div><div class="pi-price">'+it.price+'</div>'+buy;
+      d.appendChild(chk); d.appendChild(body); el.appendChild(d);
+    });
+  }
+  build("prepList", prepRequired());
+  build("prepOptList", PREP_OPT);
+  var req=prepRequired();
+  var done=req.filter(function(it){ return prepState[it.id]; }).length;
+  var btn=$("startBtn"), st=$("prepStatus");
+  if(st){ st.textContent = done>=req.length? "準備完了です。スタートできます！" : ("あと "+(req.length-done)+" 品で準備完了です（"+done+"/"+req.length+"）"); }
+  if(btn){ btn.disabled = done<req.length; }
+}
+
 function renderProducts(){
 var el=$("productList"); el.innerHTML="";
 PRODUCTS.forEach(function(p){
@@ -968,6 +1024,7 @@ var setupBaseFile=null;
 function markPlan(){
 $("planMin").classList.toggle("on", setupPlan==="min");
 $("planStd").classList.toggle("on", setupPlan==="std");
+renderPrep();
 }
 function init(){
 load(); loadPhotos();
@@ -1018,7 +1075,7 @@ toast("設定を保存しました");
 });
 $("resetBtn").addEventListener("click", function(){
 if(this.getAttribute("data-arm")==="1"){
-try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(PHOTO_KEY);}catch(e){}
+try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(PHOTO_KEY); localStorage.removeItem(PREP_KEY); prepState={};}catch(e){}
 state=defaultState(); photos=[]; compareSel=[];
 this.removeAttribute("data-arm"); this.textContent="すべての記録を消して最初からにする";
 showSetup();
