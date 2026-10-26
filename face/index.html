@@ -1129,7 +1129,7 @@ function saveGear(){ try{ localStorage.setItem(GEAR_KEY, JSON.stringify(gearStat
 var GEAR_ITEMS=[
 { id:"g_db", role:"必須", name:"可変式ダンベル 24kg×2個セット（BARWING）", price:"目安17,480円（検索時点）", url:"https://www.amazon.co.jp/dp/B0FD9WTHVT", shop:"Amazonで見る" },
 { id:"g_mat", role:"必須", name:"トレーニングマット 厚さ10mm（プリマソーレ）", price:"目安1,980円", url:"https://www.amazon.co.jp/dp/B07XL9FL8T", shop:"Amazonで見る" },
-{ id:"g_bench", role:"必須級", name:"アジャスタブルベンチ（FLYBIRD）", price:"目安1万円前後／プレス・ブルガリアン・ディップスが安定します", url:"https://roomclip.jp/shopping/products/665931", shop:"販売ページを見る" },
+{ id:"g_bench", role:"あると便利（場所に余裕があれば）", name:"アジャスタブルベンチ（FLYBIRD）", price:"目安1万円前後／場所を取るので無理に買わなくてOK。プレスは床、脚トレとディップスは椅子で代用できます", url:"https://roomclip.jp/shopping/products/665931", shop:"販売ページを見る" },
 { id:"g_bar", role:"あると便利", name:"懸垂バー 突っ張り式（Beatlome・耐荷重150kg）", price:"目安3,977円／買う前にドア・廊下の設置幅を測ってください", url:"https://www.amazon.co.jp/dp/B09VGN6ZC8", shop:"Amazonで見る" },
 { id:"g_set", role:"あると便利", name:"プッシュアップバー＋アブローラー等 5点セット（Wout）", price:"価格はページで確認", url:"https://www.amazon.co.jp/dp/B07PP5CF8T", shop:"Amazonで見る" },
 { id:"g_band", role:"あると便利", name:"トレーニングチューブ（懸垂の補助・仕上げ用）", price:"目安2,000円前後／Amazonで「トレーニングチューブ」で検索", url:"", shop:"" },
@@ -1153,7 +1153,7 @@ function renderGearAll(){
   buildGear("gearList");
   var done=GEAR_ITEMS.filter(function(it){ return gearState[it.id]; }).length;
   var t=$("gearProgText");
-  if(t) t.textContent="揃ったもの："+done+"／"+GEAR_ITEMS.length+"。必須は最初の3つ。残りは続けてからで十分です。";
+  if(t) t.textContent="揃ったもの："+done+"／"+GEAR_ITEMS.length+"。必須はダンベルとマットの2つだけ。ベンチなど場所を取るものは無理しなくて大丈夫です。";
 }
 
 function renderPrep(){
