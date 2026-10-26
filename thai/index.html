@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>タイ語かいわ練習 ブラウザ版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f6f2e9;
+        --surface: #fffdf7;
+        --surface2: #efe9da;
+        --ink: #24312a;
+        --muted: #61705f;
+        --line: #ddd3ba;
+        --accent: #14594a;
+        --accent-ink: #ffffff;
+        --amber: #c77400;
+        --amber-bg: #fdf0dc;
+        --good: #177245;
+        --good-bg: #e2f2e6;
+        --bad: #b3401e;
+        --bad-bg: #fbe9e1;
+        --shadow: 0 2px 10px rgba(60, 50, 20, .08);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111614;
+          --surface: #1b221e;
+          --surface2: #232b26;
+          --ink: #e9ede6;
+          --muted: #9dab9e;
+          --line: #39443b;
+          --accent: #45b08d;
+          --accent-ink: #0d1f18;
+          --amber: #eda63f;
+          --amber-bg: #3a2d15;
+          --good: #5cc78c;
+          --good-bg: #173526;
+          --bad: #ef8a68;
+          --bad-bg: #3d2118;
+          --shadow: 0 2px 10px rgba(0,0,0,.35);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", sans-serif;
+        font-size: 17px;
+        line-height: 1.65;
+      }
+      .thai { font-family: "Noto Sans Thai", "Hiragino Sans", sans-serif; }
+      .wrap { max-width: 680px; margin: 0 auto; padding: 0 16px 64px; }
+
+      header.top { padding: 26px 0 6px; }
+      header.top h1 {
+        font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", serif;
+        font-weight: 800;
+        font-size: 30px;
+        margin: 0 0 4px;
+        letter-spacing: .02em;
+      }
+      header.top p.sub { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+
+      .progress-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .progress-card .big { font-size: 26px; font-weight: 800; font-family: "Shippori Mincho B1", serif; }
+      .progress-card .lbl { font-size: 13px; color: var(--muted); }
+      .bar { flex: 1; }
+      .bar .track { height: 10px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
+      .bar .fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width .4s ease; }
+      .bar .cap { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+      nav.tabs {
+        position: sticky; top: 0; z-index: 20;
+        background: var(--bg);
+        padding: 14px 0 10px;
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+      }
+      nav.tabs button {
+        appearance: none; border: 1px solid var(--line); background: var(--surface);
+        color: var(--ink); border-radius: 999px; padding: 11px 4px;
+        font-size: 14.5px; font-weight: 700; cursor: pointer; min-height: 48px;
+      }
+      nav.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+      section.view { display: none; }
+      section.view.active { display: block; }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 20px 18px;
+        margin-bottom: 14px;
+      }
+      .scene-name { font-size: 13px; font-weight: 700; color: var(--amber); letter-spacing: .08em; }
+      .kana { font-size: 27px; font-weight: 800; line-height: 1.45; margin: 6px 0 2px; }
+      .thai-text { font-size: 21px; color: var(--ink); margin: 2px 0; }
+      .meaning { font-size: 17px; color: var(--muted); margin: 2px 0 0; }
+      .note { font-size: 14px; color: var(--muted); background: var(--surface2); border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
+      .tone-box { margin: 12px 0 4px; }
+      .tone-box .cap { font-size: 12.5px; color: var(--muted); margin-bottom: 2px; }
+      .tone-box svg { width: 100%; height: 56px; display: block; }
+
+      .play-row { display: flex; gap: 10px; margin-top: 14px; }
+      .btn {
+        appearance: none; cursor: pointer; border-radius: 999px; border: 1px solid var(--line);
+        background: var(--surface2); color: var(--ink);
+        font-size: 16.5px; font-weight: 700; padding: 12px 18px; min-height: 54px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); flex: 1; }
+      .btn.slow { flex: 1; }
+      .btn:active { transform: scale(.98); }
+      .btn.playing { outline: 3px solid var(--amber); outline-offset: 1px; }
+      .btn svg { flex: none; }
+
+      .judge-row { display: flex; gap: 10px; margin-top: 12px; }
+      .btn.good { flex: 1; background: var(--good-bg); border-color: var(--good); color: var(--good); font-size: 18px; min-height: 60px; }
+      .btn.again { flex: 1; background: var(--bad-bg); border-color: var(--bad); color: var(--bad); font-size: 18px; min-height: 60px; }
+
+      .dots { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; }
+      .dots span { width: 11px; height: 11px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--line); }
+      .dots span.done { background: var(--good); border-color: var(--good); }
+      .dots span.now { background: var(--amber); border-color: var(--amber); }
+      .session-cap { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+
+      .done-box { text-align: center; padding: 28px 18px; }
+      .done-box .face { font-family: "Shippori Mincho B1", serif; font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+      .done-box p { color: var(--muted); margin: 4px 0 16px; }
+
+      h2.scene-title {
+        font-family: "Shippori Mincho B1", serif; font-size: 21px; font-weight: 800;
+        margin: 26px 0 10px; display: flex; align-items: baseline; gap: 10px;
+      }
+      h2.scene-title .cnt { font-family: inherit; font-size: 13px; color: var(--muted); font-weight: 400; }
+      .phrase-row {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+        padding: 13px 14px; margin-bottom: 10px; box-shadow: var(--shadow);
+      }
+      .phrase-row .kana { font-size: 20px; margin: 0; }
+      .phrase-row .thai-text { font-size: 17px; }
+      .phrase-row .meaning { font-size: 15px; }
+      .phrase-row .play-row { margin-top: 10px; }
+      .phrase-row .btn { min-height: 48px; font-size: 15px; padding: 9px 14px; }
+      .badge {
+        display: inline-block; font-size: 12px; font-weight: 700; border-radius: 999px;
+        padding: 2px 9px; background: var(--good-bg); color: var(--good); margin-left: 8px; vertical-align: middle;
+      }
+      .badge.new { background: var(--amber-bg); color: var(--amber); }
+
+      .quiz-q { text-align: center; padding: 26px 18px 20px; }
+      .quiz-q .q-cap { color: var(--muted); font-size: 15px; margin-bottom: 14px; }
+      .quiz-play { width: 92px; height: 92px; border-radius: 50%; font-size: 16px; flex-direction: column; gap: 2px; }
+      .choices { display: grid; gap: 10px; }
+      .choices button {
+        text-align: left; font-size: 17.5px; min-height: 58px; border-radius: 12px;
+        background: var(--surface); border: 1.5px solid var(--line); padding: 12px 16px; cursor: pointer; color: var(--ink);
+      }
+      .choices button.right { border-color: var(--good); background: var(--good-bg); font-weight: 700; }
+      .choices button.wrong { border-color: var(--bad); background: var(--bad-bg); }
+      .choices button:disabled { opacity: .85; cursor: default; }
+      .quiz-feedback { min-height: 30px; font-weight: 700; margin: 12px 0 4px; text-align: center; }
+      .quiz-score { text-align: center; color: var(--muted); font-size: 14.5px; }
+
+      .tone-card .tone-head { display: flex; align-items: baseline; gap: 10px; }
+      .tone-card .tone-name { font-family: "Shippori Mincho B1", serif; font-size: 21px; font-weight: 800; }
+      .tone-card .tone-desc { color: var(--muted); font-size: 15px; }
+      .tone-card .example { display: flex; align-items: center; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+      .tone-card .example .thai-text { font-size: 26px; }
+      .tone-card .example .kana { font-size: 19px; margin: 0; }
+      .tone-card > svg { width: 100%; height: 64px; display: block; margin-top: 8px; }
+
+      footer { margin-top: 36px; color: var(--muted); font-size: 13.5px; }
+      footer .reset {
+        background: none; border: 1px solid var(--line); color: var(--muted);
+        border-radius: 999px; padding: 8px 14px; font-size: 13.5px; cursor: pointer; margin-top: 8px;
+      }
+      .toast {
+        position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+        background: var(--ink); color: var(--bg); padding: 11px 20px; border-radius: 999px;
+        font-size: 15px; font-weight: 700; opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 50;
+        max-width: 88vw; text-align: center;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <h1>タイ語かいわ練習</h1>
+        <p class="sub">聞いて、声に出すだけ。読み書きなしで、タイ人との日常会話を目指します。</p>
+        <div class="progress-card">
+          <div>
+            <div class="big"><span id="learnedCount">0</span><span style="font-size:16px;"> / 64</span></div>
+            <div class="lbl">言えるようになったフレーズ</div>
+          </div>
+          <div class="bar">
+            <div class="track"><div class="fill" id="progressFill" style="width:0%"></div></div>
+            <div class="cap" id="progressCap">今日の練習が待っています</div>
+          </div>
+        </div>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="練習メニュー">
+        <button role="tab" data-view="today" aria-selected="true">今日の練習</button>
+        <button role="tab" data-view="scenes" aria-selected="false">場面から探す</button>
+        <button role="tab" data-view="quiz" aria-selected="false">聞き取り</button>
+        <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
+      </nav>
+
+      <main>
+        <section class="view active" id="view-today"></section>
+        <section class="view" id="view-scenes"></section>
+        <section class="view" id="view-quiz"></section>
+        <section class="view" id="view-tones"></section>
+      </main>
+
+      <footer>
+        <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
+        <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <audio id="player" preload="none"></audio>
+
+    <script>
+      "use strict";
+      /* ============ データ: 8場面 × 8フレーズ ============ */
+      var SCENES = ["あいさつ", "自己紹介", "買い物", "食事", "移動", "ホテル", "困ったとき", "気持ちを伝える"];
+      /* tone: 音の高さの目安 (1=低 〜 5=高) を音節ごとに並べたもの */
+      var PHRASES = [
+        /* あいさつ */
+        { id:"s1p1", th:"สวัสดีครับ", kana:"サワッディー・クラップ", ja:"こんにちは", tone:[2,2,3,4], note:"朝・昼・夜いつでも使える基本のあいさつ。手を合わせる「ワイ」と一緒にどうぞ。" },
+        { id:"s1p2", th:"สวัสดีตอนเช้าครับ", kana:"サワッディー・トーン・チャーオ・クラップ", ja:"おはようございます", tone:[2,2,3,4,5,4], note:"朝のあいさつ。「トーン・チャーオ」が「朝に」という意味です。" },
+        { id:"s1p3", th:"ขอบคุณครับ", kana:"コープクン・クラップ", ja:"ありがとうございます", tone:[2,4,4], note:"感謝の基本。「コープ」は低めから、「クン」は高めに。" },
+        { id:"s1p4", th:"ขอบคุณมากครับ", kana:"コープクン・マーク・クラップ", ja:"本当にありがとうございます", tone:[2,4,5,4], note:"「マーク（とても）」を足すと気持ちが強まります。" },
+        { id:"s1p5", th:"ขอโทษครับ", kana:"コー・トーッ・クラップ", ja:"すみません／ごめんなさい", tone:[3,5,4], note:"謝るときも、人に声をかけるときも使えます。" },
+        { id:"s1p6", th:"ไม่เป็นไรครับ", kana:"マイ・ペン・ライ・クラップ", ja:"大丈夫です／どういたしまして", tone:[5,3,3,4], note:"タイらしいおおらかな返事。謝られたときの返答にも。" },
+        { id:"s1p7", th:"แล้วเจอกันครับ", kana:"レーオ・ヂャー・ガン・クラップ", ja:"また会いましょう", tone:[4,3,3,4], note:"別れ際の一言。「レーオ」は高めから下げる声調です。" },
+        { id:"s1p8", th:"โชคดีครับ", kana:"チョーク・ディー・クラップ", ja:"幸運を祈ります（いってらっしゃい）", tone:[5,3,4], note:"直訳は「幸運でありますように」。旅先の別れにぴったり。" },
+        /* 自己紹介 */
+        { id:"s2p1", th:"ผมเป็นคนญี่ปุ่นครับ", kana:"ポム・ペン・コン・イープン・クラップ", ja:"私は日本人です", tone:[3,3,3,2,4,4], note:"「ポム」が男性の「私」。国名を入れ替えて応用できます。" },
+        { id:"s2p2", th:"ผมมาจากญี่ปุ่นครับ", kana:"ポム・マー・ヂャーク・イープン・クラップ", ja:"日本から来ました", tone:[3,3,5,2,4,4], note:"「マー・ヂャーク」で「〜から来た」。" },
+        { id:"s2p3", th:"ผมพูดภาษาไทยได้นิดหน่อยครับ", kana:"ポム・プート・パーサー・タイ・ダイ・ニッノイ・クラップ", ja:"タイ語は少し話せます", tone:[3,5,3,3,3,4,5,2,4], note:"これが言えると相手がゆっくり話してくれやすくなります。" },
+        { id:"s2p4", th:"ผมกำลังเรียนภาษาไทยอยู่ครับ", kana:"ポム・ガムラン・リアン・パーサー・タイ・ユー・クラップ", ja:"タイ語を勉強中です", tone:[3,3,3,3,3,3,2,4], note:"タイの人は外国人がタイ語を学ぶのをとても喜びます。" },
+        { id:"s2p5", th:"ชื่อของคุณคืออะไรครับ", kana:"チュー・コン・クン・クー・アライ・クラップ", ja:"お名前は何ですか？", tone:[5,3,3,3,2,4], note:"「アライ（何）」は応用のきく言葉。疑問文は語尾を上げ気味に。" },
+        { id:"s2p6", th:"ยินดีที่ได้รู้จักครับ", kana:"イン・ディー・ティー・ダイ・ルー・ヂャック・クラップ", ja:"はじめまして（お会いできて嬉しいです）", tone:[3,3,5,4,5,4,4], note:"初対面の締めの一言。笑顔と一緒に。" },
+        { id:"s2p7", th:"คุณพูดภาษาญี่ปุ่นได้ไหมครับ", kana:"クン・プート・パーサー・イープン・ダイ・マイ・クラップ", ja:"日本語は話せますか？", tone:[3,5,3,3,2,4,4,4], note:"文末の「ダイ・マイ」で「〜できますか？」という疑問文になります。" },
+        { id:"s2p8", th:"พูดช้าๆ หน่อยได้ไหมครับ", kana:"プート・チャーチャー・ノイ・ダイ・マイ・クラップ", ja:"ゆっくり話してもらえますか？", tone:[5,4,4,2,4,4,4], note:"聞き取れなかったときの命綱。遠慮なく使ってください。" },
+        /* 買い物 */
+        { id:"s3p1", th:"อันนี้เท่าไหร่ครับ", kana:"アン・ニー・タオライ・クラップ", ja:"これはいくらですか？", tone:[3,4,5,4], note:"市場や屋台でまず使う一言。「タオライ（いくら）」。" },
+        { id:"s3p2", th:"แพงไปหน่อยครับ", kana:"ペーン・パイ・ノイ・クラップ", ja:"ちょっと高いです", tone:[3,3,2,4], note:"値段交渉の入り口。笑顔で言うのがコツです。" },
+        { id:"s3p3", th:"ลดหน่อยได้ไหมครับ", kana:"ロッ・ノイ・ダイ・マイ・クラップ", ja:"少し安くなりますか？", tone:[4,2,4,4,4], note:"「ロッ」が「下げる」。市場での交渉にどうぞ。" },
+        { id:"s3p4", th:"ขอดูหน่อยครับ", kana:"コー・ドゥー・ノイ・クラップ", ja:"見せてください", tone:[3,3,2,4], note:"「コー〜ノイ」で「〜してください」の丁寧なお願い形。" },
+        { id:"s3p5", th:"มีสีอื่นไหมครับ", kana:"ミー・シー・ウーン・マイ・クラップ", ja:"他の色はありますか？", tone:[3,4,2,4,4], note:"「ミー〜マイ」で「〜はありますか？」。色は「シー」。" },
+        { id:"s3p6", th:"เอาอันนี้ครับ", kana:"アオ・アン・ニー・クラップ", ja:"これをください（これにします）", tone:[3,3,4,4], note:"買うと決めたらこれ。指さしと一緒に。" },
+        { id:"s3p7", th:"แค่ดูเฉยๆ ครับ", kana:"ケー・ドゥー・チャーイチャーイ・クラップ", ja:"見ているだけです", tone:[5,3,3,3,4], note:"店員さんに声をかけられたときの逃げの一手。" },
+        { id:"s3p8", th:"มีถุงไหมครับ", kana:"ミー・トゥン・マイ・クラップ", ja:"袋はありますか？", tone:[3,4,4,4], note:"買い物の最後に。タイは袋代がかかる店も増えています。" },
+        /* 食事 */
+        { id:"s4p1", th:"ขอดูเมนูหน่อยครับ", kana:"コー・ドゥー・メーヌー・ノイ・クラップ", ja:"メニューを見せてください", tone:[3,3,3,3,2,4], note:"席に着いたらまずこれ。" },
+        { id:"s4p2", th:"อันนี้คืออะไรครับ", kana:"アン・ニー・クー・アライ・クラップ", ja:"これは何ですか？", tone:[3,4,3,2,4,4], note:"知らない料理に出会ったら。写真メニューでも使えます。" },
+        { id:"s4p3", th:"ไม่เผ็ดนะครับ", kana:"マイ・ペッ・ナ・クラップ", ja:"辛くしないでください", tone:[5,2,3,4], note:"タイ料理は油断すると激辛。注文時に必ず伝えましょう。" },
+        { id:"s4p4", th:"เผ็ดนิดหน่อยครับ", kana:"ペッ・ニッノイ・クラップ", ja:"少しだけ辛くしてください", tone:[2,5,2,4], note:"少し辛さが欲しいとき。「ペッ」が「辛い」。" },
+        { id:"s4p5", th:"อร่อยมากครับ", kana:"アロイ・マーク・クラップ", ja:"とても美味しいです", tone:[2,2,5,4], note:"作った人に伝えると大喜びされます。「アロイ」は最重要単語のひとつ。" },
+        { id:"s4p6", th:"ขอน้ำหน่อยครับ", kana:"コー・ナーム・ノイ・クラップ", ja:"お水をください", tone:[3,4,2,4], note:"「ナーム」が「水」。辛さにやられたときにも。" },
+        { id:"s4p7", th:"เช็คบิลด้วยครับ", kana:"チェック・ビン・ドゥアイ・クラップ", ja:"お会計をお願いします", tone:[4,3,5,4], note:"手を挙げながらどうぞ。英語由来でタイでも普通に通じます。" },
+        { id:"s4p8", th:"อิ่มแล้วครับ", kana:"イム・レーオ・クラップ", ja:"お腹いっぱいです", tone:[2,4,4], note:"食べきれないとき、もう注文しないときの返事に。" },
+        /* 移動 */
+        { id:"s5p1", th:"ไปที่นี่ครับ", kana:"パイ・ティー・ニー・クラップ", ja:"ここへ行ってください", tone:[3,5,4,4], note:"地図やスマホの画面を見せながら使うと確実です。" },
+        { id:"s5p2", th:"จอดตรงนี้ครับ", kana:"ヂョート・トロン・ニー・クラップ", ja:"ここで止めてください", tone:[2,3,4,4], note:"タクシーやトゥクトゥクを降りるときに。" },
+        { id:"s5p3", th:"เลี้ยวซ้ายครับ", kana:"リアオ・サーイ・クラップ", ja:"左に曲がってください", tone:[4,4,4], note:"「サーイ」が左。上げ下げの声調に注意。" },
+        { id:"s5p4", th:"เลี้ยวขวาครับ", kana:"リアオ・クワー・クラップ", ja:"右に曲がってください", tone:[4,3,4], note:"「クワー」が右。サーイ（左）と対で覚えましょう。" },
+        { id:"s5p5", th:"ตรงไปครับ", kana:"トロン・パイ・クラップ", ja:"まっすぐ行ってください", tone:[3,3,4], note:"短くて使いやすい指示の言葉。" },
+        { id:"s5p6", th:"สถานีรถไฟไปทางไหนครับ", kana:"サターニー・ロットファイ・パイ・ターン・ナイ・クラップ", ja:"駅はどっちですか？", tone:[2,3,4,3,3,3,2,4], note:"「ロットファイ」が電車・汽車。「〜はどこ／どっち」は応用自在。" },
+        { id:"s5p7", th:"ไกลไหมครับ", kana:"グライ・マイ・クラップ", ja:"遠いですか？", tone:[3,4,4], note:"歩ける距離かどうか確認したいときに。" },
+        { id:"s5p8", th:"ใช้เวลานานเท่าไหร่ครับ", kana:"チャイ・ウェーラー・ナーン・タオライ・クラップ", ja:"どのくらい時間がかかりますか？", tone:[4,3,3,3,5,4,4], note:"渋滞の多いバンコクでは先に聞いておくと安心。" },
+        /* ホテル */
+        { id:"s6p1", th:"ผมจองไว้ครับ", kana:"ポム・ヂョーン・ワイ・クラップ", ja:"予約しています", tone:[3,3,4,4], note:"チェックインの第一声。予約画面を見せると話が早いです。" },
+        { id:"s6p2", th:"ขอกุญแจหน่อยครับ", kana:"コー・グン・ヂェー・ノイ・クラップ", ja:"鍵をください", tone:[3,3,3,2,4], note:"カードキーの受け渡しにも使えます。" },
+        { id:"s6p3", th:"ห้องน้ำอยู่ไหนครับ", kana:"ホン・ナーム・ユー・ナイ・クラップ", ja:"トイレはどこですか？", tone:[5,4,2,3,4], note:"「ホン・ナーム」がトイレ／お風呂場。「ユー・ナイ」で「どこにある」。" },
+        { id:"s6p4", th:"แอร์ไม่ทำงานครับ", kana:"エー・マイ・タム・ガーン・クラップ", ja:"エアコンが動きません", tone:[3,5,3,3,4], note:"暑いタイでは死活問題。遠慮なくフロントに伝えましょう。" },
+        { id:"s6p5", th:"ขอผ้าขนหนูเพิ่มครับ", kana:"コー・パー・コン・ヌー・プーム・クラップ", ja:"タオルを追加でください", tone:[3,5,3,3,5,4], note:"「プーム」が「追加」。水・氷などにも応用できます。" },
+        { id:"s6p6", th:"อาหารเช้ากี่โมงครับ", kana:"アーハーン・チャーオ・ギー・モーン・クラップ", ja:"朝食は何時ですか？", tone:[3,3,4,5,3,4], note:"「ギー・モーン」が「何時」。数字の聞き取り練習にもなります。" },
+        { id:"s6p7", th:"ฝากกระเป๋าไว้ได้ไหมครับ", kana:"ファーク・グラパオ・ワイ・ダイ・マイ・クラップ", ja:"荷物を預けられますか？", tone:[2,2,3,4,4,4,4], note:"チェックアウト後の観光に便利な一言。" },
+        { id:"s6p8", th:"พรุ่งนี้เช็คเอาท์ครับ", kana:"プルン・ニー・チェック・アウト・クラップ", ja:"明日チェックアウトします", tone:[5,4,4,3,4], note:"「プルン・ニー」が明日。延泊・変更の相談の入り口にも。" },
+        /* 困ったとき */
+        { id:"s7p1", th:"ช่วยด้วยครับ", kana:"チュアイ・ドゥアイ・クラップ", ja:"助けてください", tone:[5,5,4], note:"本当に困ったときの言葉。大きくはっきりと。" },
+        { id:"s7p2", th:"ผมหลงทางครับ", kana:"ポム・ロン・ターン・クラップ", ja:"道に迷いました", tone:[3,4,3,4], note:"地図を見せながら言うと助けてもらいやすいです。" },
+        { id:"s7p3", th:"ผมไม่เข้าใจครับ", kana:"ポム・マイ・カオ・ヂャイ・クラップ", ja:"わかりません", tone:[3,5,5,3,4], note:"わかったふりより正直に。相手が言い方を変えてくれます。" },
+        { id:"s7p4", th:"พูดอีกครั้งได้ไหมครับ", kana:"プート・イーク・クラン・ダイ・マイ・クラップ", ja:"もう一度言ってもらえますか？", tone:[5,2,4,4,4,4], note:"「イーク・クラン」が「もう一度」。聞き取りの基本フレーズ。" },
+        { id:"s7p5", th:"เขียนให้หน่อยได้ไหมครับ", kana:"キアン・ハイ・ノイ・ダイ・マイ・クラップ", ja:"書いてもらえますか？", tone:[4,5,2,4,4,4], note:"スマホのメモに書いてもらえば、翻訳アプリでも確認できます。" },
+        { id:"s7p6", th:"ผมรู้สึกไม่สบายครับ", kana:"ポム・ルー・スック・マイ・サバーイ・クラップ", ja:"気分が悪いです", tone:[3,4,4,5,2,3,4], note:"体調不良を伝えるとき。「サバーイ」は「快適・元気」の反対側の言葉。" },
+        { id:"s7p7", th:"เรียกแท็กซี่ให้หน่อยครับ", kana:"リアック・テクスィー・ハイ・ノイ・クラップ", ja:"タクシーを呼んでください", tone:[5,4,4,5,2,4], note:"ホテルのフロントや店員さんにお願いするときに。" },
+        { id:"s7p8", th:"โรงพยาบาลอยู่ไหนครับ", kana:"ローン・パヤーバーン・ユー・ナイ・クラップ", ja:"病院はどこですか？", tone:[3,2,3,2,3,4], note:"いざというときのために。覚えておくと安心です。" },
+        /* 気持ちを伝える */
+        { id:"s8p1", th:"สนุกมากครับ", kana:"サヌック・マーク・クラップ", ja:"とても楽しいです", tone:[2,4,5,4], note:"ツアーや体験の感想に。笑顔とセットで。" },
+        { id:"s8p2", th:"ผมชอบประเทศไทยครับ", kana:"ポム・チョープ・プラテート・タイ・クラップ", ja:"タイが大好きです", tone:[3,5,2,5,3,4], note:"タイの人に伝えると本当に喜ばれます。" },
+        { id:"s8p3", th:"วันนี้อากาศดีนะครับ", kana:"ワン・ニー・アーガート・ディー・ナ・クラップ", ja:"今日はいい天気ですね", tone:[3,4,3,5,3,3,4], note:"会話のきっかけづくりに。世間話の入り口です。" },
+        { id:"s8p4", th:"คุณใจดีมากครับ", kana:"クン・ヂャイ・ディー・マーク・クラップ", ja:"あなたはとても親切ですね", tone:[3,3,3,5,4], note:"助けてもらったときの感謝の上乗せに。" },
+        { id:"s8p5", th:"ดีใจที่ได้เจอคุณครับ", kana:"ディー・ヂャイ・ティー・ダイ・ヂャー・クン・クラップ", ja:"会えて嬉しいです", tone:[3,3,5,4,3,3,4], note:"再会のときにも使える温かい一言。" },
+        { id:"s8p6", th:"ผมจะกลับมาอีกครับ", kana:"ポム・ヂャ・グラップ・マー・イーク・クラップ", ja:"また来ます", tone:[3,2,2,3,2,4], note:"お店や宿への最高の褒め言葉です。" },
+        { id:"s8p7", th:"ถ่ายรูปด้วยกันไหมครับ", kana:"ターイ・ループ・ドゥアイ・ガン・マイ・クラップ", ja:"一緒に写真を撮りませんか？", tone:[2,5,5,3,3,4,4], note:"仲良くなった人との記念に。相手の了承を取ってからどうぞ。" },
+        { id:"s8p8", th:"รักษาสุขภาพด้วยนะครับ", kana:"ラック・サー・スッカパープ・ドゥアイ・ナ・クラップ", ja:"お体に気をつけてください", tone:[4,3,5,2,5,5,3,4], note:"別れ際の気づかいの一言。年上の方へのあいさつにも。" }
+      ];
+      var BY_ID = {};
+      PHRASES.forEach(function (p, i) { p.scene = Math.floor(i / 8); BY_ID[p.id] = p; });
+
+      var TONES = [
+        { id:"tone1", name:"中声（ちゅうせい）", desc:"まっすぐ平らに。日本語の普通の声の高さでそのまま。", word:"มา", kana:"マー", ja:"来る", tone:[3,3,3] },
+        { id:"tone2", name:"低声（ていせい）", desc:"低いところで平らに。力を抜いて低めに保ちます。", word:"ใหม่", kana:"マイ", ja:"新しい", tone:[1,1,1] },
+        { id:"tone3", name:"下声（かせい）", desc:"高いところからすとんと落とす。「あっ！」と驚くときの落ち方。", word:"ไม่", kana:"マイ", ja:"〜ない（否定）", tone:[5,3,1] },
+        { id:"tone4", name:"高声（こうせい）", desc:"高いところで平らに。少し張った声で高めを保ちます。", word:"น้ำ", kana:"ナーム", ja:"水", tone:[5,5,5] },
+        { id:"tone5", name:"上声（じょうせい）", desc:"低いところからぐいっと上げる。日本語の「え？」と聞き返す上げ方。", word:"หมา", kana:"マー", ja:"犬", tone:[1,3,5] }
+      ];
+
+      /* ============ 記録（このブラウザ内だけに保存） ============ */
+      var STORE_KEY = "thaiKaiwaBrowser.v1";
+      var INTERVALS = [0, 1, 2, 4, 7, 14, 30]; /* 習得段階ごとの次回復習までの日数 */
+      var store = { prog: {}, lastDay: "" };
+      try {
+        var raw = localStorage.getItem(STORE_KEY);
+        if (raw) { var parsed = JSON.parse(raw); if (parsed && parsed.prog) store = parsed; }
+      } catch (e) { /* 保存できない環境ではメモリ内だけで動く */ }
+      function save() {
+        try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+      }
+      function todayStr() {
+        var d = new Date();
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      }
+      function addDays(str, n) {
+        var d = new Date(str + "T00:00:00"); d.setDate(d.getDate() + n);
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      }
+      function learnedCount() {
+        var n = 0;
+        PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.box >= 2) n++; });
+        return n;
+      }
+
+      /* ============ 音声再生（1つだけ） ============ */
+      var player = document.getElementById("player");
+      var currentBtn = null;
+      function stopAudio() {
+        player.pause();
+        if (currentBtn) { currentBtn.classList.remove("playing"); currentBtn = null; }
+      }
+      function playAudio(src, btn) {
+        if (currentBtn === btn && !player.paused) { stopAudio(); return; }
+        stopAudio();
+        player.src = src;
+        currentBtn = btn || null;
+        if (btn) btn.classList.add("playing");
+        var pr = player.play();
+        if (pr && pr.catch) pr.catch(function () { if (btn) btn.classList.remove("playing"); });
+      }
+      player.addEventListener("ended", function () { if (currentBtn) currentBtn.classList.remove("playing"); currentBtn = null; });
+
+      function toast(msg) {
+        var t = document.getElementById("toast");
+        t.textContent = msg; t.classList.add("show");
+        setTimeout(function () { t.classList.remove("show"); }, 2200);
+      }
+
+      /* ============ 声調ライン（SVG） ============ */
+      function toneSVG(points, h) {
+        var w = 300, hh = h || 56, pad = 8;
+        var min = 1, max = 5;
+        var stepX = (w - pad * 2) / Math.max(points.length - 1, 1);
+        var pts = points.map(function (v, i) {
+          var x = pad + stepX * i;
+          var y = pad + (max - v) / (max - min) * (hh - pad * 2);
+          return x.toFixed(1) + "," + y.toFixed(1);
+        }).join(" ");
+        return '<svg viewBox="0 0 ' + w + ' ' + hh + '" preserveAspectRatio="none" aria-hidden="true">' +
+          '<line x1="0" y1="' + (hh - 6) + '" x2="' + w + '" y2="' + (hh - 6) + '" stroke="var(--line)" stroke-width="1"/>' +
+          '<polyline points="' + pts + '" fill="none" stroke="var(--amber)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
+
+      var ICON_PLAY = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+      function playButtons(p, big) {
+        return '<div class="play-row">' +
+          '<button type="button" class="btn primary" data-play="' + p.id + '">' + ICON_PLAY + '音声を聞く</button>' +
+          '<button type="button" class="btn slow" data-play="' + p.id + '-slow">' + ICON_PLAY + 'ゆっくり</button>' +
+          '</div>';
+      }
+      function phraseCardHTML(p, badgeText) {
+        return '<div class="scene-name">' + SCENES[p.scene] + (badgeText ? '<span class="badge' + (badgeText === "新規" ? " new" : "") + '">' + badgeText + '</span>' : "") + '</div>' +
+          '<div class="kana">' + p.kana + '</div>' +
+          '<div class="thai-text thai">' + p.th + '</div>' +
+          '<p class="meaning">' + p.ja + '</p>' +
+          '<div class="tone-box"><div class="cap">音の高さの目安（声調）</div>' + toneSVG(p.tone) + '</div>' +
+          playButtons(p) +
+          (p.note ? '<div class="note">' + p.note + '</div>' : "");
+      }
+
+      document.addEventListener("click", function (ev) {
+        var b = ev.target.closest("[data-play]");
+        if (b) { playAudio("assets/audio/" + b.getAttribute("data-play") + ".mp3", b); }
+      });
+
+      /* ============ 今日の練習 ============ */
+      var session = null; /* {queue:[ids], idx, retried:{}} */
+      function buildSession() {
+        var t = todayStr();
+        var due = [], fresh = [];
+        PHRASES.forEach(function (p) {
+          var r = store.prog[p.id];
+          if (!r) fresh.push(p.id);
+          else if (r.due <= t) due.push(p.id);
+        });
+        var queue = due.concat(fresh.slice(0, 5));
+        return { queue: queue, idx: 0, retried: {}, total: queue.length, reviews: due.length, news: Math.min(fresh.length, 5) };
+      }
+      function renderToday() {
+        var el = document.getElementById("view-today");
+        if (!session) session = buildSession();
+        if (session.idx >= session.queue.length) {
+          var msg = session.total === 0
+            ? "今日の復習はありません。新しいフレーズも出し尽くしました。"
+            : "今日の練習はおしまいです。おつかれさまでした。";
+          el.innerHTML = '<div class="card done-box"><div class="face">よくできました</div><p>' + msg + '</p>' +
+            '<p>言えるようになったフレーズ: ' + learnedCount() + ' / 64</p>' +
+            '<button type="button" class="btn primary" id="moreBtn" style="width:100%;">場面から自由に練習する</button></div>';
+          var mb = document.getElementById("moreBtn");
+          if (mb) mb.addEventListener("click", function () { switchView("scenes"); });
+          return;
+        }
+        var id = session.queue[session.idx];
+        var p = BY_ID[id];
+        var isNew = !store.prog[id];
+        var dots = session.queue.map(function (q, i) {
+          return '<span class="' + (i < session.idx ? "done" : (i === session.idx ? "now" : "")) + '"></span>';
+        }).join("");
+        el.innerHTML =
+          '<div class="session-cap">今日の練習 ' + (session.idx + 1) + ' / ' + session.total +
+          '（復習 ' + session.reviews + ' 件・新しいフレーズ ' + session.news + ' 件）</div>' +
+          '<div class="dots">' + dots + '</div>' +
+          '<div class="card">' + phraseCardHTML(p, isNew ? "新規" : "復習") +
+          '<div class="judge-row">' +
+          '<button type="button" class="btn again" id="judgeAgain">まだ言えない</button>' +
+          '<button type="button" class="btn good" id="judgeGood">言えた！</button>' +
+          '</div>' +
+          '<p class="meaning" style="margin-top:10px;">音声を聞いて声に出してから、正直に押してください。「言えた」が続くと、次に会う間隔が少しずつ空いていきます。</p>' +
+          '</div>';
+        document.getElementById("judgeGood").addEventListener("click", function () { judge(id, true); });
+        document.getElementById("judgeAgain").addEventListener("click", function () { judge(id, false); });
+      }
+      function judge(id, good) {
+        stopAudio();
+        var t = todayStr();
+        var r = store.prog[id] || { box: 0, due: t };
+        if (good) {
+          r.box = Math.min(r.box + 1, INTERVALS.length - 1);
+          r.due = addDays(t, INTERVALS[r.box]);
+          if (r.box >= 2) toast("覚えてきました。この調子です");
+        } else {
+          r.box = 0;
+          r.due = addDays(t, 1);
+          if (!session.retried[id]) { session.retried[id] = true; session.queue.push(id); session.total++; }
+          toast("大丈夫。明日もう一度出てきます");
+        }
+        store.prog[id] = r; store.lastDay = t; save();
+        session.idx++;
+        updateProgress();
+        renderToday();
+      }
+      function updateProgress() {
+        var n = learnedCount();
+        document.getElementById("learnedCount").textContent = n;
+        document.getElementById("progressFill").style.width = (n / 64 * 100) + "%";
+        var t = todayStr(), dueCount = 0;
+        PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.due <= t) dueCount++; });
+        document.getElementById("progressCap").textContent = dueCount > 0
+          ? "復習まちのフレーズが " + dueCount + " 件あります"
+          : "今日の復習は片付いています";
+      }
+
+      /* ============ 場面から探す ============ */
+      function renderScenes() {
+        var el = document.getElementById("view-scenes");
+        var html = "";
+        SCENES.forEach(function (name, si) {
+          var list = PHRASES.filter(function (p) { return p.scene === si; });
+          var done = list.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
+          html += '<h2 class="scene-title">' + name + '<span class="cnt">言える ' + done + ' / ' + list.length + '</span></h2>';
+          list.forEach(function (p) {
+            var r = store.prog[p.id];
+            var badge = r ? (r.box >= 2 ? '<span class="badge">言える</span>' : '<span class="badge new">練習中</span>') : "";
+            html += '<div class="phrase-row">' +
+              '<div class="kana">' + p.kana + badge + '</div>' +
+              '<div class="thai-text thai">' + p.th + '</div>' +
+              '<p class="meaning">' + p.ja + '</p>' +
+              playButtons(p) + '</div>';
+          });
+        });
+        el.innerHTML = html;
+      }
+
+      /* ============ 聞き取りクイズ ============ */
+      var quiz = null;
+      function shuffle(a) {
+        var x = a.slice();
+        for (var i = x.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = x[i]; x[i] = x[j]; x[j] = t; }
+        return x;
+      }
+      function startQuiz() {
+        var ids = shuffle(PHRASES.map(function (p) { return p.id; })).slice(0, 10);
+        quiz = { ids: ids, idx: 0, score: 0, answered: false };
+        renderQuiz();
+      }
+      function renderQuiz() {
+        var el = document.getElementById("view-quiz");
+        if (!quiz) {
+          el.innerHTML = '<div class="card done-box"><div class="face">聞き取りクイズ</div>' +
+            '<p>タイ語の音声だけを聞いて、意味を当てるクイズです。全10問。</p>' +
+            '<button type="button" class="btn primary" id="quizStart" style="width:100%;">クイズをはじめる</button></div>';
+          document.getElementById("quizStart").addEventListener("click", startQuiz);
+          return;
+        }
+        if (quiz.idx >= quiz.ids.length) {
+          el.innerHTML = '<div class="card done-box"><div class="face">' + quiz.score + ' / 10 正解</div>' +
+            '<p>' + (quiz.score >= 8 ? "耳が育ってきています。その調子です。" : quiz.score >= 5 ? "半分を超えました。聞き取りは回数です。" : "まだ始めたばかり。ゆっくり音声で復習してから再挑戦を。") + '</p>' +
+            '<button type="button" class="btn primary" id="quizStart" style="width:100%;">もう一度挑戦する</button></div>';
+          document.getElementById("quizStart").addEventListener("click", startQuiz);
+          return;
+        }
+        var p = BY_ID[quiz.ids[quiz.idx]];
+        var others = shuffle(PHRASES.filter(function (q) { return q.id !== p.id; })).slice(0, 3);
+        var choices = shuffle([p].concat(others));
+        var html = '<div class="card quiz-q"><div class="q-cap">第 ' + (quiz.idx + 1) + ' 問 / 10　—　音声を聞いて、意味を選んでください</div>' +
+          '<button type="button" class="btn primary quiz-play" data-play="' + p.id + '">' + ICON_PLAY + '<span>再生</span></button>' +
+          '<div style="margin-top:10px;"><button type="button" class="btn" data-play="' + p.id + '-slow">' + ICON_PLAY + 'ゆっくり聞く</button></div>' +
+          '<div class="quiz-feedback" id="quizFb"></div></div>' +
+          '<div class="choices">' +
+          choices.map(function (c) { return '<button type="button" data-choice="' + c.id + '">' + c.ja + '</button>'; }).join("") +
+          '</div>' +
+          '<p class="quiz-score">いまのスコア: ' + quiz.score + ' 点</p>';
+        el.innerHTML = html;
+        el.querySelectorAll("[data-choice]").forEach(function (b) {
+          b.addEventListener("click", function () { answerQuiz(b, p); });
+        });
+      }
+      function answerQuiz(btn, p) {
+        if (quiz.answered) return;
+        quiz.answered = true;
+        var correct = btn.getAttribute("data-choice") === p.id;
+        document.querySelectorAll("#view-quiz [data-choice]").forEach(function (b) {
+          b.disabled = true;
+          if (b.getAttribute("data-choice") === p.id) b.classList.add("right");
+          else if (b === btn) b.classList.add("wrong");
+        });
+        var fb = document.getElementById("quizFb");
+        if (correct) { quiz.score++; fb.textContent = "正解！ 「" + p.kana + "」"; fb.style.color = "var(--good)"; }
+        else { fb.textContent = "正解は「" + p.ja + "」（" + p.kana + "）"; fb.style.color = "var(--bad)"; }
+        setTimeout(function () { quiz.idx++; quiz.answered = false; stopAudio(); renderQuiz(); }, 2400);
+      }
+
+      /* ============ 声調ガイド ============ */
+      function renderTones() {
+        var el = document.getElementById("view-tones");
+        var html = '<div class="card"><p style="margin:0;">タイ語には<strong>5つの声調</strong>（音の高さの型）があります。同じ「マー」でも高さの型が違うと意味が変わります。下の5つを聞き比べて、線の形を声で真似してみてください。</p></div>';
+        TONES.forEach(function (t) {
+          html += '<div class="card tone-card"><div class="tone-head"><span class="tone-name">' + t.name + '</span></div>' +
+            '<p class="tone-desc" style="margin:4px 0 0;">' + t.desc + '</p>' +
+            toneSVG(t.tone, 64) +
+            '<div class="example"><span class="thai-text thai">' + t.word + '</span><span class="kana">' + t.kana + '</span><span class="meaning">' + t.ja + '</span></div>' +
+            '<div class="play-row"><button type="button" class="btn primary" data-play="' + t.id + '">' + ICON_PLAY + '音声を聞く</button>' +
+            '<button type="button" class="btn slow" data-play="' + t.id + '-slow">' + ICON_PLAY + 'ゆっくり</button></div></div>';
+        });
+        html += '<div class="card"><p style="margin:0;">練習のコツ: 意味を考える前に、まず<strong>線の形を声でなぞる</strong>こと。タイの人は言葉の意味より先に、この高さの型で聞き分けています。</p></div>';
+        el.innerHTML = html;
+      }
+
+      /* ============ 画面切り替え ============ */
+      function switchView(name) {
+        stopAudio();
+        document.querySelectorAll("nav.tabs button").forEach(function (b) {
+          b.setAttribute("aria-selected", b.getAttribute("data-view") === name ? "true" : "false");
+        });
+        document.querySelectorAll("section.view").forEach(function (s) { s.classList.remove("active"); });
+        document.getElementById("view-" + name).classList.add("active");
+        if (name === "today") renderToday();
+        if (name === "scenes") renderScenes();
+        if (name === "quiz") renderQuiz();
+        if (name === "tones") renderTones();
+        window.scrollTo({ top: 0 });
+      }
+      document.querySelectorAll("nav.tabs button").forEach(function (b) {
+        b.addEventListener("click", function () { switchView(b.getAttribute("data-view")); });
+      });
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (document.getElementById("resetBtn").dataset.armed) {
+          store = { prog: {}, lastDay: "" }; save(); session = null; quiz = null;
+          updateProgress(); renderToday();
+          document.getElementById("resetBtn").textContent = "記録をすべて消す";
+          delete document.getElementById("resetBtn").dataset.armed;
+          toast("記録を消しました");
+        } else {
+          document.getElementById("resetBtn").dataset.armed = "1";
+          document.getElementById("resetBtn").textContent = "本当に消しますか？（もう一度押すと消えます）";
+          setTimeout(function () {
+            var b = document.getElementById("resetBtn");
+            delete b.dataset.armed; b.textContent = "記録をすべて消す";
+          }, 4000);
+        }
+      });
+
+      updateProgress();
+      renderToday();
+    </script>
+  </body>
+</html>
