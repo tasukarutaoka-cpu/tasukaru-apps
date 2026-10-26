@@ -107,6 +107,11 @@ background:var(--warn-bg);color:var(--warn);
 .sec-head.time{font-size:13px;color:var(--ink2);}
 .prog{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;margin:10px 16px 14px;}
 .prog>div{height:100%;background:var(--accent);border-radius:99px;transition:width.25s;}
+.task{transition:opacity .25s,transform .25s;}
+.task.leaving{opacity:0;transform:translateX(24px);}
+.all-done{padding:16px;text-align:center;color:var(--ink2);font-size:14px;}
+.done-toggle{display:block;width:100%;background:none;border:none;border-top:1px solid var(--line);padding:10px 16px;font-size:13px;color:var(--ink2);text-align:left;cursor:pointer;}
+.done-item{opacity:.6;}
 /* condition */
 .cond-row{margin-bottom:14px;}
 .cond-row:last-child{margin-bottom:2px;}
@@ -291,18 +296,21 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="sec-head"><h2>朝のルーティン</h2><span class="time" id="amTime"></span></div>
 <div id="amList"></div>
 <div class="prog"><div id="amProg" style="width:0%"></div></div>
+<div id="amDone"></div>
 </div>
 
 <div class="card flush">
 <div class="sec-head"><h2>夜のルーティン</h2><span class="time" id="pmTime"></span></div>
 <div id="pmList"></div>
 <div class="prog"><div id="pmProg" style="width:0%"></div></div>
+<div id="pmDone"></div>
 </div>
 
 <div class="card flush">
 <div class="sec-head"><h2>内側ケア</h2><span class="time">1日4つだけ</span></div>
 <div id="innerList"></div>
 <div class="prog"><div id="innerProg" style="width:0%"></div></div>
+<div id="innerDone"></div>
 <p class="small" style="padding:0 16px 14px;margin:0;">厳しい食事制限ではありません。「少ないルールを続ける」ための4つです。できない日があっても、翌日戻ればそれでOK。理由はガイドの「内側ケアの話」にまとめています。</p>
 </div>
 
@@ -741,14 +749,8 @@ renderAdvice(log);
 renderHistory();
 renderPhotoDue();
 }
-function renderTaskList(which, tasks, doneMap){
-var el=$(which+"List");
-el.innerHTML="";
-var doneCount=0, total=0;
-tasks.forEach(function(t){
-total++;
-var done = t.forceUndone? false:!!doneMap[t.id];
-if(done) doneCount++;
+var showDone={am:false,pm:false,inner:false};
+function taskButton(which, t, done){
 var b=document.createElement("button");
 b.type="button"; b.className="task"+(done?" done":"")+((t.disabled)?" disabled":"");
 var badgeHtml = t.badge? '<span class="t-badge '+esc(t.badgeCls||"")+'">'+esc(t.badge)+'</span>': "";
@@ -758,11 +760,38 @@ b.addEventListener("click", function(){
 if(t.disabled){ toast(t.id==="retinol"? "今日はレチノールお休みの日です": "この項目は今日は対象外です"); return;}
 var log=dayLog(todayKey());
 var map = which==="am"? log.am: (which==="pm"? log.pm: log.inner);
-map[t.id]=!map[t.id];
-save(); renderToday();
+if(done){ map[t.id]=false; save(); renderToday(); }
+else { b.classList.add("leaving"); map[t.id]=true; save(); setTimeout(function(){ renderToday(); },240); }
 });
-el.appendChild(b);
+return b;
+}
+function renderTaskList(which, tasks, doneMap){
+var el=$(which+"List");
+el.innerHTML="";
+var doneCount=0, total=0;
+var pending=[], dones=[];
+tasks.forEach(function(t){
+total++;
+var done = t.forceUndone? false:!!doneMap[t.id];
+if(done){ doneCount++; dones.push(t); } else pending.push(t);
 });
+pending.forEach(function(t){ el.appendChild(taskButton(which, t, false)); });
+if(pending.length===0 && total>0){
+var m=document.createElement("div"); m.className="all-done"; m.textContent="全部終わりました 🎉 おつかれさまでした"; el.appendChild(m);
+}
+var dEl=$(which+"Done");
+if(dEl){
+dEl.innerHTML="";
+if(dones.length>0){
+var tg=document.createElement("button"); tg.type="button"; tg.className="done-toggle";
+tg.textContent=(showDone[which]? "▾ ":"▸ ")+"完了した項目（"+dones.length+"件）";
+tg.addEventListener("click", function(){ showDone[which]=!showDone[which]; renderToday(); });
+dEl.appendChild(tg);
+if(showDone[which]){
+dones.forEach(function(t){ var b=taskButton(which, t, true); b.classList.add("done-item"); dEl.appendChild(b); });
+}
+}
+}
 $(which+"Prog").style.width = total? Math.round(doneCount/total*100)+"%": "0%";
 }
 
