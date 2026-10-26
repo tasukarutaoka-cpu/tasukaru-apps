@@ -113,6 +113,7 @@ background:var(--warn-bg);color:var(--warn);
 .done-toggle{display:block;width:100%;background:none;border:none;border-top:1px solid var(--line);padding:10px 16px;font-size:13px;color:var(--ink2);text-align:left;cursor:pointer;}
 .done-item{opacity:.6;}
 .goal-img{width:100%;border-radius:12px;display:block;}
+.vid-link{color:#0b6fa4;font-size:13px;font-weight:700;text-decoration:underline;cursor:pointer;display:inline-block;margin-top:4px;}
 .body-form{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
 .body-form label{font-size:13px;color:var(--ink2);display:block;}
 .body-form input{width:110px;}
@@ -257,6 +258,10 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <p class="small">サプリは必須ではありません。食事が土台で、こちらは補助です。スタートの条件にも含まれません。</p>
 <div id="prepOptList"></div>
 
+<h3 class="mt">体づくりの器具（任意）</h3>
+<p class="small">筋トレ用の器具です。スタートの条件には含まれません。買ったものからチェックしてください。同じリストが「体づくり」タブにもあります。</p>
+<div id="prepGearList"></div>
+
 <label class="f" for="startDate">開始日</label>
 <input type="date" id="startDate" />
 
@@ -379,6 +384,12 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <button type="button" class="btn" id="bodySaveBtn">保存する</button>
 </div>
 <p id="bodyTargets" class="small" style="margin-top:10px;"></p>
+</div>
+
+<div class="card">
+<h2>器具チェックリスト</h2>
+<p class="small" id="gearProgText"></p>
+<div id="gearList"></div>
 </div>
 
 <div class="card flush">
@@ -852,7 +863,10 @@ var b=document.createElement("button");
 b.type="button"; b.className="task"+(done?" done":"")+((t.disabled)?" disabled":"");
 var badgeHtml = t.badge? '<span class="t-badge '+esc(t.badgeCls||"")+'">'+esc(t.badge)+'</span>': "";
 b.innerHTML='<span class="box">✓</span><span style="flex:1"><span class="t-name">'+esc(t.name)+'</span>'+
-(t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':"")+"</span>"+badgeHtml;
+(t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':"")+
+(t.vid?'<div><span class="vid-link" data-vid="'+esc(t.vid)+'">🎬 フォーム動画を見る</span></div>':"")+"</span>"+badgeHtml;
+var vl=b.querySelector(".vid-link");
+if(vl){ vl.addEventListener("click", function(ev){ ev.stopPropagation(); window.open(vl.getAttribute("data-vid"), "_blank"); }); }
 b.addEventListener("click", function(){
 if(t.disabled){ toast(t.id==="retinol"? "今日はレチノールお休みの日です": "この項目は今日は対象外です"); return;}
 var log=dayLog(todayKey());
@@ -1107,6 +1121,41 @@ var prepState={};
 try{ prepState=JSON.parse(localStorage.getItem(PREP_KEY)||"{}")||{}; }catch(e){ prepState={}; }
 function savePrep(){ try{ localStorage.setItem(PREP_KEY, JSON.stringify(prepState)); }catch(e){} }
 function prepRequired(){ return PREP_ITEMS.filter(function(it){ return it.plan==="all" || it.plan===setupPlan; }); }
+/* ---------- 体づくり器具チェックリスト ---------- */
+var GEAR_KEY="facecare.browser.gear.v1";
+var gearState={};
+try{ gearState=JSON.parse(localStorage.getItem(GEAR_KEY)||"{}"); }catch(e){ gearState={}; }
+function saveGear(){ try{ localStorage.setItem(GEAR_KEY, JSON.stringify(gearState)); }catch(e){} }
+var GEAR_ITEMS=[
+{ id:"g_db", role:"必須", name:"可変式ダンベル 24kg×2個セット（BARWING）", price:"目安17,480円（検索時点）", url:"https://www.amazon.co.jp/dp/B0FD9WTHVT", shop:"Amazonで見る" },
+{ id:"g_mat", role:"必須", name:"トレーニングマット 厚さ10mm（プリマソーレ）", price:"目安1,980円", url:"https://www.amazon.co.jp/dp/B07XL9FL8T", shop:"Amazonで見る" },
+{ id:"g_bench", role:"必須級", name:"アジャスタブルベンチ（FLYBIRD）", price:"目安1万円前後／プレス・ブルガリアン・ディップスが安定します", url:"https://roomclip.jp/shopping/products/665931", shop:"販売ページを見る" },
+{ id:"g_bar", role:"あると便利", name:"懸垂バー 突っ張り式（Beatlome・耐荷重150kg）", price:"目安3,977円／買う前にドア・廊下の設置幅を測ってください", url:"https://www.amazon.co.jp/dp/B09VGN6ZC8", shop:"Amazonで見る" },
+{ id:"g_set", role:"あると便利", name:"プッシュアップバー＋アブローラー等 5点セット（Wout）", price:"価格はページで確認", url:"https://www.amazon.co.jp/dp/B07PP5CF8T", shop:"Amazonで見る" },
+{ id:"g_band", role:"あると便利", name:"トレーニングチューブ（懸垂の補助・仕上げ用）", price:"目安2,000円前後／Amazonで「トレーニングチューブ」で検索", url:"", shop:"" },
+{ id:"g_whey", role:"消耗品（任意）", name:"ホエイプロテイン 1kg（ビーレジェンド）", price:"目安4,580円", url:"https://www.amazon.co.jp/dp/B079FKCQS6", shop:"Amazonで見る" },
+{ id:"g_cre", role:"消耗品（任意）", name:"クレアチン モノハイドレート 500g（Myprotein）", price:"目安3,100円", url:"https://www.amazon.co.jp/dp/B00CHJ3DW4", shop:"Amazonで見る" }
+];
+function buildGear(elId){
+  var el=$(elId); if(!el) return; el.innerHTML="";
+  GEAR_ITEMS.forEach(function(it){
+    var d=document.createElement("div"); d.className="prep-item";
+    var chk=document.createElement("input"); chk.type="checkbox"; chk.checked=!!gearState[it.id];
+    chk.addEventListener("change", function(){ gearState[it.id]=chk.checked; saveGear(); renderGearAll(); });
+    var body=document.createElement("div");
+    var buy = it.url? '<br><a class="pi-buy" href="'+it.url+'" target="_blank" rel="noopener">'+it.shop+'</a>' : '';
+    body.innerHTML='<div class="pi-role">'+it.role+'</div><div class="pi-name">'+it.name+'</div><div class="pi-price">'+it.price+'</div>'+buy;
+    d.appendChild(chk); d.appendChild(body); el.appendChild(d);
+  });
+}
+function renderGearAll(){
+  buildGear("prepGearList");
+  buildGear("gearList");
+  var done=GEAR_ITEMS.filter(function(it){ return gearState[it.id]; }).length;
+  var t=$("gearProgText");
+  if(t) t.textContent="揃ったもの："+done+"／"+GEAR_ITEMS.length+"。必須は最初の3つ。残りは続けてからで十分です。";
+}
+
 function renderPrep(){
   function build(listEl, items){
     var el=$(listEl); if(!el) return; el.innerHTML="";
@@ -1122,6 +1171,7 @@ function renderPrep(){
   }
   build("prepList", prepRequired());
   build("prepOptList", PREP_OPT);
+  renderGearAll();
   var req=prepRequired();
   var done=req.filter(function(it){ return prepState[it.id]; }).length;
   var btn=$("startBtn"), st=$("prepStatus");
@@ -1144,24 +1194,24 @@ el.appendChild(d);
 /* ---------- 体づくり ---------- */
 var MENUS=[
 { key:"A", name:"A：押す日（胸・肩・腕の裏）", note:"腕立て中心の日。きつい種目は膝つき・壁からでOK。フォームが崩れるくらいなら軽い版で回数をこなす方が効きます。", items:[
-{ id:"a1", name:"プッシュアップ（腕立て伏せ）", desc:"3セット×8〜15回／体は一直線、胸を床に近づける。きつければ膝つき、余裕が出たら足を椅子に乗せる", time:"" },
-{ id:"a2", name:"パイクプッシュアップ（肩）", desc:"3セット×6〜10回／お尻を高く上げ、頭頂を床に近づけるイメージで曲げ伸ばし", time:"" },
-{ id:"a3", name:"フロアプレス（胸・腕）", desc:"3セット×10〜12回／ダンベルか水入りバッグを寝て押し上げる。なければプッシュアップをもう1セット追加", time:"" },
-{ id:"a4", name:"チェアディップス（腕の裏）", desc:"2〜3セット×8〜12回／椅子や机の縁に手をつき、肘を曲げ伸ばし。肩がすくむ深さまでは下げない", time:"" },
-{ id:"a5", name:"サイドレイズ（肩の横）", desc:"3セット×12〜15回／ペットボトルかダンベルを、肘を遠くへ運ぶイメージで肩の高さまで。反動なし", time:"" }
+{ id:"a1", vid:"https://www.youtube.com/watch?v=NLVqfH3HYVQ", name:"プッシュアップ（腕立て伏せ）", desc:"3セット×8〜15回／体は一直線、胸を床に近づける。きつければ膝つき、余裕が出たら足を椅子に乗せる", time:"" },
+{ id:"a2", vid:"https://www.youtube.com/watch?v=EqAj1FkV6jM", name:"パイクプッシュアップ（肩）", desc:"3セット×6〜10回／お尻を高く上げ、頭頂を床に近づけるイメージで曲げ伸ばし", time:"" },
+{ id:"a3", vid:"https://www.youtube.com/watch?v=TfmWXvjKiWs", name:"フロアプレス（胸・腕）", desc:"3セット×10〜12回／ダンベルか水入りバッグを寝て押し上げる。なければプッシュアップをもう1セット追加", time:"" },
+{ id:"a4", vid:"https://www.youtube.com/watch?v=JL09CbQ7498", name:"チェアディップス（腕の裏）", desc:"2〜3セット×8〜12回／椅子や机の縁に手をつき、肘を曲げ伸ばし。肩がすくむ深さまでは下げない", time:"" },
+{ id:"a5", vid:"https://www.youtube.com/watch?v=gT2EZZ2Aw0E", name:"サイドレイズ（肩の横）", desc:"3セット×12〜15回／ペットボトルかダンベルを、肘を遠くへ運ぶイメージで肩の高さまで。反動なし", time:"" }
 ]},
 { key:"B", name:"B：引く日（背中・腕の表）", note:"背中は姿勢と「一回り大きい」見た目の要です。背中を丸めず、肘を後ろへ引く意識で。", items:[
-{ id:"b1", name:"ワンハンドロウ（背中）", desc:"3セット×10〜12回（左右）／椅子に片膝と手をつき、ダンベルかバッグを腰の横へ引く。背中は平らに", time:"" },
-{ id:"b2", name:"ルーマニアンデッドリフト（背中・尻・もも裏）", desc:"3セット×10〜12回／背中まっすぐのまま、お尻を後ろへ引いて前傾→戻る。腰が丸まる重さは使わない", time:"" },
+{ id:"b1", vid:"https://www.youtube.com/watch?v=8AfN8ZzrA-4", name:"ワンハンドロウ（背中）", desc:"3セット×10〜12回（左右）／椅子に片膝と手をつき、ダンベルかバッグを腰の横へ引く。背中は平らに", time:"" },
+{ id:"b2", vid:"https://www.youtube.com/watch?v=5fsMBvfhruk", name:"ルーマニアンデッドリフト（背中・尻・もも裏）", desc:"3セット×10〜12回／背中まっすぐのまま、お尻を後ろへ引いて前傾→戻る。腰が丸まる重さは使わない", time:"" },
 { id:"b3", name:"ダンベルカール（腕の表）", desc:"3セット×10〜12回／肘を体の横に固定し、反動なしで巻き上げる。下ろすときもゆっくり", time:"" },
 { id:"b4", name:"うつ伏せスノーエンジェル（背中・姿勢）", desc:"2セット×10回／うつ伏せで腕を雪天使のように大きく回す。道具なしで背中と姿勢に効く", time:"" }
 ]},
 { key:"C", name:"C：脚・体幹の日", note:"脚は一番大きな筋肉の集まり。ここを鍛えると全体の代謝と体の厚みが変わります。膝とつま先は同じ向きで。", items:[
-{ id:"c1", name:"スクワット", desc:"3セット×12〜15回／椅子のお尻タッチから始めてOK。余裕が出たらダンベルを胸で抱える（ゴブレット）", time:"" },
-{ id:"c2", name:"ブルガリアンスプリットスクワット", desc:"2〜3セット×8回（左右）／後ろ足を椅子に乗せ、前の脚で立ち上がる。バランスが不安なら壁に手をついて", time:"" },
-{ id:"c3", name:"ヒップリフト（お尻）", desc:"3セット×12〜15回／仰向けで膝を立て、お尻を締めながら持ち上げる。一番上で2秒止める", time:"" },
-{ id:"c4", name:"カーフレイズ（ふくらはぎ）", desc:"3セット×15〜20回／壁に手をつき、かかとをゆっくり上下。段差があれば可動域が広がる", time:"" },
-{ id:"c5", name:"デッドバグ（体幹）", desc:"2〜3セット×8回（左右）／仰向けで腰を床に押し付けたまま、対角の手足をゆっくり伸ばす。腰が浮いたら戻す", time:"" }
+{ id:"c1", vid:"https://www.youtube.com/shorts/ZdOyuGoLNL4", name:"スクワット", desc:"3セット×12〜15回／椅子のお尻タッチから始めてOK。余裕が出たらダンベルを胸で抱える（ゴブレット）", time:"" },
+{ id:"c2", vid:"https://www.youtube.com/watch?v=upZfNHxFptc", name:"ブルガリアンスプリットスクワット", desc:"2〜3セット×8回（左右）／後ろ足を椅子に乗せ、前の脚で立ち上がる。バランスが不安なら壁に手をついて", time:"" },
+{ id:"c3", vid:"https://www.youtube.com/watch?v=fDP6O_aJpDg", name:"ヒップリフト（お尻）", desc:"3セット×12〜15回／仰向けで膝を立て、お尻を締めながら持ち上げる。一番上で2秒止める", time:"" },
+{ id:"c4", vid:"https://www.youtube.com/watch?v=OJF-JmIwGZI", name:"カーフレイズ（ふくらはぎ）", desc:"3セット×15〜20回／壁に手をつき、かかとをゆっくり上下。段差があれば可動域が広がる", time:"" },
+{ id:"c5", vid:"https://www.youtube.com/watch?v=h0bfQaw7qj0", name:"デッドバグ（体幹）", desc:"2〜3セット×8回（左右）／仰向けで腰を床に押し付けたまま、対角の手足をゆっくり伸ばす。腰が浮いたら戻す", time:"" }
 ]}
 ];
 function paintTargets(){
@@ -1189,6 +1239,7 @@ $("bodyStats").innerHTML="通算 <b>"+sessions.length+"回</b>／今週 <b>"+wee
 }
 function renderBody(){
 if(!state.settings) return;
+renderGearAll();
 paintTargets();
 var k=todayKey(); var log=dayLog(k);
 var sessions=state.bodySessions||[];
@@ -1318,7 +1369,7 @@ toast("設定を保存しました");
 });
 $("resetBtn").addEventListener("click", function(){
 if(this.getAttribute("data-arm")==="1"){
-try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(PHOTO_KEY); localStorage.removeItem(PREP_KEY); prepState={};}catch(e){}
+try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(PHOTO_KEY); localStorage.removeItem(PREP_KEY); localStorage.removeItem(GEAR_KEY); prepState={}; gearState={};}catch(e){}
 state=defaultState(); photos=[]; compareSel=[];
 this.removeAttribute("data-arm"); this.textContent="すべての記録を消して最初からにする";
 showSetup();
