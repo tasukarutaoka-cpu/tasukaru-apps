@@ -112,6 +112,10 @@ background:var(--warn-bg);color:var(--warn);
 .all-done{padding:16px;text-align:center;color:var(--ink2);font-size:14px;}
 .done-toggle{display:block;width:100%;background:none;border:none;border-top:1px solid var(--line);padding:10px 16px;font-size:13px;color:var(--ink2);text-align:left;cursor:pointer;}
 .done-item{opacity:.6;}
+.goal-img{width:100%;border-radius:12px;display:block;}
+.body-form{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.body-form label{font-size:13px;color:var(--ink2);display:block;}
+.body-form input{width:110px;}
 /* condition */
 .cond-row{margin-bottom:14px;}
 .cond-row:last-child{margin-bottom:2px;}
@@ -158,7 +162,7 @@ border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:
 .plan-card.on{border-color:var(--accent);}
 .plan-card.p-name{font-weight:700;font-size:16px;}
 .plan-card.p-price{font-weight:700;color:var(--accent);}
-input[type="date"],input[type="text"],textarea,select{
+input[type="date"],input[type="text"],input[type="number"],textarea,select{
 font:inherit;color:var(--ink);background:var(--surface);
 border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;width:100%;
 }
@@ -357,6 +361,97 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 </div>
 
 <!-- ガイドタブ -->
+<!-- 体づくりタブ -->
+<div class="tabpage" id="page-body">
+<div class="card">
+<h2>目指す体</h2>
+<img class="goal-img" src="goal.jpg" alt="目標の体型イメージ" />
+<p class="small" style="margin-top:10px;">目標は「写真ほどバキバキでなくていい。締まった筋肉質で、一回り大きい体」。自宅完結・無理のないペースで、時間をかけて作ります。筋肉は裏切らない代わりに急には増えません。目安は、3ヶ月で「なんか締まってきた」、1年で服のサイズ感が変わる、が現実的なペースです（51歳・初心者の増量ペースとして、筋肉は年2〜4kgつけば順調な方です）。</p>
+<p class="small">やることは3つだけ：<b>週3回の自宅トレ</b>／<b>タンパク質を毎日しっかり</b>／<b>体重を週1回記録</b>。顔ケアと同じく、淡々と続ける仕組みにしました。</p>
+</div>
+
+<div class="card">
+<h2>あなたの数値（食事の目標計算）</h2>
+<p class="small">身長と体重を入れると、1日のタンパク質とカロリーの目安を自動計算します（筋肉を増やすには「維持カロリー＋250kcal」と「タンパク質＝体重×2g」が基本）。</p>
+<div class="body-form">
+<div><label>身長（cm）</label><input type="number" id="bodyH" inputmode="decimal" placeholder="170" /></div>
+<div><label>体重（kg）</label><input type="number" id="bodyW" inputmode="decimal" placeholder="65" /></div>
+<button type="button" class="btn" id="bodySaveBtn">保存する</button>
+</div>
+<p id="bodyTargets" class="small" style="margin-top:10px;"></p>
+</div>
+
+<div class="card flush">
+<div class="sec-head"><h2 id="bodyMenuTitle">今日のトレーニング</h2><span class="time">約30〜40分</span></div>
+<p class="small" style="padding:0 16px;margin:4px 0 0;" id="bodyMenuNote"></p>
+<div id="bodyList"></div>
+<div class="prog"><div id="bodyProg" style="width:0%"></div></div>
+<div id="bodyDone"></div>
+<p class="small" style="padding:0 16px 14px;margin:0;">始める前に肩回し・その場足踏み・軽いスクワットで2〜3分温めてください。各種目の間は60〜90秒休憩。痛みが出たらその種目は中止（筋肉の張りと関節の痛みは別物です）。終わった種目からチェックすると消えていきます。</p>
+</div>
+
+<div class="card">
+<h2>トレーニングの記録</h2>
+<p class="small" id="bodyStats"></p>
+<p class="small">メニューは A（押す：胸・肩・腕）→ B（引く：背中・腕）→ C（脚・体幹）の順に自動で回ります。週3回が目安で、同じメニューを2日連続ではやりません（最低1日あける）。できない週があっても、次にやるとき続きからでOKです。</p>
+</div>
+
+<div class="card">
+<h2>食事の基本（筋肉のための食べ方）</h2>
+<details class="guide" open>
+<summary>毎日のルール</summary>
+<div class="g-body">
+<ul class="tight">
+<li><b>タンパク質：体重×2g/日</b>を3〜4食に分ける（1食30〜40gが目安）。筋肉の材料はこれが最優先。</li>
+<li><b>カロリー：維持＋200〜300kcal</b>。体重が2週間ほぼ変わらなければ＋100kcalずつ足す。逆に月1.5kg以上増えたら少し引く（脂肪が先行しているサイン）。</li>
+<li>炭水化物は敵ではありません。トレーニングの燃料なので、特にトレ前後はしっかり食べる。</li>
+<li>脂質は控えめにしすぎない（ホルモンの材料）。揚げ物で稼がず、魚・卵・ナッツ等で。</li>
+<li>酒は筋肉の合成を下げるので、トレした日は特に控えめに。</li>
+<li>睡眠7時間前後。筋肉は寝ている間に作られます。</li>
+</ul>
+</div>
+</details>
+<details class="guide">
+<summary>タンパク質の目安表</summary>
+<div class="g-body">
+<table>
+<tr><th>食品</th><th>タンパク質</th></tr>
+<tr><td>鶏むね肉 100g</td><td>約23g</td></tr>
+<tr><td>魚（サバ・鮭等）100g</td><td>約20g</td></tr>
+<tr><td>卵 1個</td><td>約6g</td></tr>
+<tr><td>納豆 1パック</td><td>約8g</td></tr>
+<tr><td>ギリシャヨーグルト 1個</td><td>約10g</td></tr>
+<tr><td>牛乳 200ml</td><td>約7g</td></tr>
+<tr><td>ホエイプロテイン 1杯</td><td>約20g</td></tr>
+</table>
+<p class="small">食事の組み立て例：朝＝卵2個＋納豆＋ご飯（約25g）、昼＝鶏や魚の定食（約35g）、間食＝プロテイン（20g）、夜＝肉か魚＋ご飯＋味噌汁（約35g）。これで約115g。体重65kgなら目標130gなので、あとヨーグルトや牛乳で足すイメージです。</p>
+</div>
+</details>
+<details class="guide">
+<summary>サプリは2つだけ（任意）</summary>
+<div class="g-body">
+<ul class="tight">
+<li><b>ホエイプロテイン</b>：食事で足りない分の穴埋め。薬ではなく食品です。</li>
+<li><b>クレアチン モノハイドレート 5g/日</b>：筋トレ系で最も研究が多く、効き目と安全性のバランスが良いもの。水分を多めに。<b>腎臓の数値で指摘がある場合は、先に医師に確認を。</b></li>
+</ul>
+<p class="small">それ以外のサプリは基本いりません。顔ケア側のサプリ（任意枠）と合わせて、多すぎるものは続かないので絞っています。</p>
+</div>
+</details>
+<details class="guide">
+<summary>強くしていく方法と注意（51歳版）</summary>
+<div class="g-body">
+<ul class="tight">
+<li><b>漸進のルール</b>：各種目、決めた回数の上限までできるようになったら、次回は回数を＋1〜2回、それも楽になったら重さを少し上げる（ペットボトル→ダンベル）。これの繰り返しが筋肉を増やします。</li>
+<li>関節（肩・肘・膝・腰）を守るため、フォームが崩れる重さは使わない。勢い・反動はなし。</li>
+<li>血圧が高めの自覚がある人は、強く息む種目は避け、呼吸を止めない。</li>
+<li>健康診断で気になる数値がある年は、始める前に一度かかりつけ医に「自宅で筋トレを始める」と伝えておくと安心です。</li>
+<li>道具は必須ではありませんが、<b>可変式ダンベル（〜20kg×2）</b>があると背中と脚の負荷を上げ続けられます。自宅トレで「一回り大きく」まで行くなら、いちばん効く投資はこれです。</li>
+</ul>
+</div>
+</details>
+</div>
+</div>
+
 <div class="tabpage" id="page-guide">
 <div class="redflag">
 <div class="a-title">⚠ 受診を考えたいサイン（眼瞼下垂）</div>
@@ -583,6 +678,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <nav class="tabbar hidden" id="tabbar">
 <button type="button" data-tab="today" class="on"><span class="ic">☀</span>今日</button>
 <button type="button" data-tab="photo"><span class="ic">📷</span>写真</button>
+<button type="button" data-tab="body"><span class="ic">🏋</span>体づくり</button>
 <button type="button" data-tab="guide"><span class="ic">📖</span>ガイド</button>
 <button type="button" data-tab="settings"><span class="ic">⚙</span>設定</button>
 </nav>
@@ -614,12 +710,12 @@ clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.add("hid
 /* ---------- 状態の保存 ---------- */
 var state=null;
 function defaultState(){
-return { settings:null, logs:{}, retinolAnchor:null};
+return { settings:null, logs:{}, retinolAnchor:null, bodySessions:[]};
 }
 function load(){
 try{
 var raw=localStorage.getItem(LS_KEY);
-if(raw){ state=JSON.parse(raw); if(!state.logs) state.logs={}; return;}
+if(raw){ state=JSON.parse(raw); if(!state.logs) state.logs={}; if(!state.bodySessions) state.bodySessions=[]; return;}
 }catch(e){}
 state=defaultState();
 }
@@ -628,9 +724,10 @@ try{ localStorage.setItem(LS_KEY, JSON.stringify(state));}
 catch(e){ toast("保存できませんでした（容量不足の可能性があります）");}
 }
 function dayLog(k){
-if(!state.logs[k]) state.logs[k]={ am:{}, pm:{}, inner:{}, cond:{ red:-1, dry:-1, puff:-1, eye:-1}};
+if(!state.logs[k]) state.logs[k]={ am:{}, pm:{}, inner:{}, body:{}, cond:{ red:-1, dry:-1, puff:-1, eye:-1}};
 if(!state.logs[k].cond) state.logs[k].cond={ red:-1, dry:-1, puff:-1, eye:-1};
 if(!state.logs[k].inner) state.logs[k].inner={};
+if(!state.logs[k].body) state.logs[k].body={};
 return state.logs[k];
 }
 
@@ -749,7 +846,7 @@ renderAdvice(log);
 renderHistory();
 renderPhotoDue();
 }
-var showDone={am:false,pm:false,inner:false};
+var showDone={am:false,pm:false,inner:false,body:false};
 function taskButton(which, t, done){
 var b=document.createElement("button");
 b.type="button"; b.className="task"+(done?" done":"")+((t.disabled)?" disabled":"");
@@ -759,9 +856,10 @@ b.innerHTML='<span class="box">✓</span><span style="flex:1"><span class="t-nam
 b.addEventListener("click", function(){
 if(t.disabled){ toast(t.id==="retinol"? "今日はレチノールお休みの日です": "この項目は今日は対象外です"); return;}
 var log=dayLog(todayKey());
-var map = which==="am"? log.am: (which==="pm"? log.pm: log.inner);
-if(done){ map[t.id]=false; save(); renderToday(); }
-else { b.classList.add("leaving"); map[t.id]=true; save(); setTimeout(function(){ renderToday(); },240); }
+var map = which==="am"? log.am: (which==="pm"? log.pm: (which==="body"? log.body: log.inner));
+var rerender = which==="body"? renderBody: renderToday;
+if(done){ map[t.id]=false; save(); rerender(); }
+else { b.classList.add("leaving"); map[t.id]=true; save(); setTimeout(function(){ rerender(); },240); }
 });
 return b;
 }
@@ -1043,9 +1141,88 @@ el.appendChild(d);
 });
 }
 
+/* ---------- 体づくり ---------- */
+var MENUS=[
+{ key:"A", name:"A：押す日（胸・肩・腕の裏）", note:"腕立て中心の日。きつい種目は膝つき・壁からでOK。フォームが崩れるくらいなら軽い版で回数をこなす方が効きます。", items:[
+{ id:"a1", name:"プッシュアップ（腕立て伏せ）", desc:"3セット×8〜15回／体は一直線、胸を床に近づける。きつければ膝つき、余裕が出たら足を椅子に乗せる", time:"" },
+{ id:"a2", name:"パイクプッシュアップ（肩）", desc:"3セット×6〜10回／お尻を高く上げ、頭頂を床に近づけるイメージで曲げ伸ばし", time:"" },
+{ id:"a3", name:"フロアプレス（胸・腕）", desc:"3セット×10〜12回／ダンベルか水入りバッグを寝て押し上げる。なければプッシュアップをもう1セット追加", time:"" },
+{ id:"a4", name:"チェアディップス（腕の裏）", desc:"2〜3セット×8〜12回／椅子や机の縁に手をつき、肘を曲げ伸ばし。肩がすくむ深さまでは下げない", time:"" },
+{ id:"a5", name:"サイドレイズ（肩の横）", desc:"3セット×12〜15回／ペットボトルかダンベルを、肘を遠くへ運ぶイメージで肩の高さまで。反動なし", time:"" }
+]},
+{ key:"B", name:"B：引く日（背中・腕の表）", note:"背中は姿勢と「一回り大きい」見た目の要です。背中を丸めず、肘を後ろへ引く意識で。", items:[
+{ id:"b1", name:"ワンハンドロウ（背中）", desc:"3セット×10〜12回（左右）／椅子に片膝と手をつき、ダンベルかバッグを腰の横へ引く。背中は平らに", time:"" },
+{ id:"b2", name:"ルーマニアンデッドリフト（背中・尻・もも裏）", desc:"3セット×10〜12回／背中まっすぐのまま、お尻を後ろへ引いて前傾→戻る。腰が丸まる重さは使わない", time:"" },
+{ id:"b3", name:"ダンベルカール（腕の表）", desc:"3セット×10〜12回／肘を体の横に固定し、反動なしで巻き上げる。下ろすときもゆっくり", time:"" },
+{ id:"b4", name:"うつ伏せスノーエンジェル（背中・姿勢）", desc:"2セット×10回／うつ伏せで腕を雪天使のように大きく回す。道具なしで背中と姿勢に効く", time:"" }
+]},
+{ key:"C", name:"C：脚・体幹の日", note:"脚は一番大きな筋肉の集まり。ここを鍛えると全体の代謝と体の厚みが変わります。膝とつま先は同じ向きで。", items:[
+{ id:"c1", name:"スクワット", desc:"3セット×12〜15回／椅子のお尻タッチから始めてOK。余裕が出たらダンベルを胸で抱える（ゴブレット）", time:"" },
+{ id:"c2", name:"ブルガリアンスプリットスクワット", desc:"2〜3セット×8回（左右）／後ろ足を椅子に乗せ、前の脚で立ち上がる。バランスが不安なら壁に手をついて", time:"" },
+{ id:"c3", name:"ヒップリフト（お尻）", desc:"3セット×12〜15回／仰向けで膝を立て、お尻を締めながら持ち上げる。一番上で2秒止める", time:"" },
+{ id:"c4", name:"カーフレイズ（ふくらはぎ）", desc:"3セット×15〜20回／壁に手をつき、かかとをゆっくり上下。段差があれば可動域が広がる", time:"" },
+{ id:"c5", name:"デッドバグ（体幹）", desc:"2〜3セット×8回（左右）／仰向けで腰を床に押し付けたまま、対角の手足をゆっくり伸ばす。腰が浮いたら戻す", time:"" }
+]}
+];
+function paintTargets(){
+var s=state.settings||{};
+if(s.bodyH) $("bodyH").value=s.bodyH;
+if(s.bodyW) $("bodyW").value=s.bodyW;
+var el=$("bodyTargets");
+if(s.bodyH && s.bodyW){
+var protein=Math.round(s.bodyW*2);
+var bmr=Math.round(10*s.bodyW + 6.25*s.bodyH - 5*51 + 5);
+var tdee=Math.round(bmr*1.5);
+el.innerHTML="1日の目安：<b>タンパク質 約"+protein+"g</b>／<b>カロリー 約"+(tdee+250)+"kcal</b>（維持 約"+tdee+"kcal ＋250）。<br>体重が2週間ほぼ変わらなければ＋100kcal、月1.5kg以上増えたら少し引くのが目安です。";
+} else {
+el.textContent="身長と体重を入れて保存すると、ここに1日の目安が出ます。";
+}
+}
+function paintStats(){
+var sessions=state.bodySessions||[];
+var now=new Date(); var dow=(now.getDay()+6)%7;
+var mon=addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -dow);
+var sun=addDays(mon, 7);
+var week=0;
+sessions.forEach(function(s){ var d=parseKey(s.date); if(d>=mon && d<sun) week++; });
+$("bodyStats").innerHTML="通算 <b>"+sessions.length+"回</b>／今週 <b>"+week+"回</b>（目安3回）。";
+}
+function renderBody(){
+if(!state.settings) return;
+paintTargets();
+var k=todayKey(); var log=dayLog(k);
+var sessions=state.bodySessions||[];
+var doneToday=sessions.some(function(s){ return s.date===k; });
+if(!doneToday){
+var menu0=MENUS[sessions.length%3];
+var allDone=menu0.items.every(function(t){ return !!log.body[t.id]; });
+if(allDone){ sessions.push({date:k, menu:menu0.key}); state.bodySessions=sessions; save(); doneToday=true; }
+}
+if(doneToday){
+var next=MENUS[sessions.length%3];
+$("bodyMenuTitle").textContent="今日のトレーニング：完了 🎉";
+$("bodyMenuNote").textContent="おつかれさまでした。次回は「"+next.name+"」です。筋肉は休んでいる間に育つので、タンパク質と睡眠をしっかりどうぞ。";
+$("bodyList").innerHTML="";
+$("bodyProg").style.width="100%";
+var dEl=$("bodyDone"); dEl.innerHTML="";
+var undo=document.createElement("button"); undo.type="button"; undo.className="done-toggle"; undo.textContent="↩ 今日の完了を取り消す";
+undo.addEventListener("click", function(){
+state.bodySessions=(state.bodySessions||[]).filter(function(s){ return s.date!==k; });
+dayLog(k).body={}; save(); renderBody();
+});
+dEl.appendChild(undo);
+} else {
+var menu=MENUS[sessions.length%3];
+$("bodyMenuTitle").textContent="今日のトレーニング："+menu.name;
+$("bodyMenuNote").textContent=menu.note;
+renderTaskList("body", menu.items, log.body);
+}
+paintStats();
+}
+
 /* ---------- タブ切替 ---------- */
 function switchTab(name){
-["today","photo","guide","settings"].forEach(function(t){
+["today","photo","body","guide","settings"].forEach(function(t){
 $("page-"+t).classList.toggle("on", t===name);
 });
 document.querySelectorAll(".tabbar button").forEach(function(b){
@@ -1053,6 +1230,7 @@ b.classList.toggle("on", b.getAttribute("data-tab")===name);
 });
 window.scrollTo(0,0);
 if(name==="photo") renderPhotos();
+if(name==="body") renderBody();
 if(name==="settings") renderSettings();
 }
 
@@ -1110,6 +1288,12 @@ document.querySelectorAll(".tabbar button").forEach(function(b){
 b.addEventListener("click", function(){ switchTab(b.getAttribute("data-tab"));});
 });
 $("gotoPhotoBtn").addEventListener("click", function(){ switchTab("photo");});
+$("bodySaveBtn").addEventListener("click", function(){
+var h=parseFloat($("bodyH").value), w=parseFloat($("bodyW").value);
+if(h>0) state.settings.bodyH=h;
+if(w>0) state.settings.bodyW=w;
+save(); renderBody(); toast("保存しました");
+});
 $("addPhotoBtn").addEventListener("click", function(){ $("photoInput").click();});
 $("photoInput").addEventListener("change", function(){
 if(this.files && this.files[0]) addPhotoFile(this.files[0], photos.length===0);
