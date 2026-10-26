@@ -203,6 +203,27 @@
       @media (prefers-reduced-motion: reduce) {
         * { transition: none !important; }
       }
+      /* かいわモード */
+      .dlg-btn { display:block; width:100%; text-align:left; background:var(--surface); border:1.5px solid var(--line); border-radius:14px; padding:14px; margin:10px 0; font-size:15px; color:var(--ink); box-shadow:var(--shadow); }
+      .dlg-btn .dlg-t { font-weight:800; font-size:16px; }
+      .dlg-btn .dlg-s { font-size:12px; color:var(--muted); margin-top:2px; }
+      .bubble { max-width:90%; padding:10px 12px; border-radius:14px; margin:8px 0; font-size:15px; line-height:1.55; }
+      .bubble.p { background:var(--surface); border:1.5px solid var(--line); margin-right:auto; border-bottom-left-radius:4px; }
+      .bubble.u { background:var(--accent); color:var(--accent-ink); margin-left:auto; border-bottom-right-radius:4px; }
+      .bubble .b-ja { font-size:12px; opacity:.8; }
+      .bubble .b-kana { font-size:13px; opacity:.9; }
+      .bubble button { margin-top:6px; }
+      .turn-card { background:var(--surface); border:2px solid var(--accent); border-radius:14px; padding:14px; margin:12px 0; }
+      .turn-card .t-ja { font-size:19px; font-weight:800; }
+      .turn-card .t-kana { font-size:15px; color:var(--accent); font-weight:700; margin-top:2px; }
+      .mic-btn { display:block; width:100%; background:#e0632f; color:#fff; border:none; border-radius:999px; padding:15px; font-size:17px; font-weight:800; margin:12px 0 6px; }
+      .mic-btn.listening { background:var(--bad); animation:micpulse 1s infinite; }
+      @keyframes micpulse { 50% { opacity:.55; } }
+      .heard-box { background:var(--surface2); border-radius:10px; padding:9px 11px; font-size:14px; margin:8px 0; word-break:break-all; }
+      .judge-ok { color:var(--good); font-weight:800; font-size:16px; }
+      .judge-ng { color:var(--bad); font-weight:800; font-size:16px; }
+      .row-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+      .row-btns button { flex:1; min-width:120px; }
     </style>
   </head>
   <body>
@@ -226,6 +247,7 @@
         <button role="tab" data-view="today" aria-selected="true">今日の練習</button>
         <button role="tab" data-view="scenes" aria-selected="false">場面から探す</button>
         <button role="tab" data-view="quiz" aria-selected="false">聞き取り</button>
+        <button role="tab" data-view="talk" aria-selected="false">かいわ</button>
         <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
       </nav>
 
@@ -233,6 +255,7 @@
         <section class="view active" id="view-today"></section>
         <section class="view" id="view-scenes"></section>
         <section class="view" id="view-quiz"></section>
+        <section class="view" id="view-talk"></section>
         <section class="view" id="view-tones"></section>
       </main>
 
@@ -594,6 +617,199 @@
         el.innerHTML = html;
       }
 
+      /* ============ かいわモード（音声認識つき） ============ */
+      var DIALOGUES = [
+        { id:"d1", title:"あいさつ・自己紹介", turns:[
+          {w:"p", id:"s1p1"},{w:"u", id:"s1p1"},{w:"p", id:"s2p5"},{w:"u", id:"s2p2"},{w:"p", id:"s8p5"},{w:"u", id:"s2p6"},{w:"p", id:"s1p8"},{w:"u", id:"s1p3"} ]},
+        { id:"d2", title:"買い物", turns:[
+          {w:"p", id:"s1p1"},{w:"u", id:"s3p4"},{w:"u", id:"s3p1"},{w:"u", id:"s3p2"},{w:"u", id:"s3p3"},{w:"p", id:"s1p6"},{w:"u", id:"s3p6"},{w:"p", id:"s1p3"},{w:"u", id:"s1p4"} ]},
+        { id:"d3", title:"食事", turns:[
+          {w:"p", id:"s1p1"},{w:"u", id:"s4p1"},{w:"u", id:"s4p2"},{w:"u", id:"s4p3"},{w:"u", id:"s4p6"},{w:"p", id:"s1p6"},{w:"u", id:"s4p5"},{w:"u", id:"s4p7"},{w:"p", id:"s1p3"},{w:"u", id:"s4p8"} ]},
+        { id:"d4", title:"移動（タクシー）", turns:[
+          {w:"p", id:"s1p1"},{w:"u", id:"s5p1"},{w:"u", id:"s5p8"},{w:"u", id:"s5p5"},{w:"u", id:"s5p4"},{w:"u", id:"s5p2"},{w:"u", id:"s1p3"} ]},
+        { id:"d5", title:"ホテル", turns:[
+          {w:"p", id:"s1p1"},{w:"u", id:"s6p1"},{w:"u", id:"s6p2"},{w:"u", id:"s6p6"},{w:"u", id:"s6p5"},{w:"p", id:"s1p6"},{w:"u", id:"s6p7"},{w:"u", id:"s1p4"} ]},
+        { id:"d6", title:"困ったとき", turns:[
+          {w:"p", id:"s1p5"},{w:"u", id:"s1p6"},{w:"u", id:"s7p2"},{w:"u", id:"s7p4"},{w:"u", id:"s2p8"},{w:"u", id:"s7p5"},{w:"u", id:"s1p3"} ]}
+      ];
+      var talk = null;
+      var talkRec = null;
+
+      function talkUserTotal(d) { return d.turns.filter(function (t) { return t.w === "u"; }).length; }
+      function normTh(s) { return (s || "").replace(/[\s.,!?…"'、。，．！？：:;・「」『』（）()\-]/g, ""); }
+      function stripPolite(s) { return s.replace(/(ครับผม|ครับ|ค่ะ|คะ|นะ)+$/, ""); }
+      function levDist(a, b) {
+        var m = a.length, n = b.length, i, j;
+        if (!m) return n; if (!n) return m;
+        var prev = [], cur = [];
+        for (j = 0; j <= n; j++) prev[j] = j;
+        for (i = 1; i <= m; i++) {
+          cur[0] = i;
+          for (j = 1; j <= n; j++) {
+            cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+          }
+          var tmp = prev; prev = cur; cur = tmp;
+        }
+        return prev[n];
+      }
+      function simTh(a, b) {
+        if (!a || !b) return 0;
+        return 1 - levDist(a, b) / Math.max(a.length, b.length);
+      }
+      function scoreHeard(heard, target) {
+        var h = normTh(heard), t = normTh(target);
+        return Math.max(simTh(h, t), simTh(stripPolite(h), stripPolite(t)), simTh(h, stripPolite(t)), simTh(stripPolite(h), t));
+      }
+
+      function renderTalk() {
+        var el = document.getElementById("view-talk");
+        if (!talk) {
+          var best = (store && store.talk) || {};
+          var html = '<div class="sec-head"><h2>かいわ練習</h2></div>' +
+            '<p class="small">相手のセリフが流れたら、あなたの番です。マイクボタンを押してタイ語で話してください。アプリが聞き取って「通じたか」を判定し、通じたら次に進みます。</p>';
+          DIALOGUES.forEach(function (d) {
+            var b = best[d.id];
+            html += '<button type="button" class="dlg-btn" data-dlg="' + d.id + '"><span class="dlg-t">' + d.title + '</span>' +
+              '<div class="dlg-s">あなたのセリフ ' + talkUserTotal(d) + 'つ' + (b ? '／自己ベスト ' + b.passed + '/' + b.total : '') + '</div></button>';
+          });
+          html += '<p class="small">※ 音声認識はインターネット接続が必要です。iPhoneはSafari（iOS 17以降）、AndroidはChromeで動作します。マイクの使用許可が出たら「許可」を押してください。</p>';
+          el.innerHTML = html;
+          el.querySelectorAll("[data-dlg]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var d = DIALOGUES.filter(function (x) { return x.id === btn.getAttribute("data-dlg"); })[0];
+              talk = { dlg: d, idx: 0, passed: 0, done: [], tries: 0 };
+              stepTalk(true);
+            });
+          });
+          return;
+        }
+        var d = talk.dlg;
+        var total = talkUserTotal(d);
+        var doneU = talk.done.filter(function (t) { return t.w === "u"; }).length;
+        var html2 = '<div class="sec-head"><h2>' + d.title + '</h2></div>' +
+          '<p class="small">進みぐあい：あなたのセリフ ' + doneU + ' / ' + total + '（通じた ' + talk.passed + '）　<button type="button" class="btn slow" id="talkQuit">一覧に戻る</button></p>';
+        talk.done.forEach(function (t) {
+          var p = BY_ID[t.id];
+          if (t.w === "p") {
+            html2 += '<div class="bubble p"><div>🗣 ' + p.th + '</div><div class="b-kana">' + p.kana + '</div><div class="b-ja">' + p.ja + '</div><button type="button" class="btn slow" data-play="' + p.id + '">もう一度聞く</button></div>';
+          } else {
+            html2 += '<div class="bubble u"><div>' + p.th + '</div><div class="b-ja">' + (t.skip ? '（スキップ）' : '✓ 通じました') + '</div></div>';
+          }
+        });
+        if (talk.idx >= d.turns.length) {
+          html2 += '<div class="turn-card"><div class="t-ja">🎉 会話クリア！</div><p class="small">通じたセリフ：' + talk.passed + ' / ' + total + '</p><div class="row-btns"><button type="button" class="btn primary" id="talkRetry">もう一度</button><button type="button" class="btn slow" id="talkBack">一覧に戻る</button></div></div>';
+          el.innerHTML = html2;
+          document.getElementById("talkRetry").addEventListener("click", function () { talk = { dlg: d, idx: 0, passed: 0, done: [], tries: 0 }; stepTalk(true); });
+          document.getElementById("talkBack").addEventListener("click", function () { talk = null; renderTalk(); });
+          return;
+        }
+        var cur = d.turns[talk.idx];
+        var cp = BY_ID[cur.id];
+        html2 += '<div class="turn-card" id="turnCard"><div class="small">あなたの番です。タイ語で言ってみましょう</div>' +
+          '<div class="t-ja">' + cp.ja + '</div><div class="t-kana">' + cp.kana + '</div>' +
+          playButtons(cp, false) +
+          '<button type="button" class="mic-btn" id="micBtn">🎤 タップして話す</button>' +
+          '<div id="talkResult"></div>' +
+          '<div class="row-btns"><button type="button" class="btn slow" id="talkSelfOk">言えた（自己判定で進む）</button><button type="button" class="btn slow" id="talkSkip">スキップ</button></div>' +
+          '</div>';
+        el.innerHTML = html2;
+        document.getElementById("talkQuit").addEventListener("click", function () { stopRec(); talk = null; renderTalk(); });
+        document.getElementById("micBtn").addEventListener("click", startRec);
+        document.getElementById("talkSelfOk").addEventListener("click", function () { passTalk(false); });
+        document.getElementById("talkSkip").addEventListener("click", function () { skipTalk(); });
+        var tc = document.getElementById("turnCard");
+        if (tc && tc.scrollIntoView) tc.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+
+      function stepTalk(first) {
+        var d = talk.dlg;
+        var lastP = null;
+        while (talk.idx < d.turns.length && d.turns[talk.idx].w === "p") {
+          lastP = d.turns[talk.idx];
+          talk.done.push(lastP);
+          talk.idx++;
+        }
+        talk.tries = 0;
+        renderTalk();
+        if (lastP) playAudio("assets/audio/" + lastP.id + ".mp3", null);
+        if (talk.idx >= d.turns.length) finishTalkRecord();
+      }
+      function finishTalkRecord() {
+        var d = talk.dlg, total = talkUserTotal(d);
+        store.talk = store.talk || {};
+        var prev = store.talk[d.id];
+        if (!prev || talk.passed > prev.passed) store.talk[d.id] = { passed: talk.passed, total: total, last: todayStr() };
+        save();
+      }
+      function passTalk(byVoice) {
+        var cur = talk.dlg.turns[talk.idx];
+        talk.done.push({ w: "u", id: cur.id, skip: false });
+        talk.passed++;
+        talk.idx++;
+        stepTalk(false);
+      }
+      function skipTalk() {
+        stopRec();
+        var cur = talk.dlg.turns[talk.idx];
+        talk.done.push({ w: "u", id: cur.id, skip: true });
+        talk.idx++;
+        stepTalk(false);
+      }
+      function stopRec() {
+        if (talkRec) { try { talkRec.abort(); } catch (e) {} talkRec = null; }
+        var mb = document.getElementById("micBtn");
+        if (mb) { mb.classList.remove("listening"); mb.textContent = "🎤 タップして話す"; }
+      }
+      function startRec() {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var res = document.getElementById("talkResult");
+        if (!SR) {
+          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。「お手本を聞く」で確認してから、自己判定で進んでください。</p>';
+          return;
+        }
+        var cur = talk.dlg.turns[talk.idx];
+        var target = BY_ID[cur.id];
+        var mb = document.getElementById("micBtn");
+        var rec = new SR();
+        talkRec = rec;
+        rec.lang = "th-TH";
+        rec.interimResults = false;
+        rec.maxAlternatives = 3;
+        if (mb) { mb.classList.add("listening"); mb.textContent = "🎙 聞き取り中…話してください"; }
+        if (res) res.innerHTML = "";
+        rec.onresult = function (ev) {
+          var best = 0, bestTxt = "";
+          for (var i = 0; i < ev.results[0].length; i++) {
+            var tr = ev.results[0][i].transcript || "";
+            var sc = scoreHeard(tr, target.th);
+            if (sc > best) { best = sc; bestTxt = tr; }
+          }
+          judgeTalk(best, bestTxt, target);
+        };
+        rec.onerror = function (ev) {
+          stopRec();
+          var r2 = document.getElementById("talkResult");
+          if (!r2) return;
+          if (ev.error === "not-allowed") r2.innerHTML = '<p class="judge-ng">マイクが許可されていません</p><p class="small">ブラウザの設定でマイクを許可してください。または「お手本を聞く」＋自己判定でも進めます。</p>';
+          else if (ev.error === "no-speech") r2.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">もう一度、マイクの近くではっきり話してみてください。</p>';
+          else r2.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度試すか、自己判定で進んでください。</p>';
+        };
+        rec.onend = function () { if (talkRec === rec) { talkRec = null; var m2 = document.getElementById("micBtn"); if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; } } };
+        try { rec.start(); } catch (e) { stopRec(); }
+      }
+      function judgeTalk(score, heard, target) {
+        stopRec();
+        var res = document.getElementById("talkResult");
+        talk.tries++;
+        if (score >= 0.55) {
+          var perfect = score >= 0.85;
+          if (res) res.innerHTML = '<p class="judge-ok">' + (perfect ? "🎉 完璧！通じました" : "✓ 通じました！") + '</p><div class="heard-box">聞き取り：' + heard + '</div>';
+          setTimeout(function () { passTalk(true); }, 1100);
+        } else {
+          if (res) res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (heard || "（聞き取れませんでした）") + '<br>お手本：' + target.th + '（' + target.kana + '）</div><p class="small">お手本を聞いて、もう一度どうぞ。どうしても難しいときはスキップできます。</p>';
+        }
+      }
+
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
@@ -605,6 +821,7 @@
         if (name === "today") renderToday();
         if (name === "scenes") renderScenes();
         if (name === "quiz") renderQuiz();
+        if (name === "talk") renderTalk();
         if (name === "tones") renderTones();
         window.scrollTo({ top: 0 });
       }
