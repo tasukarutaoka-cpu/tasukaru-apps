@@ -248,6 +248,7 @@
         <button role="tab" data-view="scenes" aria-selected="false">場面から探す</button>
         <button role="tab" data-view="quiz" aria-selected="false">聞き取り</button>
         <button role="tab" data-view="talk" aria-selected="false">かいわ</button>
+        <button role="tab" data-view="grammar" aria-selected="false">ぶんぽう</button>
         <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
       </nav>
 
@@ -256,6 +257,7 @@
         <section class="view" id="view-scenes"></section>
         <section class="view" id="view-quiz"></section>
         <section class="view" id="view-talk"></section>
+        <section class="view" id="view-grammar"></section>
         <section class="view" id="view-tones"></section>
       </main>
 
@@ -810,6 +812,120 @@
         }
       }
 
+      /* ============ ぶんぽう（型と入れ替えドリル） ============ */
+      var PATTERNS = [
+        { name:"ขอ〜หน่อย", kana:"コー〜ノイ", mean:"〜してください（丁寧なお願い）",
+          desc:"「コー（ください）＋してほしいこと＋ノイ（少し）」。ノイを付けると柔らかい頼み方になります。レストラン・買い物・ホテルで一番使う型です。",
+          ex:["s3p4","s4p6"],
+          drill:{ ja:"タオルをください", th:"ขอผ้าขนหนูหน่อยครับ", kana:"コー・パー・コン・ヌー・ノイ・クラップ" } },
+        { name:"〜ได้ไหม", kana:"〜ダイ・マイ", mean:"〜できますか？",
+          desc:"文の最後に付けると「〜できますか？」の疑問文になります。お願いと質問を兼ねる、旅先の万能パーツです。",
+          ex:["s3p3","s6p7"],
+          drill:{ ja:"ここで止まれますか？", th:"จอดตรงนี้ได้ไหมครับ", kana:"ヂョート・トロン・ニー・ダイ・マイ・クラップ" } },
+        { name:"มี〜ไหม", kana:"ミー〜マイ", mean:"〜はありますか？",
+          desc:"「ミー（ある・持っている）＋物＋マイ（〜か？）」。お店で在庫を聞くときの型です。",
+          ex:["s3p5","s3p8"],
+          drill:{ ja:"タオルはありますか？", th:"มีผ้าขนหนูไหมครับ", kana:"ミー・パー・コン・ヌー・マイ・クラップ" } },
+        { name:"ไม่〜", kana:"マイ〜", mean:"〜ない（否定）",
+          desc:"動詞や形容詞の前に「マイ」を置くだけで否定になります。活用がないタイ語らしい、シンプルな仕組みです。",
+          ex:["s4p3","s7p3"],
+          drill:{ ja:"辛くないです", th:"ไม่เผ็ดครับ", kana:"マイ・ペッ・クラップ" } },
+        { name:"〜เท่าไหร่", kana:"〜タオライ", mean:"いくら／どのくらい",
+          desc:"値段にも時間にも使える「どのくらい？」のパーツ。買い物と移動の両方で活躍します。",
+          ex:["s3p1","s5p8"],
+          drill:{ ja:"どのくらい時間がかかりますか？", th:"ใช้เวลาเท่าไหร่ครับ", kana:"チャイ・ウェーラー・タオライ・クラップ" } },
+        { name:"〜อยู่ไหน", kana:"〜ユー・ナイ", mean:"〜はどこですか？",
+          desc:"「ユー・ナイ（どこにある）」を場所の後ろに付けるだけ。道を聞くときの基本形です。",
+          ex:["s6p3","s7p8"],
+          drill:{ ja:"駅はどこですか？", th:"สถานีรถไฟอยู่ไหนครับ", kana:"サターニー・ロットファイ・ユー・ナイ・クラップ" } },
+        { name:"〜คืออะไร", kana:"〜クー・アライ", mean:"〜は何ですか？",
+          desc:"「クー・アライ（何である）」。知らない物・言葉に出会ったときの聞き方です。名前を聞くときもこの形です。",
+          ex:["s4p2","s2p5"],
+          drill:{ ja:"これは何ですか？", th:"อันนี้คืออะไรครับ", kana:"アン・ニー・クー・アライ・クラップ" } },
+        { name:"ผม／คุณ＋ครับ", kana:"ポム／クン＋クラップ", mean:"私／あなた＋丁寧の語尾",
+          desc:"タイ語の文の土台。ポム＝私（男性）、クン＝あなた。文の最後に「クラップ」を付けると丁寧になります。主語は会話では省略されることも多いです。",
+          ex:["s2p1","s2p2"],
+          drill:{ ja:"日本から来ました", th:"ผมมาจากญี่ปุ่นครับ", kana:"ポム・マー・ヂャーク・イープン・クラップ" } },
+        { name:"อยาก〜", kana:"ヤーク〜", mean:"〜したい",
+          desc:"「ヤーク＋動詞」で願望を表します。新しい単語ですが、使用頻度は高い型です。やりたいこと・行きたい場所を伝えられます。",
+          ex:["s8p2"],
+          drill:{ ja:"タイに行きたいです", th:"ผมอยากไปประเทศไทยครับ", kana:"ポム・ヤーク・パイ・プラテート・タイ・クラップ" } },
+        { name:"กี่โมง", kana:"ギー・モーン", mean:"何時ですか？",
+          desc:"「ギー（いくつ）＋モーン（時）」。時刻を聞く専用の聞き方です。数字の聞き取りとセットで覚えると便利です。",
+          ex:["s6p6"],
+          drill:{ ja:"朝食は何時ですか？", th:"อาหารเช้ากี่โมงครับ", kana:"アーハーン・チャーオ・ギー・モーン・クラップ" } }
+      ];
+      function speakTh(text) {
+        try {
+          var u = new SpeechSynthesisUtterance(text);
+          u.lang = "th-TH"; u.rate = 0.85;
+          speechSynthesis.cancel(); speechSynthesis.speak(u);
+        } catch (e) {}
+      }
+      function renderGrammar() {
+        var el = document.getElementById("view-grammar");
+        var html = '<div class="sec-head"><h2>ぶんぽう（型）</h2></div>' +
+          '<p class="small">タイ語は動詞の活用がなく、語順もシンプルです。会話に必要なのは、この「型」を覚えて単語を入れ替えること。各型の最後に、単語を入れ替えた文を声に出すドリルがあります。</p>';
+        PATTERNS.forEach(function (pt, pi) {
+          html += '<div class="turn-card"><div class="t-ja">' + pt.name + '（' + pt.kana + '）</div>' +
+            '<div class="t-kana">' + pt.mean + '</div>' +
+            '<p class="small">' + pt.desc + '</p>';
+          pt.ex.forEach(function (id) {
+            var p = BY_ID[id];
+            html += '<div class="heard-box">' + p.ja + '：' + p.kana + ' <button type="button" class="btn slow" data-play="' + p.id + '">聞く</button></div>';
+          });
+          html += '<div style="margin-top:10px;"><div class="small"><b>入れ替えドリル</b>：次の文をタイ語で言ってみましょう</div>' +
+            '<div class="t-ja" style="font-size:17px;">' + pt.drill.ja + '</div>' +
+            '<div id="drillAns' + pi + '" class="heard-box" style="display:none;">' + pt.drill.th + '（' + pt.drill.kana + '）</div>' +
+            '<div class="row-btns"><button type="button" class="btn slow" data-ans="' + pi + '">読み方を見る</button><button type="button" class="btn slow" data-tts="' + pi + '">お手本（機械の声）</button></div>' +
+            '<button type="button" class="mic-btn" data-drillmic="' + pi + '">🎤 タップして話す</button>' +
+            '<div id="drillRes' + pi + '"></div></div></div>';
+        });
+        el.innerHTML = html;
+        el.querySelectorAll("[data-ans]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var a = document.getElementById("drillAns" + b.getAttribute("data-ans"));
+            if (a) a.style.display = a.style.display === "none" ? "block" : "none";
+          });
+        });
+        el.querySelectorAll("[data-tts]").forEach(function (b) {
+          b.addEventListener("click", function () { speakTh(PATTERNS[+b.getAttribute("data-tts")].drill.th); });
+        });
+        el.querySelectorAll("[data-drillmic]").forEach(function (b) {
+          b.addEventListener("click", function () { startDrillRec(+b.getAttribute("data-drillmic"), b); });
+        });
+      }
+      function startDrillRec(pi, btn) {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var res = document.getElementById("drillRes" + pi);
+        var pt = PATTERNS[pi];
+        if (!SR) {
+          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。「読み方を見る」で確認して、声に出して練習してください。</p>';
+          return;
+        }
+        var rec = new SR();
+        rec.lang = "th-TH"; rec.interimResults = false; rec.maxAlternatives = 3;
+        btn.classList.add("listening"); btn.textContent = "🎙 聞き取り中…話してください";
+        if (res) res.innerHTML = "";
+        rec.onresult = function (ev) {
+          var best = 0, bestTxt = "";
+          for (var i = 0; i < ev.results[0].length; i++) {
+            var tr = ev.results[0][i].transcript || "";
+            var sc = scoreHeard(tr, pt.drill.th);
+            if (sc > best) { best = sc; bestTxt = tr; }
+          }
+          if (res) {
+            if (best >= 0.55) res.innerHTML = '<p class="judge-ok">' + (best >= 0.85 ? "🎉 完璧！通じました" : "✓ 通じました！") + '</p><div class="heard-box">聞き取り：' + bestTxt + '</div>';
+            else res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (bestTxt || "（聞き取れませんでした）") + '<br>お手本：' + pt.drill.th + '（' + pt.drill.kana + '）</div>';
+          }
+        };
+        rec.onerror = function (ev) {
+          if (res) res.innerHTML = '<p class="small">聞き取りに失敗しました。もう一度試してみてください。</p>';
+        };
+        rec.onend = function () { btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; };
+        try { rec.start(); } catch (e) { btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; }
+      }
+
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
@@ -822,6 +938,7 @@
         if (name === "scenes") renderScenes();
         if (name === "quiz") renderQuiz();
         if (name === "talk") renderTalk();
+        if (name === "grammar") renderGrammar();
         if (name === "tones") renderTones();
         window.scrollTo({ top: 0 });
       }
