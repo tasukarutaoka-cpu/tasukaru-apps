@@ -1,0 +1,1050 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>顔ケア継続アプリ ブラウザ版</title>
+<style>
+:root{
+--bg:#f6f4ef;
+--surface:#ffffff;
+--surface2:#efede6;
+--ink:#22302a;
+--ink2:#5c6a62;
+--line:#ddd8cc;
+--accent:#17604c;
+--accent-ink:#ffffff;
+--accent-soft:#dcebe3;
+--warn:#9a5a12;
+--warn-bg:#fbf0da;
+--danger:#a33327;
+--danger-bg:#fbe7e2;
+--ok:#17604c;
+--shadow:0 1px 3px rgba(34,48,42,.08);
+color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){
+:root{
+--bg:#141a17;
+--surface:#1e2622;
+--surface2:#28312c;
+--ink:#e8ede9;
+--ink2:#a7b5ab;
+--line:#39443d;
+--accent:#4cb894;
+--accent-ink:#0e241c;
+--accent-soft:#234034;
+--warn:#e0a44e;
+--warn-bg:#3a2f1a;
+--danger:#e88a7c;
+--danger-bg:#3d231f;
+--shadow:0 1px 3px rgba(0,0,0,.4);
+}
+}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+margin:0;background:var(--bg);color:var(--ink);
+font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif;
+font-size:16px;line-height:1.65;
+padding-bottom:calc(76px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 8px;}
+h1{font-size:21px;margin:0;line-height:1.35;}
+h2{font-size:18px;margin:0 0 8px;line-height:1.4;}
+h3{font-size:16px;margin:0 0 6px;}
+p{margin:0 0 10px;}
+.small{font-size:13px;color:var(--ink2);}
+.tiny{font-size:12px;color:var(--ink2);}
+a{color:var(--accent);}
+button{font:inherit;cursor:pointer;}
+.card{
+background:var(--surface);border:1px solid var(--line);border-radius:14px;
+box-shadow:var(--shadow);padding:16px;margin-bottom:14px;
+}
+.card.flush{padding:0;overflow:hidden;}
+.statusbar{
+display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:4px 0 14px;
+}
+.date-line{font-size:14px;color:var(--ink2);}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.chip{
+background:var(--accent-soft);color:var(--ink);border-radius:999px;
+padding:3px 11px;font-size:13px;font-weight:600;white-space:nowrap;
+}
+.chip.plain{background:var(--surface2);font-weight:500;}
+.goal{
+border-left:4px solid var(--accent);background:var(--surface);
+border-radius:0 12px 12px 0;padding:12px 14px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.goal.g-title{font-weight:700;font-size:15px;}
+/* routine tasks */
+.task{
+display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;
+background:none;border:none;border-bottom:1px solid var(--line);
+padding:12px 16px;color:var(--ink);
+}
+.task:last-child{border-bottom:none;}
+.task.box{
+flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);
+margin-top:2px;display:flex;align-items:center;justify-content:center;
+font-size:16px;color:transparent;background:var(--surface);
+}
+.task.done.box{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.task.done.t-name{color:var(--ink2);text-decoration:line-through;text-decoration-thickness:1px;}
+.task.t-name{font-weight:600;font-size:15px;}
+.task.t-desc{font-size:13px;color:var(--ink2);}
+.task.t-badge{
+flex:none;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;margin-top:3px;
+background:var(--warn-bg);color:var(--warn);
+}
+.task.t-badge.rest{background:var(--danger-bg);color:var(--danger);}
+.task.t-badge.info{background:var(--accent-soft);color:var(--ink);}
+.task.disabled{opacity:.75;}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 2px;}
+.sec-head.time{font-size:13px;color:var(--ink2);}
+.prog{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;margin:10px 16px 14px;}
+.prog>div{height:100%;background:var(--accent);border-radius:99px;transition:width.25s;}
+/* condition */
+.cond-row{margin-bottom:14px;}
+.cond-row:last-child{margin-bottom:2px;}
+.cond-label{font-weight:600;font-size:15px;margin-bottom:6px;}
+.seg{display:flex;gap:8px;flex-wrap:wrap;}
+.seg button{
+border:1.5px solid var(--line);background:var(--surface);color:var(--ink);
+border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;
+}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.seg button.on.bad{background:var(--danger);border-color:var(--danger);color:#fff;}
+.advice{border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+.advice:last-child{margin-bottom:0;}
+.advice.a-title{font-weight:700;font-size:15px;margin-bottom:2px;}
+.advice.normal{background:var(--accent-soft);}
+.advice.warn{background:var(--warn-bg);}
+.advice.danger{background:var(--danger-bg);}
+/* photos */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.photo-cell{position:relative;border-radius:10px;overflow:hidden;background:var(--surface2);aspect-ratio:3/4;}
+.photo-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-cell.p-date{
+position:absolute;left:0;right:0;bottom:0;font-size:11px;color:#fff;
+background:rgba(0,0,0,.55);padding:3px 6px;
+}
+.photo-cell.sel{outline:3px solid var(--accent);outline-offset:-3px;}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.compare figure{margin:0;}
+.compare img{width:100%;border-radius:10px;display:block;aspect-ratio:3/4;object-fit:cover;background:var(--surface2);}
+.compare figcaption{font-size:13px;color:var(--ink2);text-align:center;margin-top:4px;}
+.btn{
+display:inline-block;border:none;border-radius:10px;padding:11px 18px;
+background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;text-align:center;
+}
+.btn.sub{background:var(--surface2);color:var(--ink);}
+.btn.danger{background:none;color:var(--danger);border:1.5px solid var(--danger);}
+.btn.block{display:block;width:100%;}
+.btn:disabled{opacity:.45;cursor:default;}
+/* setup */
+.plan-card{
+display:block;width:100%;text-align:left;background:var(--surface);
+border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;color:var(--ink);
+}
+.plan-card.on{border-color:var(--accent);}
+.plan-card.p-name{font-weight:700;font-size:16px;}
+.plan-card.p-price{font-weight:700;color:var(--accent);}
+input[type="date"],input[type="text"],textarea,select{
+font:inherit;color:var(--ink);background:var(--surface);
+border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;width:100%;
+}
+label.f{display:block;font-weight:600;font-size:14px;margin:12px 0 6px;}
+/* guide */
+.rank-table{width:100%;border-collapse:collapse;font-size:14px;}
+.rank-table th,.rank-table td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+.rank-table th{font-size:12px;color:var(--ink2);white-space:nowrap;}
+.stars{color:var(--accent);white-space:nowrap;font-size:12px;}
+.prod{border-bottom:1px solid var(--line);padding:10px 0;}
+.prod:last-child{border-bottom:none;}
+.prod.pr-name{font-weight:700;font-size:15px;}
+.prod.pr-price{font-weight:700;}
+details.guide{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:10px;overflow:hidden;}
+details.guide summary{
+padding:13px 16px;font-weight:700;font-size:15px;cursor:pointer;list-style:none;
+}
+details.guide summary::-webkit-details-marker{display:none;}
+details.guide.g-body{padding:0 16px 14px;}
+.redflag{background:var(--danger-bg);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
+.redflag.a-title{font-weight:700;color:var(--danger);}
+ul.tight{margin:4px 0 10px;padding-left:20px;}
+ul.tight li{margin-bottom:4px;}
+/* tabbar */
+.tabbar{
+position:fixed;left:0;right:0;bottom:0;z-index:20;
+background:var(--surface);border-top:1px solid var(--line);
+display:flex;padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar button{
+flex:1;background:none;border:none;color:var(--ink2);
+padding:9px 2px 7px;font-size:12px;font-weight:600;line-height:1.3;
+}
+.tabbar button.ic{display:block;font-size:20px;line-height:1.1;}
+.tabbar button.on{color:var(--accent);}
+.tabpage{display:none;}
+.tabpage.on{display:block;}
+.hidden{display:none!important;}
+.row-between{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.mt{margin-top:10px;}
+.mb{margin-bottom:10px;}
+.toast{
+position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));
+background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;
+font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88vw;text-align:center;
+}
+.phase-flow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px;}
+.phase-step{
+flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;
+}
+.phase-step.now{border-color:var(--accent);background:var(--accent-soft);}
+.phase-step.ph{font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<!-- ============ セットアップ ============ -->
+<section id="setupView" class="hidden">
+<h1>顔ケアをはじめましょう</h1>
+<p class="small">51歳・自宅ケア用に調べた内容をもとにした、続けるためのアプリです。合言葉は「朝3分・夜5分」。まず土台（保湿＋日焼け止め）を固めてから、攻めの成分を1つずつ足していきます。</p>
+
+<div class="goal">
+<div class="g-title">目標：見た目マイナス20歳／目を大きく、二重に</div>
+<p class="small" style="margin:4px 0 0;">正直にお伝えすると、化粧品とセルフケアだけで「マイナス20歳」「二重そのものを作る」ことはできません。ただ、むくみ・乾燥・ハリの改善で「目が開く・若く見える」方向には確実に進めます。顔トレの臨床研究（JAMA Dermatology 2018）でも見た目年齢が平均で約2.7歳若く評価された例があります。大きな目標への第一歩として、まず3ヶ月続けることを狙います。</p>
+</div>
+
+<h2>プランを選んでください</h2>
+<button type="button" class="plan-card" id="planMin">
+<span class="p-name">最小版（続ける最優先）</span>　<span class="p-price">約3,500円／月</span>
+<div class="small">オールインワン（ナイアシンアミド）＋日焼け止め。朝2分・夜3分。まず習慣化したい人向け。</div>
+</button>
+<button type="button" class="plan-card" id="planStd">
+<span class="p-name">標準版（効果最大ねらい）</span>　<span class="p-price">約7,000〜7,500円／月</span>
+<div class="small">最小版＋ビタミンC（朝）＋レチノール（夜・段階導入）。朝3分・夜5分。シワ・ハリへの効果が最も期待できる組み合わせ。</div>
+</button>
+
+<label class="f" for="startDate">開始日</label>
+<input type="date" id="startDate" />
+
+<label class="f" for="basePhotoInput">基準写真（任意・あとからでも追加できます）</label>
+<p class="small">今の顔を「基準」として残すと、変化が比べやすくなります。写真はこの端末の中にだけ保存されます。</p>
+<input type="file" id="basePhotoInput" accept="image/*" class="hidden" />
+<button type="button" class="btn sub block" id="basePhotoBtn">写真を選ぶ</button>
+<p class="tiny" id="basePhotoName"></p>
+
+<button type="button" class="btn block mt" id="startBtn">この内容ではじめる</button>
+<p class="tiny mt">記録（チェック・状態・写真）はすべてこのブラウザの中に保存されます。別の端末やブラウザでは引き継がれません。</p>
+</section>
+
+<!-- ============ メイン ============ -->
+<section id="mainView" class="hidden">
+<div class="statusbar">
+<div>
+<h1 id="todayTitle">今日のケア</h1>
+<div class="date-line" id="todayDate"></div>
+<div class="chips">
+<span class="chip" id="streakChip">継続 0日</span>
+<span class="chip plain" id="phaseChip">土台づくり期間</span>
+<span class="chip plain" id="planChip">最小版</span>
+</div>
+</div>
+</div>
+
+<!-- 今日タブ -->
+<div class="tabpage on" id="page-today">
+<div class="card" id="photoDueCard">
+<div class="row-between">
+<div>
+<h3>📷 月1回の定点写真</h3>
+<p class="small" style="margin:0;" id="photoDueText"></p>
+</div>
+<button type="button" class="btn sub" id="gotoPhotoBtn">写真へ</button>
+</div>
+</div>
+
+<div class="card flush">
+<div class="sec-head"><h2>朝のルーティン</h2><span class="time" id="amTime"></span></div>
+<div id="amList"></div>
+<div class="prog"><div id="amProg" style="width:0%"></div></div>
+</div>
+
+<div class="card flush">
+<div class="sec-head"><h2>夜のルーティン</h2><span class="time" id="pmTime"></span></div>
+<div id="pmList"></div>
+<div class="prog"><div id="pmProg" style="width:0%"></div></div>
+</div>
+
+<div class="card flush">
+<div class="sec-head"><h2>内側ケア</h2><span class="time">1日4つだけ</span></div>
+<div id="innerList"></div>
+<div class="prog"><div id="innerProg" style="width:0%"></div></div>
+<p class="small" style="padding:0 16px 14px;margin:0;">厳しい食事制限ではありません。「少ないルールを続ける」ための4つです。できない日があっても、翌日戻ればそれでOK。理由はガイドの「内側ケアの話」にまとめています。</p>
+</div>
+
+<div class="card">
+<h2>今日の顔の状態</h2>
+<p class="small">タップで記録すると、下に状態に合わせたアドバイスが出ます。赤みがある日は、夜のレチノールが自動で「お休み」になります。</p>
+<div id="condArea"></div>
+</div>
+
+<div class="card">
+<h2>今日のアドバイス</h2>
+<div id="adviceArea"></div>
+</div>
+
+<div class="card">
+<h2>継続の記録</h2>
+<div id="historyArea"></div>
+</div>
+</div>
+
+<!-- 写真タブ -->
+<div class="tabpage" id="page-photo">
+<div class="card">
+<h2>顔写真の記録</h2>
+<p class="small">同じ照明・同じ角度・無表情で撮ると変化が分かりやすくなります。効果の見極めは8〜12週が目安です。写真はこの端末の中にだけ保存されます。</p>
+<input type="file" id="photoInput" accept="image/*" class="hidden" />
+<button type="button" class="btn block" id="addPhotoBtn">＋ 写真を追加する</button>
+<div class="photo-grid mt" id="photoGrid"></div>
+<p class="tiny mt" id="photoEmpty">まだ写真がありません。最初の1枚が「基準写真」になります。</p>
+</div>
+
+<div class="card" id="compareCard">
+<h2>比べる（2枚えらぶ）</h2>
+<p class="small">上の写真をタップして2枚選ぶと、ここに並びます。</p>
+<div class="compare" id="compareArea"></div>
+<button type="button" class="btn sub block mt hidden" id="clearCompareBtn">選択をクリア</button>
+</div>
+
+<div class="card">
+<h2>写真を削除</h2>
+<p class="small">写真を選んでから押してください（元には戻せません）。</p>
+<button type="button" class="btn danger block" id="deletePhotoBtn" disabled>選んだ写真を削除</button>
+</div>
+</div>
+
+<!-- ガイドタブ -->
+<div class="tabpage" id="page-guide">
+<div class="redflag">
+<div class="a-title">⚠ 受診を考えたいサイン（眼瞼下垂）</div>
+<p class="small" style="margin:0;">本物の眼瞼下垂（まぶたを上げる筋肉・腱膜の問題）は、クリームやトレーニングでは治らず、手術適応の疾患です。次のどれかが当てはまれば眼科／形成外科へ：眉の上を指で押さえて固定すると目が開けにくい／視界の上が狭い・顎を上げて物を見る／夕方に悪化する／頭痛・肩こりが伴う／左右差が大きい・片目だけ急に下がった。</p>
+</div>
+
+<details class="guide" open>
+<summary>大原則：土台が9割</summary>
+<div class="g-body">
+<p>紫外線はシワ・たるみの最大の外的要因（光老化）。米国皮膚科学会（AAD）は「毎朝SPF30以上の広域スペクトラム日焼け止めを、曇りの日も最後のステップで」と推奨します。ここをやらずに高額美容液を足しても効率が悪くなります。</p>
+<ul class="tight">
+<li><b>日焼け止め（毎朝）</b>：SPF30〜50+／PA+++以上を顔＋首＋耳に。屋外では2時間ごとに塗り直し。</li>
+<li><b>保湿（朝晩）</b>：化粧水だけで終わらせず、乳液・クリーム・オールインワンで「蓋」をする。セラミド、ヒアルロン酸、グリセリン、スクワランが目安。</li>
+<li><b>洗顔</b>：朝は水洗顔か低刺激洗顔料、夜は洗顔料で。ゴシゴシ擦らない・熱い湯を使わない。シェービング後の保湿も大切。</li>
+<li><b>睡眠・姿勢（無料）</b>：仰向け寝を意識し、枕は高すぎないものに。横向き・うつ伏せは頬を圧迫します。</li>
+</ul>
+</div>
+</details>
+
+<details class="guide">
+<summary>内側ケアの話（糖化・材料・睡眠）</summary>
+<div class="g-body">
+<p>肌は外から塗るものだけでできているわけではありません。ただし内側ケアは「厳しい食事制限」ではなく、少ないルールを長く続けることが前提です。</p>
+<h3>糖化：甘い飲み物をやめるのが一番簡単</h3>
+<p>余分な糖が体内のタンパク質と結びつく「糖化」が進むと、コラーゲンが硬く・もろくなり、たるみや黄ぐすみの原因になると言われています。対策として一番簡単で続けやすいのは、ジュース・加糖コーヒー・スポーツドリンクなどの<b>甘い飲み物をやめる</b>こと。液体の糖は吸収が速く、量も増えやすいからです。食事を抜くような極端な制限は必要ありません。</p>
+<h3>コラーゲンの材料：タンパク質＋ビタミンC</h3>
+<p>コラーゲンはタンパク質から作られ、その合成にはビタミンCが必要です。毎食、肉・魚・卵・大豆のどれかを取ることを目安に。ビタミンCは美容液だけでなく、野菜・果物など食事からも意識できると土台が安定します。</p>
+<h3>睡眠：肌の修復時間</h3>
+<p>睡眠中は肌の修復が進む時間帯です。寝不足はむくみを残し、目の下のたるみも目立ちやすくします。7時間前後を目安に、就寝前の塩分・お酒を控えめにすると、翌朝の目の開きが変わることがあります。</p>
+</div>
+</details>
+
+<details class="guide">
+<summary>悩み① おでこのシワ</summary>
+<div class="g-body">
+<p>おでこの横ジワは「表情ジワ＋コラーゲン減少＋乾燥」の複合。特に<b>目を額で開ける癖</b>が最大の加速因子です。額は「鍛える」より「動かさない」が正解に近い部位です。</p>
+<table class="rank-table">
+<tr><th>順位</th><th>方法</th><th>継続</th></tr>
+<tr><td>1</td><td>夜のレチノール（額全体に薄く、段階導入）</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>2</td><td>額で目を開けない癖の矯正：眉を指で固定してまぶただけで目を開く練習（1日数回・各5回）／画面位置を目線の高さへ</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>3</td><td>ナイアシンアミド全顔ケア（オールインワンで兼用）</td><td><span class="stars">★★★★★</span></td></tr>
+<tr><td>4</td><td>保湿の徹底＋日焼け止め</td><td><span class="stars">★★★★★</span></td></tr>
+<tr><td>✕</td><td>額を大きく動かす顔トレ／額マッサージのやりすぎ（反復運動そのものが横ジワを刻む）</td><td>―</td></tr>
+</table>
+</div>
+</details>
+
+<details class="guide">
+<summary>悩み② 目の下のたるみ</summary>
+<div class="g-body">
+<p>原因は眼窩脂肪の突出＋眼輪筋の衰え＋ハリ低下＋むくみの混合。<b>脂肪の突出そのものは化粧品では消えない</b>ので、狙いは「ハリ・むくみ・影の目立ちにくさ」の改善と進行予防です。目の下の皮膚は顔で最も薄いので、強く引っ張るマッサージは逆効果になり得ます。</p>
+<table class="rank-table">
+<tr><th>順位</th><th>方法</th><th>継続</th></tr>
+<tr><td>1</td><td>アイクリーム／レチノール系クリームを薬指で叩き込む（こすらない・米粒大）</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>2</td><td>下まぶただけを持ち上げる「眩しい目」運動：口を軽く「お」にし、下まぶただけ上げる→5秒キープ×5〜10回、1日1〜2回。額を動かさない</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>3</td><td>むくみ対策：就寝前の塩分・酒を控える、蒸しタオル／ホットアイマスク、頭皮マッサージ</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>4</td><td>目をこすらない／コンタクト着脱でまぶたを引っ張らない</td><td><span class="stars">★★★★★</span></td></tr>
+</table>
+</div>
+</details>
+
+<details class="guide">
+<summary>悩み③ ほうれい線</summary>
+<div class="g-body">
+<p>ほうれい線は「筋肉不足」ではなく、頬の脂肪の下垂＋コラーゲン減少＋骨格・靭帯の緩みという構造問題が医師側の主流見解です。現実的な目標は「深くなる速度を落とす＋頬の位置とハリで影を薄くする」こと。</p>
+<table class="rank-table">
+<tr><th>順位</th><th>方法</th><th>継続</th></tr>
+<tr><td>1</td><td>ナイアシンアミド＋レチノールの全顔ケア継続（頬〜口元まで塗り漏れなく）</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>2</td><td>頬の筋トレ（チークリフト系）週2〜3回：ほうれい線に手を添えて皮膚が折れないようにして行う</td><td><span class="stars">★★★☆☆</span></td></tr>
+<tr><td>3</td><td>姿勢・首・肩のほぐし（ストレートネック／肩甲骨ケア）</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>4</td><td>睡眠姿勢（仰向け）／急激なダイエットをしない</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>✕</td><td>舌回し・大きな「あいうえお」など線を強く折る運動の毎日・長時間実施（悪化相談が少なくないという専門クリニックの見解）</td><td>―</td></tr>
+</table>
+</div>
+</details>
+
+<details class="guide">
+<summary>悩み④ 目を大きく・二重に</summary>
+<div class="g-body">
+<p><b>正直な線引き</b>：二重の形そのものは、化粧品やトレーニングでは作れません。アイプチ／二重テープの毎日の使用は、接着剤がまぶたの皮膚を伸ばし下垂を進めうるため常用は勧められません。狙えるのは「軽度のたるみ・むくみ・筋力低下・癖」で目が小さく見えている部分の改善です。上の「受診を考えたいサイン」に当てはまる場合は医療機関へ。</p>
+<table class="rank-table">
+<tr><th>順位</th><th>方法</th><th>継続</th></tr>
+<tr><td>1</td><td>眉固定・まぶたの開閉トレーニング：眉の上を軽く押さえ額を止めたまま、まぶたの力だけでゆっくり開閉×5〜10回（おでこのシワ対策と一石二鳥）</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>2</td><td>むくみ取りで「目の開き」を戻す：朝の蒸しタオル、塩分・飲酒のコントロール、睡眠確保。むくみが取れるだけで二重幅・開きは見違えることが多い</td><td><span class="stars">★★★★★</span></td></tr>
+<tr><td>3</td><td>まぶた周りの皮膚ケア：目元用レチノール／ナイアシンアミドでハリを保つ（粘膜際は避ける）</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>4</td><td>コンタクトの長時間使用・着脱時の引っ張り、目をこする癖、花粉症の放置を見直す</td><td><span class="stars">★★★★☆</span></td></tr>
+</table>
+</div>
+</details>
+
+<details class="guide">
+<summary>悩み⑤ 顔全体のたるみ</summary>
+<div class="g-body">
+<table class="rank-table">
+<tr><th>順位</th><th>方法</th><th>継続</th></tr>
+<tr><td>1</td><td>紫外線対策＋レチノール／ナイアシンアミドの継続（真皮の弾力維持がたるみ予防の本体）</td><td><span class="stars">★★★★☆</span></td></tr>
+<tr><td>2</td><td>週2〜3回・短時間の頬〜フェイスライン筋トレ（安全ルール厳守）</td><td><span class="stars">★★★☆☆</span></td></tr>
+<tr><td>3</td><td>頭皮マッサージ＋首・肩・姿勢ケア（シャンプー時の1分でよい）</td><td><span class="stars">★★★★★</span></td></tr>
+<tr><td>4</td><td>体重を大きく変動させない／タンパク質と睡眠を確保／禁煙・節酒</td><td><span class="stars">★★★☆☆</span></td></tr>
+<tr><td>任意</td><td>RF＋EMS家庭用美顔器：化粧品ルーティンが3ヶ月続いてから検討（下の製品欄）</td><td><span class="stars">★★☆☆☆</span></td></tr>
+</table>
+</div>
+</details>
+
+<details class="guide">
+<summary>顔トレの安全ルール（大事）</summary>
+<div class="g-body">
+<p>顔トレ／顔ヨガは「補助」であり主役ではありません。唯一のまともな臨床データ（JAMA Dermatology 2018）は頬のふくらみ改善と見た目年齢約マイナス2.7歳ですが、対象は中年女性・小規模（27人参加）・対照群なしという限界があります。一方で「繰り返す表情の動きがシワを作る」という皮膚科・形成外科側の反論も強い分野です。</p>
+<ul class="tight">
+<li>頻度は<b>週2〜3回、1回2〜3分</b>まで</li>
+<li>必ず<b>保湿後</b>に行い、皮膚が折れる部位（ほうれい線・額・目尻）は<b>手で押さえて</b>狙いの筋肉だけ動かす</li>
+<li>鏡で「余計なシワが寄っていないか」確認しながら。痛み・痙攣が出たら中止</li>
+<li>額の種目は避ける。優先種目：頬リフト、下まぶた「眩しい目」、眉固定の開閉</li>
+<li>かっさ／リンパマッサージをやるなら、オイル等で滑らせ、内出血しない弱さで、中央→外・下→上へ2〜3分まで</li>
+</ul>
+<p class="small">参考チャンネル：間々田佳子「Core Face Training」、美容整体のうちやま先生。、このみ先生（リンクは下の出典欄）。</p>
+</div>
+</details>
+
+<details class="guide">
+<summary>成分とレチノールの進め方</summary>
+<div class="g-body">
+<p><b>導入の順番</b>：Week1-2＝保湿＋日焼け止めだけ → Week3-＝ナイアシンアミド（オールインワン）追加 → Week5-＝レチノールを週2回から。<b>一度に全部始めない</b>のが失敗しないコツです（このアプリの段階表示もこの順番に合わせています）。</p>
+<ul class="tight">
+<li><b>レチノール</b>：シワ改善で最もエビデンスが厚く、日本で医薬部外品のシワ改善有効成分として承認。<b>夜専用</b>。最初の2週は週2回、米粒〜小豆大を気になる部位に → 週3回→隔晩→毎晩へ段階的に。保湿の後に塗る「サンドイッチ」にすると刺激が出にくい。赤み・皮むけ・ヒリつき（A反応）が出たら頻度を落とす（刺激＝効いている証拠ではありません）。翌朝は必ず日焼け止め。髭剃り直後・肌荒れ時は休む。</li>
+<li><b>ナイアシンアミド</b>：シワ改善＋美白で厚労省承認の医薬部外品有効成分。4%・8週の試験で64%にシワ改善、低刺激で朝晩OK。2〜5%が目安で、10%超の高濃度は赤み・ヒリつきの報告が増えます。</li>
+<li><b>ビタミンC</b>：抗酸化・くすみ対策。朝に使うと日中の紫外線ダメージ対策と相性がよい。レチノールとは朝／夜で分けるのが無難。</li>
+<li><b>セラミド系保湿</b>：バリア補強の土台。攻め成分の前に2週間定着させると失敗が減ります。</li>
+</ul>
+</div>
+</details>
+
+<details class="guide">
+<summary>おすすめ製品と価格（2026年10月26日時点）</summary>
+<div class="g-body">
+<p class="small">価格は調査時点のもので変動します。購入時に公式・販売ページで再確認してください。</p>
+<div id="productList"></div>
+<h3 class="mt">家庭用美顔器（任意・3ヶ月続いてから）</h3>
+<div class="prod"><span class="pr-name">SALONIA EMSリフトブラシ</span><br><span class="small">EMS＋温感の電気ブラシ（顔・頭皮・体）。最安クラスの入口。</span><br><span class="pr-price">定価27,500円</span>　<a href="https://www.amazon.co.jp/dp/B0CXDNS6HN/ref=pd_hp_mw_atf_unk" target="_blank" rel="noopener">Amazonで見る</a></div>
+<div class="prod"><span class="pr-name">パナソニック バイタリフト かっさ EH-SP86</span><br><span class="small">EMS＋温感。顔・首・頭皮にも。RFなしの割り切り型。</span><br><span class="pr-price">約36,966円</span>（楽天パナソニック公式店・調査時点）</div>
+<div class="prod"><span class="pr-name">パナソニック バイタリフト RF EX EH-SR86-T</span><br><span class="small">4MHz RF＋EMS＋赤色LED＋イオン。機能は最も充実だが高額。</span><br><span class="pr-price">公式価格79,200円</span>　<a href="https://www.amazon.co.jp/dp/B0DHBYHXWK/ref=pfb_spv01_f24a042559e4f99ca77b11499adb0b72" target="_blank" rel="noopener">Amazonで見る</a></div>
+<p class="small">美顔器の「たるみ改善」効果はメーカー試験レベルの根拠が中心で、独立した大規模臨床試験は乏しいという位置づけです。使いすぎは赤み・乾燥のリスクがあるため、メーカー指定の頻度を守ってください。皮膚疾患・炎症時、ペースメーカー使用者、妊娠中は使用可否を医師に確認を。</p>
+</div>
+</details>
+
+<details class="guide">
+<summary>出典</summary>
+<div class="g-body">
+<ul class="tight small">
+<li><a href="https://www.aad.org/news/survey-worry-skin-aging-still-skip-sunscreen" target="_blank" rel="noopener">米国皮膚科学会（AAD）日焼け止め推奨</a></li>
+<li><a href="https://oogaki.or.jp/hifuka/skin-care/ingredient/retinol-effects-usage-guide/" target="_blank" rel="noopener">皮膚科医によるレチノール解説</a></li>
+<li><a href="https://womanlyzine.com/ja/style-beauty/retinol-skin-in-your-50s/" target="_blank" rel="noopener">50代レチノール導入スケジュール・0.1%試験</a></li>
+<li><a href="https://curio-lab.com/skincare18/1967/" target="_blank" rel="noopener">ナイアシンアミドの臨床試験整理</a></li>
+<li><a href="https://jamanetwork.com/journals/jamadermatology/fullarticle/2666801" target="_blank" rel="noopener">JAMA Dermatology 2018 顔面運動研究</a></li>
+<li><a href="https://marottamd.com/blog/tips-and-trends/face-yoga-a-new-way-to-firm-up-your-skin-or-total-myth/" target="_blank" rel="noopener">顔ヨガへの形成外科医の反論</a></li>
+<li><a href="https://www.osaka-houreisen.jp/nasolabialfolds-yoga/" target="_blank" rel="noopener">ほうれい線専門クリニックの顔ヨガ見解</a></li>
+<li><a href="https://pono-clinic.jp/aging-care/aging-mechanisms/mimetic-muscles/orbicularis-oculi-muscle-weakening-eye-aging/" target="_blank" rel="noopener">眼輪筋・目の下トレーニング解説</a></li>
+<li><a href="https://bc-clinic.ekiten.jp/column/sagging-under-the-eyes/" target="_blank" rel="noopener">目の下のたるみセルフケア</a></li>
+<li><a href="https://u-clinic.or.jp/eye/ptosis-palpebrae/" target="_blank" rel="noopener">眼瞼下垂セルフチェック</a></li>
+<li><a href="https://www.tarumi-clinic.info/slack/sleep-posture.html" target="_blank" rel="noopener">睡眠姿勢とたるみ</a></li>
+<li><a href="https://www.youtube.com/@coreface" target="_blank" rel="noopener">間々田佳子 Core Face Training（YouTube）</a></li>
+<li><a href="https://www.shiseido.co.jp/elixir/" target="_blank" rel="noopener">エリクシール公式サイト</a></li>
+</ul>
+<p class="tiny">このアプリの内容は2026年10月26日の調査に基づく化粧品・セルフケアの情報整理であり、医療診断ではありません。</p>
+</div>
+</details>
+</div>
+
+<!-- 設定タブ -->
+<div class="tabpage" id="page-settings">
+<div class="card">
+<h2>プランと段階</h2>
+<p class="small">現在のプラン：<b id="setPlanName"></b>／開始日：<b id="setStartDate"></b></p>
+<div class="phase-flow" id="phaseFlow"></div>
+<p class="small">段階は開始日からの週数で自動で進みます。肌の調子が悪いときは、無理に進めず前の段階に戻って大丈夫です。</p>
+<label class="f" for="planSelect">プランの変更</label>
+<select id="planSelect">
+<option value="min">最小版（約3,500円／月）</option>
+<option value="std">標準版（約7,000〜7,500円／月）</option>
+</select>
+<label class="f" for="startDateEdit">開始日の変更</label>
+<input type="date" id="startDateEdit" />
+<button type="button" class="btn block mt" id="saveSettingsBtn">保存する</button>
+</div>
+<div class="card">
+<h2>記録について</h2>
+<p class="small">チェック・状態・写真の記録は、すべてこのブラウザの中に保存されています。ブラウザのデータを消すと記録も消えます。大事な写真はスマホの写真アプリにも残しておいてください。</p>
+<button type="button" class="btn danger block" id="resetBtn">すべての記録を消して最初からにする</button>
+</div>
+</div>
+</section>
+</div>
+
+<nav class="tabbar hidden" id="tabbar">
+<button type="button" data-tab="today" class="on"><span class="ic">☀</span>今日</button>
+<button type="button" data-tab="photo"><span class="ic">📷</span>写真</button>
+<button type="button" data-tab="guide"><span class="ic">📖</span>ガイド</button>
+<button type="button" data-tab="settings"><span class="ic">⚙</span>設定</button>
+</nav>
+
+<div class="toast hidden" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var LS_KEY = "facecare.browser.v1";
+var PHOTO_KEY = "facecare.browser.photos.v1";
+
+function $(id){ return document.getElementById(id);}
+function pad(n){ return (n<10?"0":"")+n;}
+function dateKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function todayKey(){ return dateKey(new Date());}
+function parseKey(k){ var p=k.split("-"); return new Date(+p[0], +p[1]-1, +p[2]);}
+function addDays(d,n){ var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()+n); return x;}
+function fmtJP(k){ var d=parseKey(k); var w=["日","月","火","水","木","金","土"][d.getDay()]; return d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日（"+w+"）";}
+function fmtShort(k){ var d=parseKey(k); return (d.getMonth()+1)+"/"+d.getDate();}
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+var toastTimer=null;
+function toast(msg){
+var t=$("toast"); t.textContent=msg; t.classList.remove("hidden");
+clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.add("hidden");},2600);
+}
+
+/* ---------- 状態の保存 ---------- */
+var state=null;
+function defaultState(){
+return { settings:null, logs:{}, retinolAnchor:null};
+}
+function load(){
+try{
+var raw=localStorage.getItem(LS_KEY);
+if(raw){ state=JSON.parse(raw); if(!state.logs) state.logs={}; return;}
+}catch(e){}
+state=defaultState();
+}
+function save(){
+try{ localStorage.setItem(LS_KEY, JSON.stringify(state));}
+catch(e){ toast("保存できませんでした（容量不足の可能性があります）");}
+}
+function dayLog(k){
+if(!state.logs[k]) state.logs[k]={ am:{}, pm:{}, inner:{}, cond:{ red:-1, dry:-1, puff:-1, eye:-1}};
+if(!state.logs[k].cond) state.logs[k].cond={ red:-1, dry:-1, puff:-1, eye:-1};
+if(!state.logs[k].inner) state.logs[k].inner={};
+return state.logs[k];
+}
+
+/* ---------- 段階（フェーズ） ---------- */
+// 0: Week1-2 土台 / 1: Week3-4 ナイアシンアミド / 2: Week5-8 レチノール週2回 / 3: Week9-12 レチノール隔晩 / 4: Week13- 毎晩も可
+function weekNum(){
+if(!state.settings) return 1;
+var s=parseKey(state.settings.startDate);
+var t=parseKey(todayKey());
+var diff=Math.floor((t-s)/86400000);
+return Math.max(1, Math.floor(diff/7)+1);
+}
+function phase(){
+if(state.settings && state.settings.plan==="min") return 1; // 最小版はレチノールなし
+var w=weekNum();
+if(w<=2) return 0;
+if(w<=4) return 1;
+if(w<=8) return 2;
+if(w<=12) return 3;
+return 4;
+}
+var PHASE_NAMES=["土台づくり（保湿＋日焼け止め）","ナイアシンアミド定着","レチノール週2回","レチノール隔晩","レチノール毎晩も可"];
+function isRetinolDay(){
+var p=phase();
+if(p<2) return false;
+var dow=new Date().getDay(); // 0日 1月... 6土
+if(p===2) return (dow===1 || dow===4); // 月・木
+if(p===3){
+if(!state.retinolAnchor){ state.retinolAnchor=todayKey(); save();}
+var diff=Math.round((parseKey(todayKey())-parseKey(state.retinolAnchor))/86400000);
+return diff%2===0;
+}
+return true; // phase4 毎晩可
+}
+function trainDay(){
+var dow=new Date().getDay();
+return (dow===1 || dow===3 || dow===5); // 月・水・金
+}
+
+/* ---------- ルーティン定義 ---------- */
+function amTasks(){
+var plan=state.settings.plan;
+var list=[
+{ id:"wash", name:"水洗顔", desc:"30秒。べたつく場合のみ洗顔料。タオルは押さえるだけ", time:"0.5分"},
+{ id:"allinone", name:"オールインワンを顔全体＋首に", desc:"ナイアシンアミド入りジェル。余りは目の下・ほうれい線に重ね付け", time:"1分"}
+];
+if(plan==="std"){
+list.splice(1,0,{ id:"vitc", name:"ビタミンC美容液 4〜5滴", desc:"メラノCCプレミアム等。オールインワンの前に", time:"0.5分"});
+}
+list.push({ id:"sunscreen", name:"日焼け止め（朝の最重要）", desc:"顔・首・耳に500円玉大×2回に分けて。曇りの日も", time:"1分"});
+list.push({ id:"eye", name:"目元ケア（任意）", desc:"蒸しタオルで温める／眉固定の開閉×5回。むくみが強い日だけでも", time:"0.5分", optional:true});
+return list;
+}
+function pmTasks(){
+var log=dayLog(todayKey());
+var redToday = log.cond && log.cond.red>=1;
+var p=phase();
+var list=[
+{ id:"cleanse", name:"洗顔料で洗う", desc:"日焼け止めと皮脂を落とす。擦らない・熱い湯は使わない", time:"1分"},
+{ id:"allinone", name:"オールインワン（保湿の土台）", desc:"全顔＋首に。乾燥する日は重ね付け", time:"1分"}
+];
+if(state.settings.plan==="std" && p>=2){
+if(redToday){
+list.push({ id:"retinol", name:"レチノール", desc:"", badge:"今日はお休み", badgeCls:"rest", disabled:true, forceUndone:true});
+} else if(isRetinolDay()){
+list.push({ id:"retinol", name:"レチノール（今日は使う日）", desc:"額・目の周囲（粘膜際を除く）・ほうれい線に薄く。保湿の後＝サンドイッチが刺激対策", badge:"使う日", badgeCls:"info", time:"1分"});
+} else {
+list.push({ id:"retinol", name:"レチノール", desc: p===2? "使う日は月・木です。今日はオールインワンの重ね付けだけでOK": "隔晩ペースです。今日はお休みの日", badge:"お休みの日", badgeCls:"", disabled:true, forceUndone:true});
+}
+}
+if(trainDay()){
+list.push({ id:"train", name:"顔トレ3種（週2〜3回）", desc:"①下まぶた「眩しい目」5秒×5回 ②頬リフト（線を手で押さえて）×5回 ③眉固定の開閉×5回＋頭皮マッサージ1分", badge:"トレ日", badgeCls:"info", time:"2〜3分"});
+} else {
+list.push({ id:"train", name:"顔トレ3種（任意）", desc:"トレ日は月・水・金。やる場合は皮膚を押さえて・シワを寄せない範囲で", optional:true, time:"2〜3分"});
+}
+return list;
+}
+
+function innerTasks(){
+return [
+{ id:"sweet", name:"甘い飲み物を飲まなかった", desc:"ジュース・加糖コーヒー・スポーツドリンクを避ける。水・お茶・無糖が基本（糖化対策）"},
+{ id:"protein", name:"毎食タンパク質を取れた", desc:"肉・魚・卵・大豆のどれかを毎食。コラーゲンの材料になります"},
+{ id:"sleep", name:"7時間前後眠れた", desc:"睡眠は肌の修復時間。目の下のたるみ・むくみにも関係します"},
+{ id:"salt", name:"酒・塩分を控えめにできた", desc:"むくみ対策。特に寝る前は控えめに"}
+];
+}
+
+/* ---------- 今日タブ描画 ---------- */
+function renderToday(){
+var k=todayKey();
+var log=dayLog(k);
+$("todayDate").textContent=fmtJP(k);
+// 継続日数（朝・夜それぞれ1つ以上チェックした日を「実施日」とする）
+var streak=0;
+var d=new Date();
+// 今日まだ何もしていなければ昨日から数える
+function didDay(kk){ var L=state.logs[kk]; if(!L) return false; var c=0; for(var x in L.am) if(L.am[x]) c++; for(var y in L.pm) if(L.pm[y]) c++; if(L.inner) for(var z in L.inner) if(L.inner[z]) c++; return c>0;}
+if(!didDay(k)) d=addDays(d,-1);
+while(true){
+var kk=dateKey(d);
+if(didDay(kk)){ streak++; d=addDays(d,-1);} else break;
+if(streak>3650) break;
+}
+$("streakChip").textContent="継続 "+streak+"日";
+var p=phase();
+$("phaseChip").textContent = state.settings.plan==="min"? "最小版で継続中": ("第"+weekNum()+"週・"+PHASE_NAMES[p]);
+$("planChip").textContent = state.settings.plan==="min"? "最小版": "標準版";
+$("amTime").textContent = state.settings.plan==="min"? "目安2分": "目安3分";
+$("pmTime").textContent = state.settings.plan==="min"? "目安3分": "目安5分";
+
+renderTaskList("am", amTasks(), log.am);
+renderTaskList("pm", pmTasks(), log.pm);
+renderTaskList("inner", innerTasks(), log.inner);
+renderCond(log);
+renderAdvice(log);
+renderHistory();
+renderPhotoDue();
+}
+function renderTaskList(which, tasks, doneMap){
+var el=$(which+"List");
+el.innerHTML="";
+var doneCount=0, total=0;
+tasks.forEach(function(t){
+total++;
+var done = t.forceUndone? false:!!doneMap[t.id];
+if(done) doneCount++;
+var b=document.createElement("button");
+b.type="button"; b.className="task"+(done?" done":"")+((t.disabled)?" disabled":"");
+var badgeHtml = t.badge? '<span class="t-badge '+esc(t.badgeCls||"")+'">'+esc(t.badge)+'</span>': "";
+b.innerHTML='<span class="box">✓</span><span style="flex:1"><span class="t-name">'+esc(t.name)+'</span>'+
+(t.desc?'<div class="t-desc">'+esc(t.desc)+'</div>':"")+"</span>"+badgeHtml;
+b.addEventListener("click", function(){
+if(t.disabled){ toast(t.id==="retinol"? "今日はレチノールお休みの日です": "この項目は今日は対象外です"); return;}
+var log=dayLog(todayKey());
+var map = which==="am"? log.am: (which==="pm"? log.pm: log.inner);
+map[t.id]=!map[t.id];
+save(); renderToday();
+});
+el.appendChild(b);
+});
+$(which+"Prog").style.width = total? Math.round(doneCount/total*100)+"%": "0%";
+}
+
+/* ---------- 状態記録 ---------- */
+var CONDS=[
+{ id:"red", label:"赤み・ヒリつき", opts:["なし","少しある","強い"], badFrom:1},
+{ id:"dry", label:"乾燥・つっぱり", opts:["なし","少しある","強い"], badFrom:2},
+{ id:"puff", label:"むくみ", opts:["なし","少しある","強い"], badFrom:2},
+{ id:"eye", label:"目の開き", opts:["良い","ふつう","悪い"], badFrom:2}
+];
+function renderCond(log){
+var area=$("condArea"); area.innerHTML="";
+CONDS.forEach(function(c){
+var row=document.createElement("div"); row.className="cond-row";
+var val=log.cond[c.id];
+var html='<div class="cond-label">'+esc(c.label)+'</div><div class="seg">';
+c.opts.forEach(function(o,i){
+var on = val===i;
+var cls = on? ("on"+(i>=c.badFrom?" bad":"")): "";
+html+='<button type="button" data-cond="'+c.id+'" data-val="'+i+'" class="'+cls+'">'+esc(o)+'</button>';
+});
+html+="</div>";
+row.innerHTML=html;
+area.appendChild(row);
+});
+area.querySelectorAll("button[data-cond]").forEach(function(b){
+b.addEventListener("click", function(){
+var log=dayLog(todayKey());
+var cid=b.getAttribute("data-cond"), v=+b.getAttribute("data-val");
+log.cond[cid] = (log.cond[cid]===v)? -1: v;
+save(); renderToday();
+});
+});
+}
+
+/* ---------- アドバイス ---------- */
+function renderAdvice(log){
+var area=$("adviceArea"); area.innerHTML="";
+var c=log.cond||{red:-1,dry:-1,puff:-1,eye:-1};
+var items=[];
+var p=phase();
+if(c.red>=2){
+items.push({cls:"danger", title:"赤みが強い日：攻めは全部お休み", body:"今日はレチノールはお休みにしました（夜のリストに反映済み）。洗顔はぬるま湯で短く、保湿中心に。セラミド系クリーム（キュレル等）で土台を守る日にしてください。数日続く・悪化する場合は無理せず皮膚科へ。"});
+} else if(c.red===1){
+items.push({cls:"warn", title:"少し赤み：レチノールは自動でお休み", body:"A反応（慣れる過程の赤み・ヒリつき）の可能性があります。今日はレチノールを止め、保湿を厚めに。次に使うときは頻度を1段落として（例：隔晩→週2回）、保湿の後に塗る「サンドイッチ」で再開を。刺激は効いている証拠ではありません。"});
+}
+if(c.dry>=1){
+items.push({cls:"warn", title:"乾燥の日：蓋を厚く", body:"オールインワンをもう一度重ね付けして「蓋」を厚く。乾燥で小ジワ・たるみ感は強調されます。洗顔は短く・熱い湯は避けて。レチノールを使う日なら、保湿→レチノール→保湿のサンドイッチが刺激対策になります。"});
+}
+if(c.puff>=1){
+items.push({cls:"normal", title:"むくみの日：朝のひと手間が効きます", body:"蒸しタオルで目元を温め、「眩しい目」運動（下まぶただけ上げる・5秒×5回）を。夜は塩分とお酒を控えめに、睡眠をしっかり。むくみが取れるだけで目の開きと二重幅は見違えることが多いです。"});
+}
+if(c.eye===2){
+items.push({cls:"warn", title:"目の開きが悪い日", body:"まず眉固定の開閉トレーニング（眉の上を押さえて額を止め、まぶたの力だけで開閉×5〜10回）と蒸しタオルを。それでも「視界の上が狭い」「夕方に悪化する」「片目だけ急に下がった」があれば、化粧品の範囲外です。ガイドの「受診を考えたいサイン」を確認してください。"});
+} else if(c.eye===0){
+items.push({cls:"normal", title:"目の開きが良い日です", body:"調子の良い日こそ、こすらない・引っ張らないを守るのが将来のたるみ予防になります。この状態を写真に残すのもおすすめです。"});
+}
+if(state.settings.plan==="std"){
+if(p===0) items.push({cls:"normal", title:"今は土台づくりの2週間", body:"保湿＋日焼け止めだけの期間です。攻め成分はまだ入れません。土台が先に定着すると、後のレチノールで失敗しにくくなります。"});
+else if(p===1) items.push({cls:"normal", title:"ナイアシンアミド定着の期間", body:"オールインワン（ナイアシンアミド）を朝晩続ける時期です。次の段階（レチノール）は第5週から。焦らず土台を固めましょう。"});
+else if(p===2) items.push({cls:"normal", title:"レチノール導入中（週2回・月木）", body:"米粒〜小豆大を額・目の周囲・ほうれい線に薄く。翌朝の日焼け止めを忘れずに。問題がなければ第9週から隔晩に進みます。"});
+else if(p===3) items.push({cls:"normal", title:"レチノール隔晩ペース", body:"問題なければ第13週から毎晩も検討できます。評価ラインは開始から8〜12週。写真で比べるのが一番確実です。"});
+else items.push({cls:"normal", title:"維持フェーズ", body:"毎晩のレチノールが辛い日は休んでOKです。大事なのは「やめない」こと。調子の波に合わせて頻度を調整してください。"});
+} else {
+items.push({cls:"normal", title:"最小版で継続中", body:"土台（日焼け止め＋保湿＋ナイアシンアミド）だけでも、乾燥由来のシワ・くすみ・たるみ感には効きます。3ヶ月続いたら、設定から標準版（レチノール追加）への切り替えも検討してみてください。"});
+}
+if(c.red===-1 && c.dry===-1 && c.puff===-1 && c.eye===-1){
+items.push({cls:"normal", title:"まずは状態を記録してみてください", body:"上の「今日の顔の状態」をタップすると、その日に合わせたアドバイスに切り替わります。"});
+}
+items.forEach(function(it){
+var d=document.createElement("div");
+d.className="advice "+it.cls;
+d.innerHTML='<div class="a-title">'+esc(it.title)+'</div><div class="small" style="color:inherit;">'+esc(it.body)+"</div>";
+area.appendChild(d);
+});
+}
+function renderHistory(){
+var area=$("historyArea");
+var days=Object.keys(state.logs).filter(function(kk){
+var L=state.logs[kk]; var cnt=0;
+for(var x in L.am) if(L.am[x]) cnt++;
+for(var y in L.pm) if(L.pm[y]) cnt++;
+if(L.inner) for(var z in L.inner) if(L.inner[z]) cnt++;
+return cnt>0;
+}).sort();
+var total=days.length;
+var last7=0;
+for(var i=0;i<7;i++){ if(days.indexOf(dateKey(addDays(new Date(),-i)))>=0) last7++;}
+var retDays=Object.keys(state.logs).filter(function(kk){ return state.logs[kk].pm && state.logs[kk].pm.retinol;}).length;
+area.innerHTML='<div class="chips" style="margin-top:0;">'+
+'<span class="chip">ケア実施 累計'+total+'日</span>'+
+'<span class="chip plain">直近7日で'+last7+'日</span>'+
+(state.settings.plan==="std"? '<span class="chip plain">レチノール実施 '+retDays+'回</span>': "")+
+"</div>"+
+'<p class="small" style="margin:8px 0 0;">効果の見極めは8〜12週が目安（臨床試験の期間と一致）。続けた日数がそのまま土台になります。</p>';
+}
+
+/* ---------- 写真 ---------- */
+var photos=[]; // {id, date, dataUrl, base}
+var compareSel=[];
+function loadPhotos(){
+try{
+var raw=localStorage.getItem(PHOTO_KEY);
+photos = raw? JSON.parse(raw): [];
+}catch(e){ photos=[];}
+}
+function savePhotos(){
+try{ localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); return true;}
+catch(e){ return false;}
+}
+function nextPhotoDate(){
+var s=parseKey(state.settings.startDate);
+var t=parseKey(todayKey());
+var d=new Date(s.getFullYear(), s.getMonth()+1, s.getDate());
+while(d<=t){ d=new Date(d.getFullYear(), d.getMonth()+1, d.getDate());}
+return dateKey(d);
+}
+function renderPhotoDue(){
+var nd=nextPhotoDate();
+var thisMonthPhoto = photos.some(function(ph){
+var pd=parseKey(ph.date), now=new Date();
+return pd.getFullYear()===now.getFullYear() && pd.getMonth()===now.getMonth();
+});
+var startD=parseKey(state.settings.startDate);
+var isStartMonth = (startD.getFullYear()===new Date().getFullYear() && startD.getMonth()===new Date().getMonth());
+if(thisMonthPhoto){
+$("photoDueText").textContent="今月分は撮影済みです。次の目安は "+fmtJP(nd)+" ごろ。";
+} else if(isStartMonth && photos.length===0){
+$("photoDueText").textContent="まず基準写真を1枚撮りましょう。「写真」タブから追加できます。";
+} else {
+$("photoDueText").textContent="今月分がまだです。次の目安日は "+fmtJP(nd)+"。同じ照明・無表情で撮るのがコツです。";
+}
+}
+function renderPhotos(){
+var grid=$("photoGrid"); grid.innerHTML="";
+$("photoEmpty").classList.toggle("hidden", photos.length>0);
+var sorted=photos.slice().sort(function(a,b){ return a.date<b.date?-1:1;});
+sorted.forEach(function(ph){
+var cell=document.createElement("div");
+cell.className="photo-cell"+(compareSel.indexOf(ph.id)>=0?" sel":"");
+cell.innerHTML='<img alt="顔写真 '+esc(ph.date)+'"><div class="p-date">'+esc(fmtShort(ph.date))+(ph.base?"・基準":"")+"</div>";
+cell.querySelector("img").src=ph.dataUrl;
+cell.addEventListener("click", function(){
+var i=compareSel.indexOf(ph.id);
+if(i>=0) compareSel.splice(i,1);
+else { compareSel.push(ph.id); if(compareSel.length>2) compareSel.shift();}
+renderPhotos();
+});
+grid.appendChild(cell);
+});
+var ca=$("compareArea"); ca.innerHTML="";
+var selPhotos=compareSel.map(function(id){ return photos.find(function(p){return p.id===id;});}).filter(Boolean);
+selPhotos.sort(function(a,b){ return a.date<b.date?-1:1;});
+selPhotos.forEach(function(ph){
+var fig=document.createElement("figure");
+fig.innerHTML='<img alt="比較写真 '+esc(ph.date)+'"><figcaption>'+esc(fmtJP(ph.date))+(ph.base?"（基準）":"")+"</figcaption>";
+fig.querySelector("img").src=ph.dataUrl;
+ca.appendChild(fig);
+});
+$("clearCompareBtn").classList.toggle("hidden", compareSel.length===0);
+$("deletePhotoBtn").disabled = compareSel.length!==1;
+}
+function addPhotoFile(file, isBase){
+if(!file) return;
+var reader=new FileReader();
+reader.onload=function(){
+var img=new Image();
+img.onload=function(){
+var max=720;
+var scale=Math.min(1, max/Math.max(img.width,img.height));
+var cv=document.createElement("canvas");
+cv.width=Math.round(img.width*scale); cv.height=Math.round(img.height*scale);
+cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+var dataUrl=cv.toDataURL("image/jpeg",0.72);
+photos.push({ id:"p"+Date.now(), date:todayKey(), dataUrl:dataUrl, base:!!isBase});
+if(!savePhotos()){
+photos.pop();
+toast("写真を保存できませんでした（ブラウザの容量上限）。古い写真を削除してからお試しください。");
+return;
+}
+toast("写真を保存しました");
+renderPhotos(); renderPhotoDue();
+};
+img.src=reader.result;
+};
+reader.readAsDataURL(file);
+}
+
+/* ---------- 製品リスト ---------- */
+var PRODUCTS=[
+{ role:"オールインワン（主役・朝晩）", name:"グレイスワン リンクルケア モイストジェルクリーム（コーセーコスメポート）", desc:"ナイアシンアミド。1品7役。保湿寄りで51歳向き。", price:"100g 3,300円／詰替90g 2,860円", url:"https://lipscosme.com/products/380162/review?rate=2.0", src:"LIPS"},
+{ role:"オールインワン（さっぱり派・安価）", name:"無印良品 エイジングケア 薬用リンクルケア美容液", desc:"ナイアシンアミド配合。", price:"30g 1,490円", url:"https://fortune-girl.com/skincare/SrOZv", src:"FORTUNE"},
+{ role:"メンズ専用オールインワン的選択肢", name:"オルビス ミスター エッセンスローション", desc:"ローション単体でオールインワン使用可と公式案内。無香料・アルコールフリー。", price:"180mL 2,420円", url:"https://corp.orbis.co.jp/wp-content/uploads/2024/11/20241129_ORBIS-Mr._survey.pdf", src:"ORBIS公式資料"},
+{ role:"レチノール（本命）", name:"資生堂 エリクシール レチノパワー リンクルクリーム ba", desc:"純粋レチノール（シワ改善有効成分）。光・酸素を遮断する容器設計。", price:"S 15g 6,490円（約1ヶ月）／L 22g 8,800円（約1.5ヶ月）", url:"https://onecosme.jp/92586", src:"ワンコスメ"},
+{ role:"レチノール（コスパ型）", name:"トゥヴェール レチノショット 0.1（化粧品）", desc:"純粋レチノール0.1%＋レチノール類計5種。価格は情報源で3,300円（旧）／3,980円が併存するため購入時要確認。", price:"30g 3,980円", url:"https://onecosme.jp/77900", src:"ワンコスメ"},
+{ role:"ビタミンC（安価・少量設計）", name:"ロート メラノCC 薬用しみ集中対策 プレミアム美容液", desc:"活性型ビタミンC等。1回4〜5滴・1日1回で1本約5〜6ヶ月。", price:"20mL 約1,424〜1,499円", url:"https://www.amazon.co.jp/dp/B08WMJB5WV/ref=cm_sw_r_as_gl_api_gl_i_CWTZR502Q6EY46H8HTR0", src:"Amazon"},
+{ role:"ビタミンC（高濃度・本格派）", name:"ロート オバジC25セラム ネオ（入門はC10）", desc:"ピュアビタミンC。朝晩4〜5滴。", price:"C25 12mL 11,000円／C10 12mL 4,400円", url:"https://maquia.hpplus.jp/cosme/153254/", src:"MAQUIA"},
+{ role:"ナイアシンアミド部分用", name:"ONE BY KOSÉ ザ リンクレス S", desc:"額・口元に厚塗りしたい人向け。価格はAmazonストア表示の調査値で、公式定価は未確認。", price:"20g 約5,350〜5,800円", url:"", src:"Amazonストア表示"},
+{ role:"保湿クリーム（土台・敏感時）", name:"キュレル 潤浸保湿 フェイスクリーム（花王）", desc:"セラミド機能成分＋アラントイン。無香料。", price:"40g 2,970円（約1.5ヶ月）", url:"https://onecosme.jp/93381", src:"ワンコスメ"},
+{ role:"日焼け止め", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", desc:"SPF50+／PA++++、石けんで落とせる、ベタつき少なめ。", price:"70g 約1,011円〜（販売店で変動）", url:"https://lohaco.yahoo.co.jp/store/h-lohaco/item/rw00411/?sc_e=zb_pwpr_aas_blh_cias_dps_item_kao_bioreuv", src:"LOHACO"}
+];
+function renderProducts(){
+var el=$("productList"); el.innerHTML="";
+PRODUCTS.forEach(function(p){
+var d=document.createElement("div"); d.className="prod";
+var link = p.url? '　<a href="'+esc(p.url)+'" target="_blank" rel="noopener">販売・情報ページ</a>': "";
+d.innerHTML='<div class="tiny">'+esc(p.role)+'</div><span class="pr-name">'+esc(p.name)+'</span><br>'+
+'<span class="small">'+esc(p.desc)+'</span><br><span class="pr-price">'+esc(p.price)+'</span>'+
+'<span class="tiny">（出典：'+esc(p.src)+'）</span>'+link;
+el.appendChild(d);
+});
+}
+
+/* ---------- タブ切替 ---------- */
+function switchTab(name){
+["today","photo","guide","settings"].forEach(function(t){
+$("page-"+t).classList.toggle("on", t===name);
+});
+document.querySelectorAll(".tabbar button").forEach(function(b){
+b.classList.toggle("on", b.getAttribute("data-tab")===name);
+});
+window.scrollTo(0,0);
+if(name==="photo") renderPhotos();
+if(name==="settings") renderSettings();
+}
+
+/* ---------- 設定 ---------- */
+function renderSettings(){
+$("setPlanName").textContent = state.settings.plan==="min"? "最小版": "標準版";
+$("setStartDate").textContent = fmtJP(state.settings.startDate);
+$("planSelect").value = state.settings.plan;
+$("startDateEdit").value = state.settings.startDate;
+var flow=$("phaseFlow"); flow.innerHTML="";
+var cur=phase();
+PHASE_NAMES.forEach(function(n,i){
+var d=document.createElement("div");
+d.className="phase-step"+(i===cur && state.settings.plan==="std"? " now":"");
+d.innerHTML='<span class="ph">段階'+(i+1)+'</span><br>'+esc(n)+(i===0?'<br><span class="tiny">Week1-2</span>':i===1?'<br><span class="tiny">Week3-4</span>':i===2?'<br><span class="tiny">Week5-8</span>':i===3?'<br><span class="tiny">Week9-12</span>':'<br><span class="tiny">Week13-</span>');
+flow.appendChild(d);
+});
+if(state.settings.plan==="min"){
+var note=document.createElement("p"); note.className="small";
+note.textContent="最小版ではレチノールの段階（段階3以降）は使いません。";
+flow.appendChild(note);
+}
+}
+
+/* ---------- セットアップ ---------- */
+var setupPlan="std";
+var setupBaseFile=null;
+function markPlan(){
+$("planMin").classList.toggle("on", setupPlan==="min");
+$("planStd").classList.toggle("on", setupPlan==="std");
+}
+function init(){
+load(); loadPhotos();
+$("startDate").value=todayKey();
+markPlan();
+$("planMin").addEventListener("click", function(){ setupPlan="min"; markPlan();});
+$("planStd").addEventListener("click", function(){ setupPlan="std"; markPlan();});
+$("basePhotoBtn").addEventListener("click", function(){ $("basePhotoInput").click();});
+$("basePhotoInput").addEventListener("change", function(){
+setupBaseFile = this.files && this.files[0]? this.files[0]: null;
+$("basePhotoName").textContent = setupBaseFile? ("選択中："+setupBaseFile.name): "";
+});
+$("startBtn").addEventListener("click", function(){
+var sd=$("startDate").value || todayKey();
+state.settings={ plan:setupPlan, startDate:sd};
+state.retinolAnchor=null;
+save();
+if(setupBaseFile){ addPhotoFile(setupBaseFile, true);}
+showMain();
+toast("スタートしました。まずは今日の朝のケアから");
+});
+
+document.querySelectorAll(".tabbar button").forEach(function(b){
+b.addEventListener("click", function(){ switchTab(b.getAttribute("data-tab"));});
+});
+$("gotoPhotoBtn").addEventListener("click", function(){ switchTab("photo");});
+$("addPhotoBtn").addEventListener("click", function(){ $("photoInput").click();});
+$("photoInput").addEventListener("change", function(){
+if(this.files && this.files[0]) addPhotoFile(this.files[0], photos.length===0);
+this.value="";
+});
+$("clearCompareBtn").addEventListener("click", function(){ compareSel=[]; renderPhotos();});
+$("deletePhotoBtn").addEventListener("click", function(){
+if(compareSel.length!==1) return;
+var id=compareSel[0];
+photos=photos.filter(function(p){ return p.id!==id;});
+compareSel=[];
+savePhotos(); renderPhotos(); renderPhotoDue();
+toast("写真を削除しました");
+});
+$("saveSettingsBtn").addEventListener("click", function(){
+var np=$("planSelect").value;
+var ns=$("startDateEdit").value || state.settings.startDate;
+if(np!==state.settings.plan){ state.retinolAnchor=null;}
+state.settings.plan=np; state.settings.startDate=ns;
+save(); renderSettings(); renderToday();
+toast("設定を保存しました");
+});
+$("resetBtn").addEventListener("click", function(){
+if(this.getAttribute("data-arm")==="1"){
+try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(PHOTO_KEY);}catch(e){}
+state=defaultState(); photos=[]; compareSel=[];
+this.removeAttribute("data-arm"); this.textContent="すべての記録を消して最初からにする";
+showSetup();
+toast("記録をすべて消しました");
+} else {
+this.setAttribute("data-arm","1");
+this.textContent="本当にすべて消しますか？（もう一度押すと実行）";
+}
+});
+
+renderProducts();
+if(state.settings){ showMain();} else { showSetup();}
+}
+function showSetup(){
+$("setupView").classList.remove("hidden");
+$("mainView").classList.add("hidden");
+$("tabbar").classList.add("hidden");
+}
+function showMain(){
+$("setupView").classList.add("hidden");
+$("mainView").classList.remove("hidden");
+$("tabbar").classList.remove("hidden");
+renderToday(); renderPhotos();
+}
+init();
+})();
+</script>
+</body>
+</html>
