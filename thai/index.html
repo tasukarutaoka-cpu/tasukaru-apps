@@ -475,15 +475,19 @@
       function renderToday() {
         var el = document.getElementById("view-today");
         if (!session) session = buildSession();
+        if (session.maxIdx == null) session.maxIdx = session.idx;
         if (session.idx >= session.queue.length) {
           var msg = session.total === 0
             ? "今日の復習はありません。新しいフレーズも出し尽くしました。"
             : "今日の練習はおしまいです。おつかれさまでした。";
           el.innerHTML = '<div class="card done-box"><div class="face">よくできました</div><p>' + msg + '</p>' +
             '<p>言えるようになったフレーズ: ' + learnedCount() + ' / 64</p>' +
-            '<button type="button" class="btn primary" id="moreBtn" style="width:100%;">場面から自由に練習する</button></div>';
+            '<button type="button" class="btn primary" id="moreBtn" style="width:100%;">場面から自由に練習する</button>' +
+            (session.total > 0 ? '<button type="button" class="btn slow" id="reviewBtn" style="width:100%;margin-top:8px;">今日のフレーズを見返す</button>' : '') + '</div>';
           var mb = document.getElementById("moreBtn");
           if (mb) mb.addEventListener("click", function () { switchView("scenes"); });
+          var rb = document.getElementById("reviewBtn");
+          if (rb) rb.addEventListener("click", function () { session.idx = 0; renderToday(); });
           return;
         }
         var id = session.queue[session.idx];
@@ -492,19 +496,33 @@
         var dots = session.queue.map(function (q, i) {
           return '<span class="' + (i < session.idx ? "done" : (i === session.idx ? "now" : "")) + '"></span>';
         }).join("");
+        var viewingPast = session.idx < session.maxIdx;
+        var judgeArea = viewingPast
+          ? '<p class="meaning" style="margin-top:10px;">確認用の表示です。音声は何度でも聞けます。判定は最新のフレーズに戻ってからどうぞ。</p>'
+          : '<div class="judge-row">' +
+            '<button type="button" class="btn again" id="judgeAgain">まだ言えない</button>' +
+            '<button type="button" class="btn good" id="judgeGood">言えた！</button>' +
+            '</div>' +
+            '<p class="meaning" style="margin-top:10px;">音声を聞いて声に出してから、正直に押してください。「言えた」が続くと、次に会う間隔が少しずつ空いていきます。</p>';
+        var navRow = '<div class="row-btns" style="margin-top:10px;">' +
+          (session.idx > 0 ? '<button type="button" class="btn slow" id="navPrev">← 前のフレーズ</button>' : '') +
+          (viewingPast ? '<button type="button" class="btn slow" id="navNext">次のフレーズ →</button>' : '') +
+          '</div>';
         el.innerHTML =
           '<div class="session-cap">今日の練習 ' + (session.idx + 1) + ' / ' + session.total +
           '（復習 ' + session.reviews + ' 件・新しいフレーズ ' + session.news + ' 件）</div>' +
           '<div class="dots">' + dots + '</div>' +
           '<div class="card">' + phraseCardHTML(p, isNew ? "新規" : "復習") +
-          '<div class="judge-row">' +
-          '<button type="button" class="btn again" id="judgeAgain">まだ言えない</button>' +
-          '<button type="button" class="btn good" id="judgeGood">言えた！</button>' +
-          '</div>' +
-          '<p class="meaning" style="margin-top:10px;">音声を聞いて声に出してから、正直に押してください。「言えた」が続くと、次に会う間隔が少しずつ空いていきます。</p>' +
+          judgeArea + navRow +
           '</div>';
-        document.getElementById("judgeGood").addEventListener("click", function () { judge(id, true); });
-        document.getElementById("judgeAgain").addEventListener("click", function () { judge(id, false); });
+        if (!viewingPast) {
+          document.getElementById("judgeGood").addEventListener("click", function () { judge(id, true); });
+          document.getElementById("judgeAgain").addEventListener("click", function () { judge(id, false); });
+        }
+        var np = document.getElementById("navPrev");
+        if (np) np.addEventListener("click", function () { stopAudio(); session.idx--; renderToday(); });
+        var nn = document.getElementById("navNext");
+        if (nn) nn.addEventListener("click", function () { stopAudio(); session.idx++; renderToday(); });
       }
       function judge(id, good) {
         stopAudio();
@@ -522,6 +540,7 @@
         }
         store.prog[id] = r; store.lastDay = t; save();
         session.idx++;
+        if (session.maxIdx == null || session.idx > session.maxIdx) session.maxIdx = session.idx;
         updateProgress();
         renderToday();
       }
