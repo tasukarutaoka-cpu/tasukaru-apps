@@ -585,23 +585,42 @@
         for (var i = x.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = x[i]; x[i] = x[j]; x[j] = t; }
         return x;
       }
+      function quizPool() {
+        var t = todayStr();
+        var due = [], learned = [];
+        PHRASES.forEach(function (p) {
+          var r = store.prog[p.id];
+          if (!r) return;
+          if (r.due <= t) due.push(p.id); else learned.push(p.id);
+        });
+        return shuffle(due).concat(shuffle(learned));
+      }
       function startQuiz() {
-        var ids = shuffle(PHRASES.map(function (p) { return p.id; })).slice(0, 10);
+        var ids = quizPool().slice(0, 10);
         quiz = { ids: ids, idx: 0, score: 0, answered: false };
         renderQuiz();
       }
       function renderQuiz() {
         var el = document.getElementById("view-quiz");
         if (!quiz) {
+          var poolN = quizPool().length;
+          if (poolN === 0) {
+            el.innerHTML = '<div class="card done-box"><div class="face">聞き取りクイズ</div>' +
+              '<p>聞き取りは、練習したフレーズから出題されます。まず「今日の練習」でフレーズを練習してから来てください。</p>' +
+              '<button type="button" class="btn primary" id="quizToToday" style="width:100%;">今日の練習へ</button></div>';
+            document.getElementById("quizToToday").addEventListener("click", function () { switchView("today"); });
+            return;
+          }
           el.innerHTML = '<div class="card done-box"><div class="face">聞き取りクイズ</div>' +
-            '<p>タイ語の音声だけを聞いて、意味を当てるクイズです。全10問。</p>' +
+            '<p>タイ語の音声だけを聞いて、意味を当てるクイズです。練習したフレーズから' + Math.min(10, poolN) + '問出題されます（復習どきのフレーズを優先）。</p>' +
             '<button type="button" class="btn primary" id="quizStart" style="width:100%;">クイズをはじめる</button></div>';
           document.getElementById("quizStart").addEventListener("click", startQuiz);
           return;
         }
         if (quiz.idx >= quiz.ids.length) {
-          el.innerHTML = '<div class="card done-box"><div class="face">' + quiz.score + ' / 10 正解</div>' +
-            '<p>' + (quiz.score >= 8 ? "耳が育ってきています。その調子です。" : quiz.score >= 5 ? "半分を超えました。聞き取りは回数です。" : "まだ始めたばかり。ゆっくり音声で復習してから再挑戦を。") + '</p>' +
+          var ratio = quiz.ids.length ? quiz.score / quiz.ids.length : 0;
+          el.innerHTML = '<div class="card done-box"><div class="face">' + quiz.score + ' / ' + quiz.ids.length + ' 正解</div>' +
+            '<p>' + (ratio >= 0.8 ? "耳が育ってきています。その調子です。" : ratio >= 0.5 ? "半分を超えました。聞き取りは回数です。" : "まだ始めたばかり。ゆっくり音声で復習してから再挑戦を。") + '</p>' +
             '<button type="button" class="btn primary" id="quizStart" style="width:100%;">もう一度挑戦する</button></div>';
           document.getElementById("quizStart").addEventListener("click", startQuiz);
           return;
@@ -609,7 +628,7 @@
         var p = BY_ID[quiz.ids[quiz.idx]];
         var others = shuffle(PHRASES.filter(function (q) { return q.id !== p.id; })).slice(0, 3);
         var choices = shuffle([p].concat(others));
-        var html = '<div class="card quiz-q"><div class="q-cap">第 ' + (quiz.idx + 1) + ' 問 / 10　—　音声を聞いて、意味を選んでください</div>' +
+        var html = '<div class="card quiz-q"><div class="q-cap">第 ' + (quiz.idx + 1) + ' 問 / ' + quiz.ids.length + '　—　音声を聞いて、意味を選んでください</div>' +
           '<button type="button" class="btn primary quiz-play" data-play="' + p.id + '">' + ICON_PLAY + '<span>再生</span></button>' +
           '<div style="margin-top:10px;"><button type="button" class="btn" data-play="' + p.id + '-slow">' + ICON_PLAY + 'ゆっくり聞く</button></div>' +
           '<div class="quiz-feedback" id="quizFb"></div></div>' +
