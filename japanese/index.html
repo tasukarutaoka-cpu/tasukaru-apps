@@ -82,6 +82,13 @@
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
   .hidden{ display:none !important; }
   .mic-live{ background:var(--bad) !important; border-color:var(--bad) !important; color:#fff !important; }
+  .parts{ font-size:13px; color:var(--muted); margin-top:8px; line-height:2; }
+  .parts .pw{ font-weight:800; color:var(--accent-deep); }
+  .form-line{ font-size:13px; margin-top:8px; padding:7px 10px; background:var(--accent-soft); border-left:4px solid var(--accent); border-radius:0 10px 10px 0; }
+  .chip{ display:inline-block; font-size:12px; font-weight:700; border-radius:99px; padding:2px 9px; margin-left:8px; vertical-align:middle; }
+  .chip.done{ background:var(--good-soft); color:var(--good); }
+  .chip.mid{ background:var(--accent-soft); color:var(--accent-deep); }
+  .chip.todo{ background:var(--surface2); color:var(--muted); }
 </style>
 </head>
 <body>
@@ -143,77 +150,77 @@ var SCENES = [
 ];
 var PHRASES = [
   /* 0 greetings */
-  { ja: "こんにちは", romaji: "konnichiwa", th: "สวัสดีตอนกลางวัน", note: "ใช้ทักทายตอนกลางวัน" },
-  { ja: "はじめまして", romaji: "hajimemashite", th: "ยินดีที่ได้รู้จัก", note: "พูดครั้งแรกที่เจอกัน" },
-  { ja: "ジェンといいます", romaji: "Jen to iimasu", th: "ฉันชื่อเจนค่ะ", note: "แนะนำชื่อตัวเอง แบบสุภาพนิดหน่อย" },
-  { ja: "タイから来ました", romaji: "Tai kara kimashita", th: "มาจากประเทศไทยค่ะ", note: "บอกว่ามาจากไทย" },
-  { ja: "よろしくお願いします", romaji: "yoroshiku onegaishimasu", th: "ฝากเนื้อฝากตัวด้วยนะคะ", note: "ปิดท้ายการแนะนำตัวเสมอ" },
-  { ja: "お元気ですか", romaji: "o-genki desu ka", th: "สบายดีไหมคะ", note: "ถามสารทุกข์สุกดิบ" },
-  { ja: "久しぶりです", romaji: "hisashiburi desu", th: "ไม่ได้เจอกันนานเลยนะคะ", note: "เจอเพื่อนที่ไม่ได้เจอนาน" },
-  { ja: "また会いましょう", romaji: "mata aimashō", th: "แล้วเจอกันอีกนะคะ", note: "พูดตอนแยกกัน" },
+  { ja: "こんにちは", romaji: "konnichiwa", th: "สวัสดีตอนกลางวัน", note: "ใช้ทักทายตอนกลางวัน", parts:[["こんにちは","สวัสดี (ตอนกลางวัน)"]], form:"คำทักทาย" },
+  { ja: "はじめまして", romaji: "hajimemashite", th: "ยินดีที่ได้รู้จัก", note: "พูดครั้งแรกที่เจอกัน", parts:[["はじめまして","ยินดีที่ได้รู้จัก"]], form:"คำทักทายครั้งแรก" },
+  { ja: "ジェンといいます", romaji: "Jen to iimasu", th: "ฉันชื่อเจนค่ะ", note: "แนะนำชื่อตัวเอง แบบสุภาพนิดหน่อย", parts:[["ジェン","เจน (ชื่อ)"],["と","ว่า"],["いいます","เรียกว่า"]], form:"[ชื่อตัวเอง] + เรียกว่า" },
+  { ja: "タイから来ました", romaji: "Tai kara kimashita", th: "มาจากประเทศไทยค่ะ", note: "บอกว่ามาจากไทย", parts:[["タイ","ประเทศไทย"],["から","จาก"],["来ました","มาแล้ว"]], form:"[สถานที่] + จาก + มาแล้ว" },
+  { ja: "よろしくお願いします", romaji: "yoroshiku onegaishimasu", th: "ฝากเนื้อฝากตัวด้วยนะคะ", note: "ปิดท้ายการแนะนำตัวเสมอ", parts:[["よろしく","ฝากตัว"],["お願いします","ขอความกรุณา"]], form:"ฝากตัว + ขอความกรุณา" },
+  { ja: "お元気ですか", romaji: "o-genki desu ka", th: "สบายดีไหมคะ", note: "ถามสารทุกข์สุกดิบ", parts:[["お元気","สบายดี"],["です","เป็น"],["か","ไหม"]], form:"สบายดี + ไหม?" },
+  { ja: "久しぶりです", romaji: "hisashiburi desu", th: "ไม่ได้เจอกันนานเลยนะคะ", note: "เจอเพื่อนที่ไม่ได้เจอนาน", parts:[["久しぶり","ไม่ได้เจอนาน"],["です","ค่ะ"]], form:"ไม่ได้เจอนาน + ค่ะ" },
+  { ja: "また会いましょう", romaji: "mata aimashō", th: "แล้วเจอกันอีกนะคะ", note: "พูดตอนแยกกัน", parts:[["また","อีก"],["会いましょう","เจอกันเถอะ"]], form:"อีก + เจอกันเถอะ" },
   /* 1 small talk */
-  { ja: "最近どうですか", romaji: "saikin dō desu ka", th: "ช่วงนี้เป็นยังไงบ้างคะ", note: "ประโยคเปิดบทสนทนา" },
-  { ja: "今日は暑いですね", romaji: "kyō wa atsui desu ne", th: "วันนี้ร้อนเนอะ", note: "คุยเรื่องอากาศ คนญี่ปุ่นนิยมมาก" },
-  { ja: "いい天気ですね", romaji: "ii tenki desu ne", th: "อากาศดีจังเลยนะคะ", note: "ชวนคุยเบา ๆ" },
-  { ja: "週末は何をしましたか", romaji: "shūmatsu wa nani o shimashita ka", th: "สุดสัปดาห์ทำอะไรบ้างคะ", note: "ถามเรื่องวันหยุด" },
-  { ja: "仕事は忙しいですか", romaji: "shigoto wa isogashii desu ka", th: "งานยุ่งไหมคะ", note: "ถามเรื่องงาน" },
-  { ja: "本当ですか", romaji: "hontō desu ka", th: "จริงเหรอคะ", note: "แสดงความสนใจตอนฟัง" },
-  { ja: "すごいですね", romaji: "sugoi desu ne", th: "เก่งจัง / สุดยอดเลย", note: "คำชมที่ใช้บ่อยมาก" },
-  { ja: "それはよかったですね", romaji: "sore wa yokatta desu ne", th: "ดีจังเลยนะคะ", note: "ตอบรับเรื่องดี ๆ ของเพื่อน" },
+  { ja: "最近どうですか", romaji: "saikin dō desu ka", th: "ช่วงนี้เป็นยังไงบ้างคะ", note: "ประโยคเปิดบทสนทนา", parts:[["最近","ช่วงนี้"],["どう","ยังไง"],["です","เป็น"],["か","ไหม"]], form:"ช่วงนี้ + ยังไง + ไหม?" },
+  { ja: "今日は暑いですね", romaji: "kyō wa atsui desu ne", th: "วันนี้ร้อนเนอะ", note: "คุยเรื่องอากาศ คนญี่ปุ่นนิยมมาก", parts:[["今日","วันนี้"],["は","คำชี้ประธาน"],["暑い","ร้อน"],["です","ค่ะ"],["ね","เนอะ"]], form:"วันนี้ + ร้อน + นะ" },
+  { ja: "いい天気ですね", romaji: "ii tenki desu ne", th: "อากาศดีจังเลยนะคะ", note: "ชวนคุยเบา ๆ", parts:[["いい","ดี"],["天気","อากาศ"],["です","ค่ะ"],["ね","เนอะ"]], form:"ดี + อากาศ + นะ" },
+  { ja: "週末は何をしましたか", romaji: "shūmatsu wa nani o shimashita ka", th: "สุดสัปดาห์ทำอะไรบ้างคะ", note: "ถามเรื่องวันหยุด", parts:[["週末","สุดสัปดาห์"],["は","คำชี้ประธาน"],["何","อะไร"],["を","คำชี้กรรม"],["しました","ทำแล้ว"],["か","ไหม"]], form:"สุดสัปดาห์ + ทำอะไร + ไหม?" },
+  { ja: "仕事は忙しいですか", romaji: "shigoto wa isogashii desu ka", th: "งานยุ่งไหมคะ", note: "ถามเรื่องงาน", parts:[["仕事","งาน"],["は","คำชี้ประธาน"],["忙しい","ยุ่ง"],["です","ค่ะ"],["か","ไหม"]], form:"งาน + ยุ่ง + ไหม?" },
+  { ja: "本当ですか", romaji: "hontō desu ka", th: "จริงเหรอคะ", note: "แสดงความสนใจตอนฟัง", parts:[["本当","จริง"],["です","ค่ะ"],["か","เหรอ"]], form:"จริง + เหรอ?" },
+  { ja: "すごいですね", romaji: "sugoi desu ne", th: "เก่งจัง / สุดยอดเลย", note: "คำชมที่ใช้บ่อยมาก", parts:[["すごい","เก่ง / สุดยอด"],["です","ค่ะ"],["ね","เนอะ"]], form:"สุดยอด + นะ" },
+  { ja: "それはよかったですね", romaji: "sore wa yokatta desu ne", th: "ดีจังเลยนะคะ", note: "ตอบรับเรื่องดี ๆ ของเพื่อน", parts:[["それ","อันนั้น"],["は","คำชี้ประธาน"],["よかった","ดีแล้ว"],["です","ค่ะ"],["ね","เนอะ"]], form:"อันนั้น + ดีแล้ว + นะ" },
   /* 2 eating */
-  { ja: "いただきます", romaji: "itadakimasu", th: "จะทานแล้วนะคะ (พูดก่อนกินข้าว)", note: "พูดก่อนเริ่มกินเสมอ" },
-  { ja: "おいしいです", romaji: "oishii desu", th: "อร่อยมากค่ะ", note: "ชมอาหาร" },
-  { ja: "辛いのが好きです", romaji: "karai no ga suki desu", th: "ชอบกินเผ็ดค่ะ", note: "บอกรสชาติที่ชอบ" },
-  { ja: "何がおすすめですか", romaji: "nani ga osusume desu ka", th: "มีอะไรแนะนำบ้างคะ", note: "ถามเมนูแนะนำที่ร้าน" },
-  { ja: "もう少し食べますか", romaji: "mō sukoshi tabemasu ka", th: "ทานอีกหน่อยไหมคะ", note: "ชวนเพื่อนกินเพิ่ม" },
-  { ja: "お腹いっぱいです", romaji: "onaka ippai desu", th: "อิ่มแล้วค่ะ", note: "ตอนกินไม่ไหวแล้ว" },
-  { ja: "ごちそうさまでした", romaji: "gochisōsama deshita", th: "ขอบคุณสำหรับอาหารค่ะ (พูดหลังกิน)", note: "พูดหลังทานเสร็จ" },
-  { ja: "乾杯", romaji: "kanpai", th: "ชนแก้ว!", note: "ตอนดื่มฉลองกับเพื่อน" },
+  { ja: "いただきます", romaji: "itadakimasu", th: "จะทานแล้วนะคะ (พูดก่อนกินข้าว)", note: "พูดก่อนเริ่มกินเสมอ", parts:[["いただきます","จะทานแล้ว (พูดก่อนกิน)"]], form:"คำพูดก่อนกิน (คงที่)" },
+  { ja: "おいしいです", romaji: "oishii desu", th: "อร่อยมากค่ะ", note: "ชมอาหาร", parts:[["おいしい","อร่อย"],["です","ค่ะ"]], form:"อร่อย + ค่ะ" },
+  { ja: "辛いのが好きです", romaji: "karai no ga suki desu", th: "ชอบกินเผ็ดค่ะ", note: "บอกรสชาติที่ชอบ", parts:[["辛い","เผ็ด"],["の","ที่"],["が","คำชี้ประธาน"],["好き","ชอบ"],["です","ค่ะ"]], form:"[รสชาติ] + ที่ + ชอบ" },
+  { ja: "何がおすすめですか", romaji: "nani ga osusume desu ka", th: "มีอะไรแนะนำบ้างคะ", note: "ถามเมนูแนะนำที่ร้าน", parts:[["何","อะไร"],["が","คำชี้ประธาน"],["おすすめ","แนะนำ"],["です","ค่ะ"],["か","ไหม"]], form:"อะไร + แนะนำ + ไหม?" },
+  { ja: "もう少し食べますか", romaji: "mō sukoshi tabemasu ka", th: "ทานอีกหน่อยไหมคะ", note: "ชวนเพื่อนกินเพิ่ม", parts:[["もう少し","อีกหน่อย"],["食べます","ทาน"],["か","ไหม"]], form:"อีกหน่อย + ทาน + ไหม?" },
+  { ja: "お腹いっぱいです", romaji: "onaka ippai desu", th: "อิ่มแล้วค่ะ", note: "ตอนกินไม่ไหวแล้ว", parts:[["お腹","ท้อง"],["いっぱい","เต็ม / อิ่ม"],["です","ค่ะ"]], form:"ท้อง + อิ่ม + ค่ะ" },
+  { ja: "ごちそうさまでした", romaji: "gochisōsama deshita", th: "ขอบคุณสำหรับอาหารค่ะ (พูดหลังกิน)", note: "พูดหลังทานเสร็จ", parts:[["ごちそうさま","ขอบคุณสำหรับอาหาร"],["でした","รูปอดีต"]], form:"คำพูดหลังกิน (คงที่)" },
+  { ja: "乾杯", romaji: "kanpai", th: "ชนแก้ว!", note: "ตอนดื่มฉลองกับเพื่อน", parts:[["乾杯","ชนแก้ว"]], form:"ชนแก้ว (คำเดียว)" },
   /* 3 shopping */
-  { ja: "いくらですか", romaji: "ikura desu ka", th: "อันนี้เท่าไหร่คะ", note: "ถามราคา" },
-  { ja: "高いですね", romaji: "takai desu ne", th: "แพงจังเลยนะคะ", note: "พูดตอนเห็นราคา" },
-  { ja: "安いですね", romaji: "yasui desu ne", th: "ถูกจังเลยค่ะ", note: "ตรงข้ามกับแพง" },
-  { ja: "見ているだけです", romaji: "mite iru dake desu", th: "ขอดูเฉย ๆ ค่ะ", note: "ตอบพนักงานที่ร้าน" },
-  { ja: "これをください", romaji: "kore o kudasai", th: "เอาอันนี้ค่ะ", note: "ตอนตัดสินใจซื้อ" },
-  { ja: "試着できますか", romaji: "shichaku dekimasu ka", th: "ลองใส่ได้ไหมคะ", note: "ขอลองเสื้อผ้า" },
-  { ja: "色違いはありますか", romaji: "irochigai wa arimasu ka", th: "มีสีอื่นไหมคะ", note: "ถามหาสีอื่น" },
-  { ja: "袋はいりません", romaji: "fukuro wa irimasen", th: "ไม่ต้องใส่ถุงค่ะ", note: "ปฏิเสธถุงอย่างสุภาพ" },
+  { ja: "いくらですか", romaji: "ikura desu ka", th: "อันนี้เท่าไหร่คะ", note: "ถามราคา", parts:[["いくら","เท่าไหร่"],["です","ค่ะ"],["か","ไหม"]], form:"เท่าไหร่ + ไหม?" },
+  { ja: "高いですね", romaji: "takai desu ne", th: "แพงจังเลยนะคะ", note: "พูดตอนเห็นราคา", parts:[["高い","แพง"],["です","ค่ะ"],["ね","เนอะ"]], form:"แพง + นะ" },
+  { ja: "安いですね", romaji: "yasui desu ne", th: "ถูกจังเลยค่ะ", note: "ตรงข้ามกับแพง", parts:[["安い","ถูก"],["です","ค่ะ"],["ね","เนอะ"]], form:"ถูก + นะ" },
+  { ja: "見ているだけです", romaji: "mite iru dake desu", th: "ขอดูเฉย ๆ ค่ะ", note: "ตอบพนักงานที่ร้าน", parts:[["見ている","กำลังดู"],["だけ","เฉย ๆ"],["です","ค่ะ"]], form:"กำลังดู + เฉย ๆ" },
+  { ja: "これをください", romaji: "kore o kudasai", th: "เอาอันนี้ค่ะ", note: "ตอนตัดสินใจซื้อ", parts:[["これ","อันนี้"],["を","คำชี้กรรม"],["ください","ขอ / เอา"]], form:"อันนี้ + เอา" },
+  { ja: "試着できますか", romaji: "shichaku dekimasu ka", th: "ลองใส่ได้ไหมคะ", note: "ขอลองเสื้อผ้า", parts:[["試着","ลองใส่"],["できます","ทำได้"],["か","ไหม"]], form:"ลองใส่ + ได้ + ไหม?" },
+  { ja: "色違いはありますか", romaji: "irochigai wa arimasu ka", th: "มีสีอื่นไหมคะ", note: "ถามหาสีอื่น", parts:[["色違い","สีอื่น"],["は","คำชี้ประธาน"],["あります","มี"],["か","ไหม"]], form:"สีอื่น + มี + ไหม?" },
+  { ja: "袋はいりません", romaji: "fukuro wa irimasen", th: "ไม่ต้องใส่ถุงค่ะ", note: "ปฏิเสธถุงอย่างสุภาพ", parts:[["袋","ถุง"],["は","คำชี้ประธาน"],["いりません","ไม่ต้อง"]], form:"ถุง + ไม่ต้อง" },
   /* 4 plans */
-  { ja: "今週末、暇ですか", romaji: "konshūmatsu, hima desu ka", th: "สุดสัปดาห์นี้ว่างไหมคะ", note: "เปิดเรื่องชวนเที่ยว" },
-  { ja: "一緒に映画を見ませんか", romaji: "issho ni eiga o mimasen ka", th: "ไปดูหนังด้วยกันไหมคะ", note: "ชวนทำกิจกรรม" },
-  { ja: "何時に会いますか", romaji: "nanji ni aimasu ka", th: "เจอกันกี่โมงดีคะ", note: "นัดเวลา" },
-  { ja: "駅で待ち合わせしましょう", romaji: "eki de machiawase shimashō", th: "เจอกันที่สถานีรถไฟนะคะ", note: "นัดจุดเจอกัน" },
-  { ja: "楽しみにしています", romaji: "tanoshimi ni shite imasu", th: "รอคอยเลยค่ะ ตื่นเต้น!", note: "แสดงความตื่นเต้นก่อนถึงวันนัด" },
-  { ja: "遅れてすみません", romaji: "okurete sumimasen", th: "ขอโทษที่มาสายค่ะ", note: "ขอโทษตอนไปสาย" },
-  { ja: "また誘ってください", romaji: "mata sasotte kudasai", th: "ชวนอีกนะคะ", note: "ปิดท้ายวันสนุก ๆ" },
-  { ja: "行きましょう", romaji: "ikimashō", th: "ไปกันเถอะ", note: "ชวนออกเดินทาง" },
+  { ja: "今週末、暇ですか", romaji: "konshūmatsu, hima desu ka", th: "สุดสัปดาห์นี้ว่างไหมคะ", note: "เปิดเรื่องชวนเที่ยว", parts:[["今週末","สุดสัปดาห์นี้"],["暇","ว่าง"],["です","ค่ะ"],["か","ไหม"]], form:"สุดสัปดาห์นี้ + ว่าง + ไหม?" },
+  { ja: "一緒に映画を見ませんか", romaji: "issho ni eiga o mimasen ka", th: "ไปดูหนังด้วยกันไหมคะ", note: "ชวนทำกิจกรรม", parts:[["一緒に","ด้วยกัน"],["映画","หนัง"],["を","คำชี้กรรม"],["見ませんか","ดูไหม (ชวน)"]], form:"ด้วยกัน + [กิจกรรม] + ไหม (ชวน)" },
+  { ja: "何時に会いますか", romaji: "nanji ni aimasu ka", th: "เจอกันกี่โมงดีคะ", note: "นัดเวลา", parts:[["何時","กี่โมง"],["に","ตอน"],["会います","เจอกัน"],["か","ไหม"]], form:"กี่โมง + เจอกัน + ไหม?" },
+  { ja: "駅で待ち合わせしましょう", romaji: "eki de machiawase shimashō", th: "เจอกันที่สถานีรถไฟนะคะ", note: "นัดจุดเจอกัน", parts:[["駅","สถานีรถไฟ"],["で","ที่"],["待ち合わせ","นัดเจอ"],["しましょう","กันเถอะ"]], form:"[สถานที่] + นัดเจอกันเถอะ" },
+  { ja: "楽しみにしています", romaji: "tanoshimi ni shite imasu", th: "รอคอยเลยค่ะ ตื่นเต้น!", note: "แสดงความตื่นเต้นก่อนถึงวันนัด", parts:[["楽しみ","รอคอย"],["に","คำช่วย"],["しています","กำลังทำอยู่"]], form:"รอคอย + กำลัง" },
+  { ja: "遅れてすみません", romaji: "okurete sumimasen", th: "ขอโทษที่มาสายค่ะ", note: "ขอโทษตอนไปสาย", parts:[["遅れて","มาสาย"],["すみません","ขอโทษ"]], form:"มาสาย + ขอโทษ" },
+  { ja: "また誘ってください", romaji: "mata sasotte kudasai", th: "ชวนอีกนะคะ", note: "ปิดท้ายวันสนุก ๆ", parts:[["また","อีก"],["誘って","ชวน"],["ください","หน่อย"]], form:"อีก + ชวน + หน่อย" },
+  { ja: "行きましょう", romaji: "ikimashō", th: "ไปกันเถอะ", note: "ชวนออกเดินทาง", parts:[["行きましょう","ไปกันเถอะ"]], form:"ไป + กันเถอะ" },
   /* 5 feelings */
-  { ja: "うれしいです", romaji: "ureshii desu", th: "ดีใจจังค่ะ", note: "แสดงความดีใจ" },
-  { ja: "疲れました", romaji: "tsukaremashita", th: "เหนื่อยจังค่ะ", note: "บ่นเหนื่อยเบา ๆ" },
-  { ja: "ちょっと難しいです", romaji: "chotto muzukashii desu", th: "ยากนิดหน่อยค่ะ", note: "ยอมรับว่ายากอย่างนุ่มนวล" },
-  { ja: "大丈夫です", romaji: "daijōbu desu", th: "ไม่เป็นไรค่ะ", note: "คำสารพัดประโยชน์ ใช้ได้หลายสถานการณ์" },
-  { ja: "そう思います", romaji: "sō omoimasu", th: "ฉันก็คิดแบบนั้นค่ะ", note: "เห็นด้วยกับความเห็นของเพื่อน" },
-  { ja: "なるほど", romaji: "naruhodo", th: "อ๋อ เข้าใจแล้วค่ะ", note: "ตอบรับเวลารู้เรื่องใหม่" },
-  { ja: "わかります", romaji: "wakarimasu", th: "เข้าใจค่ะ", note: "บอกว่าเข้าใจ" },
-  { ja: "心配しないでください", romaji: "shinpai shinaide kudasai", th: "ไม่ต้องเป็นห่วงนะคะ", note: "ปลอบเพื่อน" },
+  { ja: "うれしいです", romaji: "ureshii desu", th: "ดีใจจังค่ะ", note: "แสดงความดีใจ", parts:[["うれしい","ดีใจ"],["です","ค่ะ"]], form:"ดีใจ + ค่ะ" },
+  { ja: "疲れました", romaji: "tsukaremashita", th: "เหนื่อยจังค่ะ", note: "บ่นเหนื่อยเบา ๆ", parts:[["疲れました","เหนื่อยแล้ว"]], form:"เหนื่อย + แล้ว (อดีต)" },
+  { ja: "ちょっと難しいです", romaji: "chotto muzukashii desu", th: "ยากนิดหน่อยค่ะ", note: "ยอมรับว่ายากอย่างนุ่มนวล", parts:[["ちょっと","นิดหน่อย"],["難しい","ยาก"],["です","ค่ะ"]], form:"นิดหน่อย + ยาก + ค่ะ" },
+  { ja: "大丈夫です", romaji: "daijōbu desu", th: "ไม่เป็นไรค่ะ", note: "คำสารพัดประโยชน์ ใช้ได้หลายสถานการณ์", parts:[["大丈夫","ไม่เป็นไร"],["です","ค่ะ"]], form:"ไม่เป็นไร + ค่ะ" },
+  { ja: "そう思います", romaji: "sō omoimasu", th: "ฉันก็คิดแบบนั้นค่ะ", note: "เห็นด้วยกับความเห็นของเพื่อน", parts:[["そう","แบบนั้น"],["思います","คิดว่า"]], form:"แบบนั้น + คิดว่า" },
+  { ja: "なるほど", romaji: "naruhodo", th: "อ๋อ เข้าใจแล้วค่ะ", note: "ตอบรับเวลารู้เรื่องใหม่", parts:[["なるほど","อ๋อ เข้าใจแล้ว"]], form:"คำตอบรับ (คำเดียว)" },
+  { ja: "わかります", romaji: "wakarimasu", th: "เข้าใจค่ะ", note: "บอกว่าเข้าใจ", parts:[["わかります","เข้าใจ"]], form:"เข้าใจ (กริยา)" },
+  { ja: "心配しないでください", romaji: "shinpai shinaide kudasai", th: "ไม่ต้องเป็นห่วงนะคะ", note: "ปลอบเพื่อน", parts:[["心配","เป็นห่วง"],["しないで","อย่า"],["ください","เลยนะ"]], form:"อย่า + เป็นห่วง + เลยนะ" },
   /* 6 phone/chat */
-  { ja: "もしもし", romaji: "moshi moshi", th: "ฮัลโหล (ตอนรับโทรศัพท์)", note: "ใช้เฉพาะตอนคุยโทรศัพท์" },
-  { ja: "LINEを交換しませんか", romaji: "LINE o kōkan shimasen ka", th: "แลกไลน์กันไหมคะ", note: "ชวนแลกไลน์กับเพื่อนใหม่" },
-  { ja: "写真を送りますね", romaji: "shashin o okurimasu ne", th: "เดี๋ยวส่งรูปให้นะคะ", note: "บอกก่อนส่งรูป" },
-  { ja: "あとで電話します", romaji: "ato de denwa shimasu", th: "เดี๋ยวโทรหานะคะ", note: "สัญญาว่าจะโทรภายหลัง" },
-  { ja: "今、忙しいです", romaji: "ima, isogashii desu", th: "ตอนนี้ยุ่งอยู่ค่ะ", note: "บอกว่ายังไม่ว่าง" },
-  { ja: "ごめん、今は話せません", romaji: "gomen, ima wa hanasemasen", th: "โทษที ตอนนี้คุยไม่ได้ค่ะ", note: "ปฏิเสธอย่างนุ่มนวล" },
-  { ja: "メッセージありがとう", romaji: "messēji arigatō", th: "ขอบคุณสำหรับข้อความนะคะ", note: "ตอบแชทเพื่อน" },
-  { ja: "了解です", romaji: "ryōkai desu", th: "รับทราบค่ะ", note: "ตอบรับสั้น ๆ แบบเป็นกันเอง" },
+  { ja: "もしもし", romaji: "moshi moshi", th: "ฮัลโหล (ตอนรับโทรศัพท์)", note: "ใช้เฉพาะตอนคุยโทรศัพท์", parts:[["もしもし","ฮัลโหล (โทรศัพท์)"]], form:"ฮัลโหล (โทรศัพท์เท่านั้น)" },
+  { ja: "LINEを交換しませんか", romaji: "LINE o kōkan shimasen ka", th: "แลกไลน์กันไหมคะ", note: "ชวนแลกไลน์กับเพื่อนใหม่", parts:[["LINE","ไลน์"],["を","คำชี้กรรม"],["交換","แลก"],["しませんか","กันไหม (ชวน)"]], form:"LINE + แลก + กันไหม (ชวน)" },
+  { ja: "写真を送りますね", romaji: "shashin o okurimasu ne", th: "เดี๋ยวส่งรูปให้นะคะ", note: "บอกก่อนส่งรูป", parts:[["写真","รูปภาพ"],["を","คำชี้กรรม"],["送ります","ส่ง"],["ね","นะ"]], form:"รูป + ส่ง + นะ" },
+  { ja: "あとで電話します", romaji: "ato de denwa shimasu", th: "เดี๋ยวโทรหานะคะ", note: "สัญญาว่าจะโทรภายหลัง", parts:[["あとで","เดี๋ยว / ทีหลัง"],["電話","โทรศัพท์"],["します","โทร / ทำ"]], form:"ทีหลัง + โทร" },
+  { ja: "今、忙しいです", romaji: "ima, isogashii desu", th: "ตอนนี้ยุ่งอยู่ค่ะ", note: "บอกว่ายังไม่ว่าง", parts:[["今","ตอนนี้"],["忙しい","ยุ่ง"],["です","ค่ะ"]], form:"ตอนนี้ + ยุ่ง + ค่ะ" },
+  { ja: "ごめん、今は話せません", romaji: "gomen, ima wa hanasemasen", th: "โทษที ตอนนี้คุยไม่ได้ค่ะ", note: "ปฏิเสธอย่างนุ่มนวล", parts:[["ごめん","โทษที"],["今","ตอนนี้"],["は","คำชี้ประธาน"],["話せません","คุยไม่ได้"]], form:"โทษที + ตอนนี้ + คุยไม่ได้" },
+  { ja: "メッセージありがとう", romaji: "messēji arigatō", th: "ขอบคุณสำหรับข้อความนะคะ", note: "ตอบแชทเพื่อน", parts:[["メッセージ","ข้อความ"],["ありがとう","ขอบคุณ"]], form:"ข้อความ + ขอบคุณ" },
+  { ja: "了解です", romaji: "ryōkai desu", th: "รับทราบค่ะ", note: "ตอบรับสั้น ๆ แบบเป็นกันเอง", parts:[["了解","รับทราบ"],["です","ค่ะ"]], form:"รับทราบ + ค่ะ" },
   /* 7 thanks/help */
-  { ja: "ありがとうございます", romaji: "arigatō gozaimasu", th: "ขอบคุณมากค่ะ", note: "ขอบคุณแบบสุภาพ" },
-  { ja: "助かりました", romaji: "tasukarimashita", th: "ช่วยได้มากเลยค่ะ", note: "ขอบคุณคนที่ช่วยเหลือ" },
-  { ja: "すみません", romaji: "sumimasen", th: "ขอโทษค่ะ / ขออนุญาตค่ะ", note: "ใช้เรียกพนักงานก็ได้" },
-  { ja: "ごめんなさい", romaji: "gomen nasai", th: "ขอโทษจริง ๆ ค่ะ", note: "ขอโทษแบบจริงใจ" },
-  { ja: "わかりません", romaji: "wakarimasen", th: "ไม่เข้าใจค่ะ / ไม่รู้ค่ะ", note: "บอกว่าไม่เข้าใจ" },
-  { ja: "ゆっくり話してください", romaji: "yukkuri hanashite kudasai", th: "ช่วยพูดช้า ๆ หน่อยได้ไหมคะ", note: "ขอให้พูดช้าลง" },
-  { ja: "もう一度お願いします", romaji: "mō ichido onegaishimasu", th: "ขออีกครั้งได้ไหมคะ", note: "ขอให้พูดซ้ำ" },
-  { ja: "日本語を勉強中です", romaji: "nihongo o benkyō-chū desu", th: "กำลังเรียนภาษาญี่ปุ่นอยู่ค่ะ", note: "พูดประโยคนี้ คนญี่ปุ่นจะใจดีขึ้นทันที" }
+  { ja: "ありがとうございます", romaji: "arigatō gozaimasu", th: "ขอบคุณมากค่ะ", note: "ขอบคุณแบบสุภาพ", parts:[["ありがとうございます","ขอบคุณมากค่ะ"]], form:"ขอบคุณ (สุภาพ)" },
+  { ja: "助かりました", romaji: "tasukarimashita", th: "ช่วยได้มากเลยค่ะ", note: "ขอบคุณคนที่ช่วยเหลือ", parts:[["助かりました","ช่วยได้มาก (อดีต)"]], form:"ช่วยได้มาก (อดีต)" },
+  { ja: "すみません", romaji: "sumimasen", th: "ขอโทษค่ะ / ขออนุญาตค่ะ", note: "ใช้เรียกพนักงานก็ได้", parts:[["すみません","ขอโทษ / ขออนุญาต"]], form:"ขอโทษ / เรียกคน" },
+  { ja: "ごめんなさい", romaji: "gomen nasai", th: "ขอโทษจริง ๆ ค่ะ", note: "ขอโทษแบบจริงใจ", parts:[["ごめんなさい","ขอโทษจริง ๆ"]], form:"ขอโทษ (จริงใจ)" },
+  { ja: "わかりません", romaji: "wakarimasen", th: "ไม่เข้าใจค่ะ / ไม่รู้ค่ะ", note: "บอกว่าไม่เข้าใจ", parts:[["わかりません","ไม่เข้าใจ / ไม่รู้"]], form:"ไม่เข้าใจ (ปฏิเสธ)" },
+  { ja: "ゆっくり話してください", romaji: "yukkuri hanashite kudasai", th: "ช่วยพูดช้า ๆ หน่อยได้ไหมคะ", note: "ขอให้พูดช้าลง", parts:[["ゆっくり","ช้า ๆ"],["話して","พูด"],["ください","หน่อย"]], form:"ช้า ๆ + พูด + หน่อย" },
+  { ja: "もう一度お願いします", romaji: "mō ichido onegaishimasu", th: "ขออีกครั้งได้ไหมคะ", note: "ขอให้พูดซ้ำ", parts:[["もう一度","อีกครั้ง"],["お願いします","ขอหน่อย"]], form:"อีกครั้ง + ขอหน่อย" },
+  { ja: "日本語を勉強中です", romaji: "nihongo o benkyō-chū desu", th: "กำลังเรียนภาษาญี่ปุ่นอยู่ค่ะ", note: "พูดประโยคนี้ คนญี่ปุ่นจะใจดีขึ้นทันที", parts:[["日本語","ภาษาญี่ปุ่น"],["を","คำชี้กรรม"],["勉強中","กำลังเรียน"],["です","ค่ะ"]], form:"ภาษาญี่ปุ่น + กำลังเรียน + ค่ะ" }
 ];
 PHRASES.forEach(function (p, i) { p.id = "p" + (i + 1); p.scene = Math.floor(i / 8); });
 var BY_ID = {};
@@ -455,10 +462,26 @@ function playBtns(p) {
     '<button type="button" class="btn primary" data-say="' + p.ja + '">🔊 ฟัง</button>' +
     '<button type="button" class="btn" data-say-slow="' + p.ja + '">🐢 ฟังช้า ๆ</button></div>';
 }
+function partsHTML(p) {
+  if (!p.parts) return "";
+  return '<div class="parts">' + p.parts.map(function (w) { return '<span class="pw">' + w[0] + '</span>（' + w[1] + '）'; }).join('・') + '</div>';
+}
+function formHTML(p) {
+  if (!p.form) return "";
+  return '<div class="form-line">🧩 แบบประโยค: ' + p.form + '</div>';
+}
+function statusChip(p) {
+  var r = store.prog[p.id];
+  if (!r) return '<span class="chip todo">⬜ ยังไม่เรียน</span>';
+  if (r.box >= 2) return '<span class="chip done">✅ พูดได้แล้ว</span>';
+  var t = todayStr();
+  var when = r.due <= t ? "วันนี้" : r.due === addDays(t, 1) ? "พรุ่งนี้" : r.due.slice(5).replace("-", "/");
+  return '<span class="chip mid">📖 กำลังฝึก (ทบทวนต่อไป: ' + when + ')</span>';
+}
 function phraseCardHTML(p, badge) {
   return '<div class="card"><div class="row" style="justify-content:space-between"><span class="note" style="margin:0">' + (badge || "") + '</span></div>' +
     '<div class="ja">' + p.ja + '</div><div class="romaji">' + p.romaji + '</div>' +
-    '<div class="th">' + p.th + '</div><div class="note">' + p.note + '</div>' + playBtns(p) + '</div>';
+    '<div class="th">' + p.th + '</div><div class="note">' + p.note + '</div>' + partsHTML(p) + formHTML(p) + playBtns(p) + '</div>';
 }
 document.addEventListener("click", function (ev) {
   var b = ev.target.closest("[data-say],[data-say-slow]");
@@ -501,12 +524,25 @@ function buildQueue(extra) {
 function renderToday() {
   var el = document.getElementById("view-today");
   if (!session) session = { queue: buildQueue(false), idx: 0, earned: 0 };
+  if (session.maxIdx == null) session.maxIdx = session.idx;
   if (session.idx >= session.queue.length) {
     el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">🎉</div>' +
       '<h3>วันนี้ครบแล้ว! เก่งมากเจน</h3><p class="note">ฝึกครบตามแผนวันนี้แล้วค่ะ พักผ่อนได้เลย หรือจะฝึกเพิ่มอีกนิดก็ได้นะ</p>' +
       '<p>⭐ ที่ได้รอบนี้: <b>' + session.earned + '</b></p>' +
       '<div class="row" style="justify-content:center"><button type="button" class="btn primary" id="extraBtn">ฝึกเพิ่ม 5 วลี</button>' +
-      '<button type="button" class="btn" id="toScenes">ดูฉากทั้งหมด</button></div></div>';
+      '<button type="button" class="btn" id="toScenes">ดูฉากทั้งหมด</button>' +
+      (session.queue.length ? '<button type="button" class="btn" id="reviewBtn">ทบทวนวลีวันนี้</button>' : '') + '</div></div>' +
+      (session.queue.length ? '<h3 style="margin:18px 0 4px">📚 วลีวันนี้ (ทบทวนได้ตลอด)</h3>' + (function () {
+        var seen = [];
+        return session.queue.filter(function (q) { if (seen.indexOf(q) >= 0) return false; seen.push(q); return true; }).map(function (q) {
+          var p = BY_ID[q];
+          return '<div class="card"><div class="ja sm">' + p.ja + statusChip(p) + '</div>' +
+            '<div class="romaji">' + p.romaji + '</div><div class="th">' + p.th + '</div>' +
+            partsHTML(p) + formHTML(p) + playBtns(p) + '</div>';
+        }).join("");
+      })() : '');
+    var rvb = document.getElementById("reviewBtn");
+    if (rvb) rvb.addEventListener("click", function () { session.idx = 0; renderToday(); });
     document.getElementById("extraBtn").addEventListener("click", function () { session = { queue: buildQueue(true), idx: 0, earned: 0 }; renderToday(); });
     document.getElementById("toScenes").addEventListener("click", function () { switchView("scenes"); });
     return;
@@ -514,16 +550,28 @@ function renderToday() {
   var p = BY_ID[session.queue[session.idx]];
   var r = store.prog[p.id];
   var dots = session.queue.map(function (q, i) { return '<i class="' + (i < session.idx ? "done" : i === session.idx ? "now" : "") + '"></i>'; }).join("");
+  var viewingPast = session.idx < session.maxIdx;
+  var judgeArea = viewingPast
+    ? '<p class="note">โหมดดูทบทวนอยู่ค่ะ ฟังเสียงได้ตามสบายเลย ปุ่มตัดสินจะอยู่ที่วลีล่าสุดนะ</p>'
+    : '<div class="row"><button type="button" class="btn good" id="judgeGood">💪 จำได้แล้ว</button>' +
+      '<button type="button" class="btn" id="judgeAgain">🔁 ขอดูอีกครั้ง</button></div>' +
+      '<p class="note">กดฟังแล้วพูดตามหลาย ๆ รอบก่อนตอบก็ได้นะ ไม่ต้องรีบ</p>';
+  var navRow = '<div class="row" style="margin-top:10px">' +
+    (session.idx > 0 ? '<button type="button" class="btn" id="navPrev">⬅ วลีก่อนหน้า</button>' : '') +
+    (viewingPast ? '<button type="button" class="btn" id="navNext">วลีต่อไป ➜</button>' : '') + '</div>';
   el.innerHTML = '<div class="dots">' + dots + '</div>' +
     '<div class="note">วลีที่ ' + (session.idx + 1) + ' / ' + session.queue.length + ' ・ ' + SCENES[p.scene].icon + ' ' + SCENES[p.scene].name + (r ? ' ・ ทบทวน' : ' ・ วลีใหม่') + '</div>' +
     phraseCardHTML(p) +
-    '<div class="card"><h3>จำได้ไหม?</h3><div class="row">' +
-    '<button type="button" class="btn good" id="judgeGood">💪 จำได้แล้ว</button>' +
-    '<button type="button" class="btn" id="judgeAgain">🔁 ขอดูอีกครั้ง</button></div>' +
-    '<p class="note">กดฟังแล้วพูดตามหลาย ๆ รอบก่อนตอบก็ได้นะ ไม่ต้องรีบ</p></div>';
+    '<div class="card"><h3>จำได้ไหม?</h3>' + judgeArea + navRow + '</div>';
   speakJa(p.ja, 1, null);
-  document.getElementById("judgeGood").addEventListener("click", function () { judge(p, true); });
-  document.getElementById("judgeAgain").addEventListener("click", function () { judge(p, false); });
+  if (!viewingPast) {
+    document.getElementById("judgeGood").addEventListener("click", function () { judge(p, true); });
+    document.getElementById("judgeAgain").addEventListener("click", function () { judge(p, false); });
+  }
+  var np = document.getElementById("navPrev");
+  if (np) np.addEventListener("click", function () { session.idx--; renderToday(); });
+  var nn = document.getElementById("navNext");
+  if (nn) nn.addEventListener("click", function () { session.idx++; renderToday(); });
 }
 function judge(p, good) {
   var t = todayStr();
@@ -538,6 +586,7 @@ function judge(p, good) {
   }
   store.prog[p.id] = r; save(); updateStats();
   session.idx++;
+  if (session.maxIdx == null || session.idx > session.maxIdx) session.maxIdx = session.idx;
   setTimeout(renderToday, good ? 500 : 150);
 }
 /* ----- Scenes & stamps ----- */
@@ -549,31 +598,52 @@ function renderScenes() {
   var stamps = SCENES.map(function (s, si) {
     return '<div class="stamp' + (sceneDone(si) ? " got" : "") + '" title="' + s.name + '">' + s.stamp + '</div>';
   }).join("");
+  var learnedN = PHRASES.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
+  var studyingN = PHRASES.filter(function (p) { var r = store.prog[p.id]; return r && r.box < 2; }).length;
   var html = '<div class="card"><h3>🏅 แสตมป์สะสมของเจน</h3><div class="stamps">' + stamps + '</div>' +
-    '<p class="note">จำครบทั้งฉาก (ทบทวนผ่าน 2 รอบขึ้นไป) จะได้แสตมป์ของฉากนั้น สะสมให้ครบ 8 อันเลยนะ!</p></div>';
+    '<p class="note">จำครบทั้งฉาก (ทบทวนผ่าน 2 รอบขึ้นไป) จะได้แสตมป์ของฉากนั้น สะสมให้ครบ 8 อันเลยนะ!</p></div>' +
+    '<div class="card"><h3>📚 สถานะของเจน</h3>' +
+    '<p class="note" style="margin-top:0">✅ พูดได้แล้ว ' + learnedN + ' วลี ・ 📖 กำลังฝึก ' + studyingN + ' วลี ・ ⬜ ยังไม่เรียน ' + (64 - learnedN - studyingN) + ' วลี<br>ทุกวลีเปิดดูและฟังเสียงทบทวนได้ตลอดจากหน้านี้เลย</p></div>';
   SCENES.forEach(function (s, si) {
     var list = PHRASES.filter(function (p) { return p.scene === si; });
     var done = list.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
     html += '<div class="scene-head"><h3>' + s.icon + ' ' + s.name + '</h3><span>' + done + '/8</span></div>';
     list.forEach(function (p) {
-      var r = store.prog[p.id];
-      html += '<div class="card"><div class="ja sm">' + p.ja + (r && r.box >= 2 ? ' <span style="font-size:14px">💮</span>' : '') + '</div>' +
+      html += '<div class="card"><div class="ja sm">' + p.ja + statusChip(p) + '</div>' +
         '<div class="romaji">' + p.romaji + '</div><div class="th">' + p.th + '</div>' +
-        '<div class="note">' + p.note + '</div>' + playBtns(p) + '</div>';
+        '<div class="note">' + p.note + '</div>' + partsHTML(p) + formHTML(p) + playBtns(p) + '</div>';
     });
   });
   el.innerHTML = html;
 }
 /* ----- Listening game ----- */
 var quiz = null;
+function quizPool() {
+  var t = todayStr();
+  var due = [], learned = [];
+  PHRASES.forEach(function (p) {
+    var r = store.prog[p.id];
+    if (!r) return;
+    if (r.due <= t) due.push(p.id); else learned.push(p.id);
+  });
+  return shuffle(due).concat(shuffle(learned));
+}
 function renderQuizStart() {
   var el = document.getElementById("view-quiz");
+  var poolN = quizPool().length;
+  if (poolN === 0) {
+    el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">👂🎵</div>' +
+      '<h3>เกมฟังเสียง</h3><p class="note">เกมนี้จะออกข้อสอบจากวลีที่เจนฝึกแล้วเท่านั้นค่ะ<br>ไปฝึกที่แท็บ "วันนี้" ก่อน แล้วกลับมาเล่นนะ</p>' +
+      '<button type="button" class="btn primary" id="quizToToday">ไปฝึกวันนี้</button></div>';
+    document.getElementById("quizToToday").addEventListener("click", function () { switchView("today"); });
+    return;
+  }
   el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">👂🎵</div>' +
-    '<h3>เกมฟังเสียง</h3><p class="note">ฟังประโยคภาษาญี่ปุ่น แล้วเลือกความหมายที่ถูก มีทั้งหมด 10 ข้อ<br>ตอบถูกได้ ⭐ +1 พร้อมคำชมจากโมโมะ</p>' +
+    '<h3>เกมฟังเสียง</h3><p class="note">ฟังประโยคภาษาญี่ปุ่น แล้วเลือกความหมายที่ถูก<br>ออกข้อสอบจากวลีที่ฝึกแล้ว ' + Math.min(10, poolN) + ' ข้อ (วลีที่ถึงเวลาทบทวนจะมาก่อน)<br>ตอบถูกได้ ⭐ +1 พร้อมคำชมจากโมโมะ</p>' +
     '<button type="button" class="btn primary" id="quizStart">เริ่มเกม</button>' +
     '<p class="note">เปิดเสียงไว้ด้วยนะคะ</p></div>';
   document.getElementById("quizStart").addEventListener("click", function () {
-    quiz = { ids: shuffle(PHRASES.slice()).slice(0, 10).map(function (p) { return p.id; }), idx: 0, score: 0, answered: false };
+    quiz = { ids: quizPool().slice(0, 10), idx: 0, score: 0, answered: false };
     renderQuiz();
   });
 }
@@ -581,7 +651,7 @@ function renderQuiz() {
   var el = document.getElementById("view-quiz");
   if (quiz.idx >= quiz.ids.length) {
     el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">' + (quiz.score >= 8 ? "🏆" : "🌷") + '</div>' +
-      '<h3>จบเกม! ได้ ' + quiz.score + ' / 10 คะแนน</h3>' +
+      '<h3>จบเกม! ได้ ' + quiz.score + ' / ' + quiz.ids.length + ' คะแนน</h3>' +
       '<p class="note">' + (quiz.score >= 8 ? "หูดีมาก! ฟังเก่งขึ้นเยอะเลย" : "เก่งมากแล้ว ฝึกอีกนิดหูจะยิ่งไวขึ้น") + '</p>' +
       '<button type="button" class="btn primary" id="quizAgain">เล่นอีกครั้ง</button></div>';
     if (quiz.score >= 5) cheer(true);
@@ -591,7 +661,7 @@ function renderQuiz() {
   var p = BY_ID[quiz.ids[quiz.idx]];
   var others = shuffle(PHRASES.filter(function (q) { return q.id !== p.id; })).slice(0, 3);
   var choices = shuffle([p].concat(others));
-  el.innerHTML = '<div class="note">ข้อ ' + (quiz.idx + 1) + ' / 10 ・ คะแนน ' + quiz.score + '</div>' +
+  el.innerHTML = '<div class="note">ข้อ ' + (quiz.idx + 1) + ' / ' + quiz.ids.length + ' ・ คะแนน ' + quiz.score + '</div>' +
     '<div class="card" style="text-align:center"><div style="font-size:34px">🎧</div>' +
     '<div class="row" style="justify-content:center;margin-top:6px"><button type="button" class="btn primary" id="qPlay">🔊 ฟังเสียง</button>' +
     '<button type="button" class="btn" id="qPlaySlow">🐢 ช้า ๆ</button></div>' +
