@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>เรียนภาษาญี่ปุ่นกับโมโมะ | แอปของเจน</title>
+<meta name="description" content="แอปเรียนสนทนาภาษาญี่ปุ่นสุดน่ารักสำหรับเจน เรียนเพลิน ๆ ทุกวันกับโมโมะ">
+<style>
+  :root{
+    --bg:#fff5f8; --surface:#ffffff; --surface2:#ffedf3;
+    --ink:#503040; --muted:#bb8fa1; --line:#ffd9e6;
+    --accent:#ef6a9e; --accent-deep:#d94f83; --accent-soft:#ffe3ee;
+    --good:#3faf7d; --good-soft:#e2f7ec; --bad:#e5637c; --bad-soft:#ffe9ee;
+    --radius:20px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#2a1b22; --surface:#3a2530; --surface2:#452c3a; --ink:#ffeef4; --muted:#d3a7ba; --line:#5f3d4e; --accent:#ff9ec2; --accent-deep:#ff8ab5; --accent-soft:#55303f; --good:#7ed7a8; --good-soft:#274a3a; --bad:#ffa4b5; --bad-soft:#54303c; }
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans Thai","Noto Sans JP",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.55; }
+  .wrap{ max-width:640px; margin:0 auto; padding:14px 14px 96px; }
+  header.app h1{ font-size:21px; margin:4px 0 2px; }
+  header.app .sub{ margin:0; color:var(--muted); font-size:13px; }
+  .hero{ display:flex; gap:12px; align-items:center; background:var(--surface); border:2px solid var(--line); border-radius:24px; padding:12px 14px; margin:12px 0; }
+  .hero img{ width:92px; height:92px; border-radius:50%; object-fit:cover; border:3px solid var(--accent-soft); flex:none; }
+  .bubble{ position:relative; background:var(--accent-soft); border-radius:16px; padding:10px 12px; font-size:14px; flex:1; }
+  .bubble:before{ content:""; position:absolute; left:-7px; top:50%; margin-top:-7px; border:7px solid transparent; border-right-color:var(--accent-soft); border-left:0; }
+  .bubble .b-ja{ font-weight:800; font-size:16px; color:var(--accent-deep); }
+  .stats{ display:flex; gap:8px; margin:10px 0 2px; flex-wrap:wrap; }
+  .stat{ background:var(--surface); border:1.5px solid var(--line); border-radius:99px; padding:5px 12px; font-size:13px; font-weight:700; }
+  .bar{ height:9px; background:var(--surface2); border-radius:99px; overflow:hidden; margin-top:8px; }
+  .bar > i{ display:block; height:100%; background:linear-gradient(90deg,var(--accent),#ffb3cd); border-radius:99px; transition:width .4s; }
+  nav.tabs{ position:fixed; left:0; right:0; bottom:0; background:var(--surface); border-top:2px solid var(--line); display:flex; z-index:20; padding-bottom:env(safe-area-inset-bottom); }
+  nav.tabs button{ flex:1; border:0; background:none; padding:9px 2px 7px; font-size:12px; color:var(--muted); cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; font-family:inherit; }
+  nav.tabs button .ic{ font-size:19px; }
+  nav.tabs button.on{ color:var(--accent-deep); font-weight:800; }
+  .card{ background:var(--surface); border:2px solid var(--line); border-radius:var(--radius); padding:16px; margin:12px 0; }
+  .card h3{ margin:0 0 8px; font-size:16px; }
+  .ja{ font-size:24px; font-weight:800; letter-spacing:.01em; }
+  .ja.sm{ font-size:19px; }
+  .romaji{ color:var(--accent-deep); font-size:14px; font-weight:700; }
+  .th{ font-size:15px; margin-top:2px; }
+  .note{ color:var(--muted); font-size:13px; margin-top:6px; }
+  .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  button.btn{ border:2px solid var(--line); background:var(--surface); color:var(--ink); border-radius:99px; padding:8px 15px; font-size:14px; cursor:pointer; font-family:inherit; font-weight:600; }
+  button.btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:800; }
+  button.btn.good{ background:var(--good); border-color:var(--good); color:#fff; font-weight:800; }
+  button.btn:disabled{ opacity:.45; }
+  button.btn.playing{ background:var(--accent-soft); }
+  .dots{ display:flex; gap:5px; margin:10px 0; flex-wrap:wrap; }
+  .dots i{ width:9px; height:9px; border-radius:50%; background:var(--line); }
+  .dots i.done{ background:var(--good); }
+  .dots i.now{ background:var(--accent); }
+  .scene-head{ display:flex; justify-content:space-between; align-items:baseline; margin:18px 0 4px; }
+  .scene-head h3{ margin:0; font-size:16px; }
+  .scene-head span{ font-size:12px; color:var(--muted); }
+  .stamps{ display:flex; gap:6px; flex-wrap:wrap; }
+  .stamp{ width:44px; height:44px; border-radius:50%; border:2px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:20px; background:var(--surface); filter:grayscale(1); opacity:.45; }
+  .stamp.got{ border-style:solid; border-color:var(--accent); filter:none; opacity:1; background:var(--accent-soft); }
+  .choices{ display:grid; gap:8px; margin-top:10px; }
+  .choices button{ text-align:left; padding:12px 14px; border-radius:14px; border:2px solid var(--line); background:var(--surface); font-size:15px; cursor:pointer; color:var(--ink); font-family:inherit; }
+  .choices button.right{ background:var(--good-soft); border-color:var(--good); }
+  .choices button.wrong{ background:var(--bad-soft); border-color:var(--bad); }
+  .bubble-chat{ max-width:88%; padding:10px 13px; border-radius:18px; margin:8px 0; font-size:15px; }
+  .bubble-chat.p{ background:var(--surface2); margin-right:auto; border-bottom-left-radius:4px; }
+  .bubble-chat.u{ background:var(--accent-soft); margin-left:auto; border-bottom-right-radius:4px; }
+  .bubble-chat .who{ font-size:11px; color:var(--muted); margin-bottom:2px; }
+  .bubble-chat .sub{ font-size:13px; color:var(--muted); }
+  .verdict{ font-weight:800; margin-top:8px; }
+  .verdict.ok{ color:var(--good); } .verdict.ng{ color:var(--bad); }
+  details.card summary{ cursor:pointer; font-weight:800; font-size:15px; }
+  .ex{ padding:8px 0; border-top:1.5px dashed var(--line); }
+  .ex:first-of-type{ border-top:0; }
+  .cheer{ position:fixed; left:50%; top:14px; transform:translateX(-50%) translateY(-16px); background:var(--surface); border:2px solid var(--accent); border-radius:18px; padding:8px 12px; display:flex; gap:10px; align-items:center; box-shadow:0 8px 24px rgba(217,79,131,.25); opacity:0; pointer-events:none; transition:.3s; z-index:40; max-width:92vw; }
+  .cheer.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .cheer img{ width:46px; height:46px; border-radius:50%; object-fit:cover; }
+  .cheer .c-ja{ font-weight:800; color:var(--accent-deep); font-size:15px; }
+  .cheer .c-th{ font-size:13px; }
+  .heart{ position:fixed; font-size:20px; pointer-events:none; z-index:39; animation:floatUp 1.4s ease-out forwards; }
+  @keyframes floatUp{ 0%{ transform:translateY(0) scale(.7); opacity:0; } 15%{ opacity:1; } 100%{ transform:translateY(-120px) scale(1.15); opacity:0; } }
+  .toast{ position:fixed; left:50%; bottom:92px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--bg); padding:9px 16px; border-radius:99px; font-size:14px; opacity:0; pointer-events:none; transition:.25s; z-index:30; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .hidden{ display:none !important; }
+  .mic-live{ background:var(--bad) !important; border-color:var(--bad) !important; color:#fff !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <h1>🎀 เรียนภาษาญี่ปุ่นกับโมโมะ</h1>
+    <p class="sub">แอปพิเศษสำหรับเจนคนเดียว — เรียนสนุก ๆ วันละนิด ไม่เบื่อแน่นอน</p>
+  </header>
+
+  <div class="hero">
+    <img src="mascot.png" alt="โมโมะ">
+    <div class="bubble">
+      <div class="b-ja" id="heroJa">เจนจัง、こんにちは！</div>
+      <div id="heroTh">สวัสดีเจน! วันนี้มาเรียนภาษาญี่ปุ่นกันเถอะ โมโมะอยู่ข้าง ๆ เสมอ</div>
+    </div>
+  </div>
+  <div class="stats">
+    <span class="stat" id="statStars">⭐ 0</span>
+    <span class="stat" id="statStreak">🔥 0 วันติดกัน</span>
+    <span class="stat" id="statLevel">🥚 เริ่มต้น</span>
+    <span class="stat" id="statLearned">📚 0/64 วลี</span>
+  </div>
+  <div class="bar"><i id="progBar" style="width:0%"></i></div>
+
+  <main>
+    <section id="view-today"></section>
+    <section id="view-scenes" class="hidden"></section>
+    <section id="view-quiz" class="hidden"></section>
+    <section id="view-talk" class="hidden"></section>
+    <section id="view-grammar" class="hidden"></section>
+  </main>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="เมนูฝึก">
+  <button type="button" data-view="today" class="on"><span class="ic">📅</span>วันนี้</button>
+  <button type="button" data-view="scenes"><span class="ic">🗂️</span>ฉาก</button>
+  <button type="button" data-view="quiz"><span class="ic">👂</span>เกมฟัง</button>
+  <button type="button" data-view="talk"><span class="ic">💬</span>สนทนา</button>
+  <button type="button" data-view="grammar"><span class="ic">🧩</span>ไวยากรณ์</button>
+</nav>
+
+<div class="cheer" id="cheer">
+  <img src="mascot.png" alt="">
+  <div><div class="c-ja" id="cheerJa"></div><div class="c-th" id="cheerTh"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+/* ===== Data ===== */
+var SCENES = [
+  { name: "ทักทาย・แนะนำตัว", icon: "👋", stamp: "🌸" },
+  { name: "คุยเล่น・ถามสารทุกข์สุกดิบ", icon: "☕", stamp: "🍵" },
+  { name: "กินข้าวด้วยกัน", icon: "🍰", stamp: "🍓" },
+  { name: "ช้อปปิ้ง", icon: "🛍️", stamp: "🎁" },
+  { name: "ชวนเที่ยว・นัดเจอ", icon: "🎡", stamp: "🎠" },
+  { name: "ความรู้สึก・ความคิดเห็น", icon: "💭", stamp: "💌" },
+  { name: "โทรศัพท์・แชท", icon: "📱", stamp: "📩" },
+  { name: "ขอบคุณ・ขอโทษ・ขอความช่วยเหลือ", icon: "🌷", stamp: "⭐" }
+];
+var PHRASES = [
+  /* 0 greetings */
+  { ja: "こんにちは", romaji: "konnichiwa", th: "สวัสดีตอนกลางวัน", note: "ใช้ทักทายตอนกลางวัน" },
+  { ja: "はじめまして", romaji: "hajimemashite", th: "ยินดีที่ได้รู้จัก", note: "พูดครั้งแรกที่เจอกัน" },
+  { ja: "ジェンといいます", romaji: "Jen to iimasu", th: "ฉันชื่อเจนค่ะ", note: "แนะนำชื่อตัวเอง แบบสุภาพนิดหน่อย" },
+  { ja: "タイから来ました", romaji: "Tai kara kimashita", th: "มาจากประเทศไทยค่ะ", note: "บอกว่ามาจากไทย" },
+  { ja: "よろしくお願いします", romaji: "yoroshiku onegaishimasu", th: "ฝากเนื้อฝากตัวด้วยนะคะ", note: "ปิดท้ายการแนะนำตัวเสมอ" },
+  { ja: "お元気ですか", romaji: "o-genki desu ka", th: "สบายดีไหมคะ", note: "ถามสารทุกข์สุกดิบ" },
+  { ja: "久しぶりです", romaji: "hisashiburi desu", th: "ไม่ได้เจอกันนานเลยนะคะ", note: "เจอเพื่อนที่ไม่ได้เจอนาน" },
+  { ja: "また会いましょう", romaji: "mata aimashō", th: "แล้วเจอกันอีกนะคะ", note: "พูดตอนแยกกัน" },
+  /* 1 small talk */
+  { ja: "最近どうですか", romaji: "saikin dō desu ka", th: "ช่วงนี้เป็นยังไงบ้างคะ", note: "ประโยคเปิดบทสนทนา" },
+  { ja: "今日は暑いですね", romaji: "kyō wa atsui desu ne", th: "วันนี้ร้อนเนอะ", note: "คุยเรื่องอากาศ คนญี่ปุ่นนิยมมาก" },
+  { ja: "いい天気ですね", romaji: "ii tenki desu ne", th: "อากาศดีจังเลยนะคะ", note: "ชวนคุยเบา ๆ" },
+  { ja: "週末は何をしましたか", romaji: "shūmatsu wa nani o shimashita ka", th: "สุดสัปดาห์ทำอะไรบ้างคะ", note: "ถามเรื่องวันหยุด" },
+  { ja: "仕事は忙しいですか", romaji: "shigoto wa isogashii desu ka", th: "งานยุ่งไหมคะ", note: "ถามเรื่องงาน" },
+  { ja: "本当ですか", romaji: "hontō desu ka", th: "จริงเหรอคะ", note: "แสดงความสนใจตอนฟัง" },
+  { ja: "すごいですね", romaji: "sugoi desu ne", th: "เก่งจัง / สุดยอดเลย", note: "คำชมที่ใช้บ่อยมาก" },
+  { ja: "それはよかったですね", romaji: "sore wa yokatta desu ne", th: "ดีจังเลยนะคะ", note: "ตอบรับเรื่องดี ๆ ของเพื่อน" },
+  /* 2 eating */
+  { ja: "いただきます", romaji: "itadakimasu", th: "จะทานแล้วนะคะ (พูดก่อนกินข้าว)", note: "พูดก่อนเริ่มกินเสมอ" },
+  { ja: "おいしいです", romaji: "oishii desu", th: "อร่อยมากค่ะ", note: "ชมอาหาร" },
+  { ja: "辛いのが好きです", romaji: "karai no ga suki desu", th: "ชอบกินเผ็ดค่ะ", note: "บอกรสชาติที่ชอบ" },
+  { ja: "何がおすすめですか", romaji: "nani ga osusume desu ka", th: "มีอะไรแนะนำบ้างคะ", note: "ถามเมนูแนะนำที่ร้าน" },
+  { ja: "もう少し食べますか", romaji: "mō sukoshi tabemasu ka", th: "ทานอีกหน่อยไหมคะ", note: "ชวนเพื่อนกินเพิ่ม" },
+  { ja: "お腹いっぱいです", romaji: "onaka ippai desu", th: "อิ่มแล้วค่ะ", note: "ตอนกินไม่ไหวแล้ว" },
+  { ja: "ごちそうさまでした", romaji: "gochisōsama deshita", th: "ขอบคุณสำหรับอาหารค่ะ (พูดหลังกิน)", note: "พูดหลังทานเสร็จ" },
+  { ja: "乾杯", romaji: "kanpai", th: "ชนแก้ว!", note: "ตอนดื่มฉลองกับเพื่อน" },
+  /* 3 shopping */
+  { ja: "いくらですか", romaji: "ikura desu ka", th: "อันนี้เท่าไหร่คะ", note: "ถามราคา" },
+  { ja: "高いですね", romaji: "takai desu ne", th: "แพงจังเลยนะคะ", note: "พูดตอนเห็นราคา" },
+  { ja: "安いですね", romaji: "yasui desu ne", th: "ถูกจังเลยค่ะ", note: "ตรงข้ามกับแพง" },
+  { ja: "見ているだけです", romaji: "mite iru dake desu", th: "ขอดูเฉย ๆ ค่ะ", note: "ตอบพนักงานที่ร้าน" },
+  { ja: "これをください", romaji: "kore o kudasai", th: "เอาอันนี้ค่ะ", note: "ตอนตัดสินใจซื้อ" },
+  { ja: "試着できますか", romaji: "shichaku dekimasu ka", th: "ลองใส่ได้ไหมคะ", note: "ขอลองเสื้อผ้า" },
+  { ja: "色違いはありますか", romaji: "irochigai wa arimasu ka", th: "มีสีอื่นไหมคะ", note: "ถามหาสีอื่น" },
+  { ja: "袋はいりません", romaji: "fukuro wa irimasen", th: "ไม่ต้องใส่ถุงค่ะ", note: "ปฏิเสธถุงอย่างสุภาพ" },
+  /* 4 plans */
+  { ja: "今週末、暇ですか", romaji: "konshūmatsu, hima desu ka", th: "สุดสัปดาห์นี้ว่างไหมคะ", note: "เปิดเรื่องชวนเที่ยว" },
+  { ja: "一緒に映画を見ませんか", romaji: "issho ni eiga o mimasen ka", th: "ไปดูหนังด้วยกันไหมคะ", note: "ชวนทำกิจกรรม" },
+  { ja: "何時に会いますか", romaji: "nanji ni aimasu ka", th: "เจอกันกี่โมงดีคะ", note: "นัดเวลา" },
+  { ja: "駅で待ち合わせしましょう", romaji: "eki de machiawase shimashō", th: "เจอกันที่สถานีรถไฟนะคะ", note: "นัดจุดเจอกัน" },
+  { ja: "楽しみにしています", romaji: "tanoshimi ni shite imasu", th: "รอคอยเลยค่ะ ตื่นเต้น!", note: "แสดงความตื่นเต้นก่อนถึงวันนัด" },
+  { ja: "遅れてすみません", romaji: "okurete sumimasen", th: "ขอโทษที่มาสายค่ะ", note: "ขอโทษตอนไปสาย" },
+  { ja: "また誘ってください", romaji: "mata sasotte kudasai", th: "ชวนอีกนะคะ", note: "ปิดท้ายวันสนุก ๆ" },
+  { ja: "行きましょう", romaji: "ikimashō", th: "ไปกันเถอะ", note: "ชวนออกเดินทาง" },
+  /* 5 feelings */
+  { ja: "うれしいです", romaji: "ureshii desu", th: "ดีใจจังค่ะ", note: "แสดงความดีใจ" },
+  { ja: "疲れました", romaji: "tsukaremashita", th: "เหนื่อยจังค่ะ", note: "บ่นเหนื่อยเบา ๆ" },
+  { ja: "ちょっと難しいです", romaji: "chotto muzukashii desu", th: "ยากนิดหน่อยค่ะ", note: "ยอมรับว่ายากอย่างนุ่มนวล" },
+  { ja: "大丈夫です", romaji: "daijōbu desu", th: "ไม่เป็นไรค่ะ", note: "คำสารพัดประโยชน์ ใช้ได้หลายสถานการณ์" },
+  { ja: "そう思います", romaji: "sō omoimasu", th: "ฉันก็คิดแบบนั้นค่ะ", note: "เห็นด้วยกับความเห็นของเพื่อน" },
+  { ja: "なるほど", romaji: "naruhodo", th: "อ๋อ เข้าใจแล้วค่ะ", note: "ตอบรับเวลารู้เรื่องใหม่" },
+  { ja: "わかります", romaji: "wakarimasu", th: "เข้าใจค่ะ", note: "บอกว่าเข้าใจ" },
+  { ja: "心配しないでください", romaji: "shinpai shinaide kudasai", th: "ไม่ต้องเป็นห่วงนะคะ", note: "ปลอบเพื่อน" },
+  /* 6 phone/chat */
+  { ja: "もしもし", romaji: "moshi moshi", th: "ฮัลโหล (ตอนรับโทรศัพท์)", note: "ใช้เฉพาะตอนคุยโทรศัพท์" },
+  { ja: "LINEを交換しませんか", romaji: "LINE o kōkan shimasen ka", th: "แลกไลน์กันไหมคะ", note: "ชวนแลกไลน์กับเพื่อนใหม่" },
+  { ja: "写真を送りますね", romaji: "shashin o okurimasu ne", th: "เดี๋ยวส่งรูปให้นะคะ", note: "บอกก่อนส่งรูป" },
+  { ja: "あとで電話します", romaji: "ato de denwa shimasu", th: "เดี๋ยวโทรหานะคะ", note: "สัญญาว่าจะโทรภายหลัง" },
+  { ja: "今、忙しいです", romaji: "ima, isogashii desu", th: "ตอนนี้ยุ่งอยู่ค่ะ", note: "บอกว่ายังไม่ว่าง" },
+  { ja: "ごめん、今は話せません", romaji: "gomen, ima wa hanasemasen", th: "โทษที ตอนนี้คุยไม่ได้ค่ะ", note: "ปฏิเสธอย่างนุ่มนวล" },
+  { ja: "メッセージありがとう", romaji: "messēji arigatō", th: "ขอบคุณสำหรับข้อความนะคะ", note: "ตอบแชทเพื่อน" },
+  { ja: "了解です", romaji: "ryōkai desu", th: "รับทราบค่ะ", note: "ตอบรับสั้น ๆ แบบเป็นกันเอง" },
+  /* 7 thanks/help */
+  { ja: "ありがとうございます", romaji: "arigatō gozaimasu", th: "ขอบคุณมากค่ะ", note: "ขอบคุณแบบสุภาพ" },
+  { ja: "助かりました", romaji: "tasukarimashita", th: "ช่วยได้มากเลยค่ะ", note: "ขอบคุณคนที่ช่วยเหลือ" },
+  { ja: "すみません", romaji: "sumimasen", th: "ขอโทษค่ะ / ขออนุญาตค่ะ", note: "ใช้เรียกพนักงานก็ได้" },
+  { ja: "ごめんなさい", romaji: "gomen nasai", th: "ขอโทษจริง ๆ ค่ะ", note: "ขอโทษแบบจริงใจ" },
+  { ja: "わかりません", romaji: "wakarimasen", th: "ไม่เข้าใจค่ะ / ไม่รู้ค่ะ", note: "บอกว่าไม่เข้าใจ" },
+  { ja: "ゆっくり話してください", romaji: "yukkuri hanashite kudasai", th: "ช่วยพูดช้า ๆ หน่อยได้ไหมคะ", note: "ขอให้พูดช้าลง" },
+  { ja: "もう一度お願いします", romaji: "mō ichido onegaishimasu", th: "ขออีกครั้งได้ไหมคะ", note: "ขอให้พูดซ้ำ" },
+  { ja: "日本語を勉強中です", romaji: "nihongo o benkyō-chū desu", th: "กำลังเรียนภาษาญี่ปุ่นอยู่ค่ะ", note: "พูดประโยคนี้ คนญี่ปุ่นจะใจดีขึ้นทันที" }
+];
+PHRASES.forEach(function (p, i) { p.id = "p" + (i + 1); p.scene = Math.floor(i / 8); });
+var BY_ID = {};
+PHRASES.forEach(function (p) { BY_ID[p.id] = p; });
+</script>
+<script>
+"use strict";
+/* ===== Dialogues ===== */
+var DIALOGUES = [
+  { title: "はじめまして", sub: "แนะนำตัวกับเพื่อนใหม่", turns: [
+    { w: "p", ja: "こんにちは！", romaji: "konnichiwa!", th: "สวัสดี!" },
+    { w: "u", ja: "こんにちは。はじめまして", romaji: "konnichiwa. hajimemashite", th: "สวัสดีค่ะ ยินดีที่ได้รู้จัก" },
+    { w: "p", ja: "私は ゆきです。お名前は？", romaji: "watashi wa Yuki desu. onamae wa?", th: "ฉันชื่อยูกิ ชื่ออะไรคะ" },
+    { w: "u", ja: "ジェンといいます", romaji: "Jen to iimasu", th: "ฉันชื่อเจนค่ะ" },
+    { w: "p", ja: "どちらから来ましたか", romaji: "dochira kara kimashita ka", th: "มาจากที่ไหนคะ" },
+    { w: "u", ja: "タイから来ました", romaji: "Tai kara kimashita", th: "มาจากประเทศไทยค่ะ" },
+    { w: "p", ja: "そうですか！よろしくお願いします", romaji: "sō desu ka! yoroshiku onegaishimasu", th: "เหรอคะ! ยินดีที่ได้รู้จักนะ" },
+    { w: "u", ja: "よろしくお願いします", romaji: "yoroshiku onegaishimasu", th: "ยินดีที่ได้รู้จักเช่นกันค่ะ" }
+  ]},
+  { title: "カフェで", sub: "กินเค้กที่คาเฟ่กับเพื่อน", turns: [
+    { w: "p", ja: "このケーキ、おいしいよ", romaji: "kono kēki, oishii yo", th: "เค้กนี้อร่อยนะ" },
+    { w: "u", ja: "本当ですか。いただきます", romaji: "hontō desu ka. itadakimasu", th: "จริงเหรอคะ จะทานแล้วนะคะ" },
+    { w: "p", ja: "どう？", romaji: "dō?", th: "เป็นไงบ้าง" },
+    { w: "u", ja: "おいしいです！", romaji: "oishii desu!", th: "อร่อยมากค่ะ!" },
+    { w: "p", ja: "もう少し食べる？", romaji: "mō sukoshi taberu?", th: "ทานอีกหน่อยไหม" },
+    { w: "u", ja: "お腹いっぱいです。ごちそうさまでした", romaji: "onaka ippai desu. gochisōsama deshita", th: "อิ่มแล้วค่ะ ขอบคุณสำหรับอาหารนะคะ" }
+  ]},
+  { title: "買い物", sub: "ช้อปปิ้งเสื้อผ้ากับเพื่อน", turns: [
+    { w: "p", ja: "この服、かわいいね", romaji: "kono fuku, kawaii ne", th: "เสื้อตัวนี้น่ารักเนอะ" },
+    { w: "u", ja: "試着できますか", romaji: "shichaku dekimasu ka", th: "ลองใส่ได้ไหมคะ (ถามพนักงาน)" },
+    { w: "p", ja: "わあ、似合うよ！", romaji: "wā, niau yo!", th: "ว้าว เข้ากับเจนมากเลย!" },
+    { w: "u", ja: "ありがとうございます。これをください", romaji: "arigatō gozaimasu. kore o kudasai", th: "ขอบคุณค่ะ เอาอันนี้ค่ะ" }
+  ]},
+  { title: "約束", sub: "นัดเพื่อนไปดูหนัง", turns: [
+    { w: "p", ja: "今週末、暇？", romaji: "konshūmatsu, hima?", th: "สุดสัปดาห์นี้ว่างไหม" },
+    { w: "u", ja: "暇です", romaji: "hima desu", th: "ว่างค่ะ" },
+    { w: "p", ja: "一緒に映画を見ませんか", romaji: "issho ni eiga o mimasen ka", th: "ไปดูหนังด้วยกันไหม" },
+    { w: "u", ja: "いいですね。行きましょう", romaji: "ii desu ne. ikimashō", th: "ดีเลยค่ะ ไปกันเถอะ" },
+    { w: "p", ja: "何時に会いますか", romaji: "nanji ni aimasu ka", th: "เจอกันกี่โมงดี" },
+    { w: "u", ja: "二時に駅で会いましょう", romaji: "niji ni eki de aimashō", th: "เจอกันที่สถานีตอนบ่ายสองนะคะ" },
+    { w: "p", ja: "楽しみにしています！", romaji: "tanoshimi ni shite imasu!", th: "รอเลย!" }
+  ]},
+  { title: "久しぶり", sub: "เจอเพื่อนที่ไม่ได้เจอนาน", turns: [
+    { w: "p", ja: "久しぶり！元気？", romaji: "hisashiburi! genki?", th: "ไม่ได้เจอนานเลย! สบายดีไหม" },
+    { w: "u", ja: "元気です。最近どうですか", romaji: "genki desu. saikin dō desu ka", th: "สบายดีค่ะ ช่วงนี้เป็นยังไงบ้างคะ" },
+    { w: "p", ja: "仕事が忙しいけど、楽しいよ", romaji: "shigoto ga isogashii kedo, tanoshii yo", th: "งานยุ่ง แต่สนุกดี" },
+    { w: "u", ja: "それはよかったですね", romaji: "sore wa yokatta desu ne", th: "ดีจังเลยนะคะ" },
+    { w: "p", ja: "また会いましょう", romaji: "mata aimashō", th: "แล้วเจอกันอีกนะ" },
+    { w: "u", ja: "また誘ってください", romaji: "mata sasotte kudasai", th: "ชวนอีกนะคะ" }
+  ]}
+];
+/* ===== Grammar patterns ===== */
+var PATTERNS = [
+  { title: "อยาก… 〜たいです", form: "กริยารูป ます ตัด ます + たいです", ex: [
+    { ja: "日本へ行きたいです", romaji: "Nihon e ikitai desu", th: "อยากไปญี่ปุ่น" },
+    { ja: "寿司を食べたいです", romaji: "sushi o tabetai desu", th: "อยากกินซูชิ" }],
+    drill: { th: "อยากดื่มกาแฟ", ja: "コーヒーを飲みたいです", romaji: "kōhī o nomitai desu" } },
+  { title: "ช่วย…หน่อย 〜てください", form: "กริยารูป て + ください", ex: [
+    { ja: "ゆっくり話してください", romaji: "yukkuri hanashite kudasai", th: "ช่วยพูดช้า ๆ หน่อยค่ะ" },
+    { ja: "ここに名前を書いてください", romaji: "koko ni namae o kaite kudasai", th: "ช่วยเขียนชื่อตรงนี้หน่อยค่ะ" }],
+    drill: { th: "ช่วยรอหน่อยค่ะ", ja: "待ってください", romaji: "matte kudasai" } },
+  { title: "ขอ…ได้ไหม 〜てもいいですか", form: "กริยารูป て + もいいですか", ex: [
+    { ja: "写真を撮ってもいいですか", romaji: "shashin o totte mo ii desu ka", th: "ถ่ายรูปได้ไหมคะ" },
+    { ja: "ここに座ってもいいですか", romaji: "koko ni suwatte mo ii desu ka", th: "นั่งตรงนี้ได้ไหมคะ" }],
+    drill: { th: "เปิดหน้าต่างได้ไหมคะ", ja: "窓を開けてもいいですか", romaji: "mado o akete mo ii desu ka" } },
+  { title: "ชวน…กันเถอะ 〜ましょう", form: "กริยารูป ます ตัด ます + ましょう", ex: [
+    { ja: "一緒に帰りましょう", romaji: "issho ni kaerimashō", th: "กลับด้วยกันเถอะ" },
+    { ja: "少し休みましょう", romaji: "sukoshi yasumimashō", th: "พักกันหน่อยเถอะ" }],
+    drill: { th: "ไปกินข้าวกันเถอะ", ja: "ご飯を食べましょう", romaji: "gohan o tabemashō" } },
+  { title: "ชอบ… 〜が好きです", form: "คำนาม + が好きです", ex: [
+    { ja: "猫が好きです", romaji: "neko ga suki desu", th: "ชอบแมว" },
+    { ja: "辛い食べ物が好きです", romaji: "karai tabemono ga suki desu", th: "ชอบอาหารเผ็ด" }],
+    drill: { th: "ชอบเพลงญี่ปุ่น", ja: "日本の歌が好きです", romaji: "Nihon no uta ga suki desu" } },
+  { title: "ไป… 〜へ行きます", form: "สถานที่ + へ行きます", ex: [
+    { ja: "明日、学校へ行きます", romaji: "ashita, gakkō e ikimasu", th: "พรุ่งนี้ไปโรงเรียน" },
+    { ja: "友達の家へ行きます", romaji: "tomodachi no ie e ikimasu", th: "ไปบ้านเพื่อน" }],
+    drill: { th: "วันนี้ไปตลาด", ja: "今日、市場へ行きます", romaji: "kyō, ichiba e ikimasu" } },
+  { title: "อดีต 〜ました", form: "กริยารูป ます เปลี่ยนเป็น ました = ทำไปแล้ว", ex: [
+    { ja: "昨日、買いました", romaji: "kinō, kaimashita", th: "เมื่อวานซื้อแล้ว" },
+    { ja: "友達に会いました", romaji: "tomodachi ni aimashita", th: "เจอเพื่อนมาแล้ว" }],
+    drill: { th: "เมื่อวานกินแล้ว", ja: "昨日、食べました", romaji: "kinō, tabemashita" } },
+  { title: "ปฏิเสธ 〜ません", form: "กริยารูป ます เปลี่ยนเป็น ません = ไม่…", ex: [
+    { ja: "わかりません", romaji: "wakarimasen", th: "ไม่เข้าใจ / ไม่รู้" },
+    { ja: "今日は行きません", romaji: "kyō wa ikimasen", th: "วันนี้ไม่ไป" }],
+    drill: { th: "ไม่กิน", ja: "食べません", romaji: "tabemasen" } },
+  { title: "เพราะว่า… 〜から", form: "ประโยคเหตุผล + から + ประโยคผลลัพธ์", ex: [
+    { ja: "疲れましたから、休みます", romaji: "tsukaremashita kara, yasumimasu", th: "เพราะเหนื่อย จะพักค่ะ" },
+    { ja: "安いですから、買います", romaji: "yasui desu kara, kaimasu", th: "เพราะถูก จะซื้อค่ะ" }],
+    drill: { th: "เพราะอร่อย จะกินอีกหน่อย", ja: "おいしいですから、もう少し食べます", romaji: "oishii desu kara, mō sukoshi tabemasu" } },
+  { title: "คำถาม อะไร・ที่ไหน・เมื่อไหร่", form: "何 (อะไร) ・ どこ (ที่ไหน) ・ いつ (เมื่อไหร่) + か", ex: [
+    { ja: "これは何ですか", romaji: "kore wa nan desu ka", th: "นี่คืออะไรคะ" },
+    { ja: "トイレはどこですか", romaji: "toire wa doko desu ka", th: "ห้องน้ำอยู่ที่ไหนคะ" },
+    { ja: "いつ行きますか", romaji: "itsu ikimasu ka", th: "ไปเมื่อไหร่คะ" }],
+    drill: { th: "อันนั้นคืออะไรคะ", ja: "あれは何ですか", romaji: "are wa nan desu ka" } }
+];
+/* ===== Praise & hero lines ===== */
+var PRAISES = [
+  { ja: "すごい！", th: "เก่งมากเลย เจน!" },
+  { ja: "やったね！", th: "ทำได้แล้ว!" },
+  { ja: "完璧！", th: "เป๊ะเลย ไม่มีที่ติ!" },
+  { ja: "その調子！", th: "ดีมาก ไปต่อแบบนี้เลย!" },
+  { ja: "上手になったね！", th: "เก่งขึ้นทุกวันเลยนะ" },
+  { ja: "発音がきれい！", th: "ออกเสียงเพราะมาก!" },
+  { ja: "がんばったね！", th: "พยายามได้ดีมากเลย!" },
+  { ja: "さすがジェン！", th: "สมกับเป็นเจนเลย!" },
+  { ja: "もう覚えたの？早い！", th: "จำได้แล้วเหรอ เร็วมาก!" },
+  { ja: "楽しいね！", th: "เรียนกับโมโมะสนุกเนอะ!" }
+];
+var HERO_LINES = [
+  { ja: "เจนจัง、こんにちは！", th: "สวัสดีเจน! วันนี้มาเรียนภาษาญี่ปุ่นกันเถอะ โมโมะอยู่ข้าง ๆ เสมอ" },
+  { ja: "今日もがんばろう！", th: "วันนี้ก็สู้ ๆ นะ เรียนวันละนิด เดี๋ยวก็พูดคล่อง" },
+  { ja: "เจนならできる！", th: "เจนทำได้แน่นอน โมโมะเชื่อแบบนั้น" },
+  { ja: "少しずつ上手になってるよ", th: "เจนเก่งขึ้นทีละนิดทุกวันเลย โมโมะเห็นนะ" }
+];
+var LEVELS = [
+  { min: 0, label: "🥚 เริ่มต้น" }, { min: 15, label: "🌱 มือใหม่" },
+  { min: 40, label: "🌷 กำลังเก่ง" }, { min: 80, label: "🌸 คุยได้แล้ว" },
+  { min: 140, label: "💖 สนทนาคล่อง" }, { min: 220, label: "👑 เซียนสนทนา" }
+];
+/* ===== Store ===== */
+var STORE_KEY = "nihongoForJen.v1";
+var store = { prog: {}, stars: 0, streakLast: "", streakCount: 0, talk: {}, lastDay: "" };
+try { var raw = localStorage.getItem(STORE_KEY); if (raw) store = Object.assign(store, JSON.parse(raw)); } catch (e) {}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {} }
+function todayStr() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+function addDays(str, n) { var d = new Date(str + "T00:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+(function touchStreak() {
+  var t = todayStr();
+  if (store.streakLast !== t) {
+    store.streakCount = (store.streakLast === addDays(t, -1)) ? store.streakCount + 1 : 1;
+    store.streakLast = t; save();
+  }
+})();
+/* ===== Speech (TTS) ===== */
+function speakJa(text, rate, btn) {
+  try {
+    speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "ja-JP"; u.rate = rate || 1;
+    var vs = speechSynthesis.getVoices().filter(function (v) { return v.lang && v.lang.indexOf("ja") === 0; });
+    if (vs.length) u.voice = vs[0];
+    if (btn) { btn.classList.add("playing"); u.onend = u.onerror = function () { btn.classList.remove("playing"); }; }
+    speechSynthesis.speak(u);
+  } catch (e) { toast("เครื่องนี้เล่นเสียงไม่ได้ค่ะ"); }
+}
+if (window.speechSynthesis) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function () {}; } catch (e) {} }
+/* ===== Speech recognition scoring ===== */
+function normJa(s) {
+  s = (s || "").replace(/[\s。、．，,.!?！？・「」『』（）()〜~\-ー]/g, "");
+  return s.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60); });
+}
+function stripPoliteJa(s) { return s.replace(/(です|ます|ました|ません|ましょう|ください)$/, ""); }
+function levDist(a, b) {
+  var m = a.length, n = b.length, d = [], i, j;
+  for (i = 0; i <= m; i++) { d[i] = [i]; }
+  for (j = 0; j <= n; j++) { d[0][j] = j; }
+  for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) {
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  }
+  return d[m][n];
+}
+function simJa(a, b) { if (!a || !b) return 0; return 1 - levDist(a, b) / Math.max(a.length, b.length); }
+function scoreHeard(heard, target) {
+  var h = normJa(heard), t = normJa(target);
+  return Math.max(simJa(h, t), simJa(stripPoliteJa(h), stripPoliteJa(t)));
+}
+function listenJa(target, btn, cb) {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { cb(null, 0, ""); return false; }
+  var rec = new SR();
+  rec.lang = "ja-JP"; rec.interimResults = false; rec.maxAlternatives = 3;
+  if (btn) { btn.classList.add("mic-live"); btn.textContent = "🎙️ กำลังฟัง…"; }
+  rec.onresult = function (ev) {
+    var best = 0, heardText = "";
+    for (var i = 0; i < ev.results[0].length; i++) {
+      var s = scoreHeard(ev.results[0][i].transcript, target);
+      if (s > best) { best = s; heardText = ev.results[0][i].transcript; }
+    }
+    cb(best, heardText);
+  };
+  rec.onerror = function () { cb(null, 0, ""); };
+  rec.onend = function () { if (btn) { btn.classList.remove("mic-live"); btn.textContent = "🎤 พูดเลย"; } };
+  try { rec.start(); } catch (e) { cb(null, 0, ""); return false; }
+  return true;
+}
+/* ===== Cheer & hearts ===== */
+var lastPraise = -1, cheerTimer = null;
+function hearts(n) {
+  var emojis = ["💖", "✨", "🌸", "⭐"];
+  for (var i = 0; i < (n || 5); i++) {
+    var s = document.createElement("span");
+    s.className = "heart"; s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    s.style.left = (15 + Math.random() * 70) + "vw"; s.style.top = (55 + Math.random() * 20) + "vh";
+    s.style.animationDelay = (Math.random() * 0.3) + "s";
+    document.body.appendChild(s);
+    setTimeout(function (el) { el.remove(); }, 2000, s);
+  }
+}
+function cheer(big) {
+  var i; do { i = Math.floor(Math.random() * PRAISES.length); } while (i === lastPraise);
+  lastPraise = i;
+  document.getElementById("cheerJa").textContent = PRAISES[i].ja;
+  document.getElementById("cheerTh").textContent = PRAISES[i].th;
+  var el = document.getElementById("cheer");
+  el.classList.add("show");
+  clearTimeout(cheerTimer);
+  cheerTimer = setTimeout(function () { el.classList.remove("show"); }, 2300);
+  hearts(big ? 9 : 4);
+}
+function toast(msg) {
+  var t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(function () { t.classList.remove("show"); }, 2200);
+}
+function addStars(n) {
+  var before = levelOf(store.stars), after = levelOf(store.stars + n);
+  store.stars += n; save(); updateStats();
+  if (after !== before) { setTimeout(function () { toast("เลเวลอัพ! " + LEVELS[after].label); hearts(10); }, 300); }
+}
+function levelOf(stars) { var lv = 0; LEVELS.forEach(function (l, i) { if (stars >= l.min) lv = i; }); return lv; }
+function learnedCount() { var n = 0; PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.box >= 2) n++; }); return n; }
+function updateStats() {
+  document.getElementById("statStars").textContent = "⭐ " + store.stars;
+  document.getElementById("statStreak").textContent = "🔥 " + store.streakCount + " วันติดกัน";
+  document.getElementById("statLevel").textContent = LEVELS[levelOf(store.stars)].label;
+  var learned = learnedCount();
+  document.getElementById("statLearned").textContent = "📚 " + learned + "/64 วลี";
+  document.getElementById("progBar").style.width = Math.round(learned / 64 * 100) + "%";
+}
+function playBtns(p) {
+  return '<div class="row" style="margin-top:8px">' +
+    '<button type="button" class="btn primary" data-say="' + p.ja + '">🔊 ฟัง</button>' +
+    '<button type="button" class="btn" data-say-slow="' + p.ja + '">🐢 ฟังช้า ๆ</button></div>';
+}
+function phraseCardHTML(p, badge) {
+  return '<div class="card"><div class="row" style="justify-content:space-between"><span class="note" style="margin:0">' + (badge || "") + '</span></div>' +
+    '<div class="ja">' + p.ja + '</div><div class="romaji">' + p.romaji + '</div>' +
+    '<div class="th">' + p.th + '</div><div class="note">' + p.note + '</div>' + playBtns(p) + '</div>';
+}
+document.addEventListener("click", function (ev) {
+  var b = ev.target.closest("[data-say],[data-say-slow]");
+  if (!b) return;
+  if (b.hasAttribute("data-say")) speakJa(b.getAttribute("data-say"), 1, b);
+  else speakJa(b.getAttribute("data-say-slow"), 0.6, b);
+});
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+</script>
+<script>
+"use strict";
+/* ===== Views ===== */
+var INTERVALS = [0, 1, 3, 7, 14, 30];
+function switchView(name) {
+  ["today", "scenes", "quiz", "talk", "grammar"].forEach(function (v) {
+    document.getElementById("view-" + v).classList.toggle("hidden", v !== name);
+  });
+  document.querySelectorAll("nav.tabs button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-view") === name); });
+  if (name === "today") renderToday();
+  if (name === "scenes") renderScenes();
+  if (name === "quiz") renderQuizStart();
+  if (name === "talk") renderTalkList();
+  if (name === "grammar") renderGrammar();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("nav.tabs button").forEach(function (b) {
+  b.addEventListener("click", function () { switchView(b.getAttribute("data-view")); });
+});
+/* ----- Today ----- */
+var session = null;
+function buildQueue(extra) {
+  var t = todayStr();
+  if (extra) return shuffle(PHRASES.slice()).slice(0, 5).map(function (p) { return p.id; });
+  var due = PHRASES.filter(function (p) { var r = store.prog[p.id]; return r && r.due <= t; })
+    .sort(function (a, b) { return store.prog[a.id].due < store.prog[b.id].due ? -1 : 1; });
+  var fresh = PHRASES.filter(function (p) { return !store.prog[p.id]; });
+  var q = due.concat(fresh).slice(0, 8).map(function (p) { return p.id; });
+  return q;
+}
+function renderToday() {
+  var el = document.getElementById("view-today");
+  if (!session) session = { queue: buildQueue(false), idx: 0, earned: 0 };
+  if (session.idx >= session.queue.length) {
+    el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">🎉</div>' +
+      '<h3>วันนี้ครบแล้ว! เก่งมากเจน</h3><p class="note">ฝึกครบตามแผนวันนี้แล้วค่ะ พักผ่อนได้เลย หรือจะฝึกเพิ่มอีกนิดก็ได้นะ</p>' +
+      '<p>⭐ ที่ได้รอบนี้: <b>' + session.earned + '</b></p>' +
+      '<div class="row" style="justify-content:center"><button type="button" class="btn primary" id="extraBtn">ฝึกเพิ่ม 5 วลี</button>' +
+      '<button type="button" class="btn" id="toScenes">ดูฉากทั้งหมด</button></div></div>';
+    document.getElementById("extraBtn").addEventListener("click", function () { session = { queue: buildQueue(true), idx: 0, earned: 0 }; renderToday(); });
+    document.getElementById("toScenes").addEventListener("click", function () { switchView("scenes"); });
+    return;
+  }
+  var p = BY_ID[session.queue[session.idx]];
+  var r = store.prog[p.id];
+  var dots = session.queue.map(function (q, i) { return '<i class="' + (i < session.idx ? "done" : i === session.idx ? "now" : "") + '"></i>'; }).join("");
+  el.innerHTML = '<div class="dots">' + dots + '</div>' +
+    '<div class="note">วลีที่ ' + (session.idx + 1) + ' / ' + session.queue.length + ' ・ ' + SCENES[p.scene].icon + ' ' + SCENES[p.scene].name + (r ? ' ・ ทบทวน' : ' ・ วลีใหม่') + '</div>' +
+    phraseCardHTML(p) +
+    '<div class="card"><h3>จำได้ไหม?</h3><div class="row">' +
+    '<button type="button" class="btn good" id="judgeGood">💪 จำได้แล้ว</button>' +
+    '<button type="button" class="btn" id="judgeAgain">🔁 ขอดูอีกครั้ง</button></div>' +
+    '<p class="note">กดฟังแล้วพูดตามหลาย ๆ รอบก่อนตอบก็ได้นะ ไม่ต้องรีบ</p></div>';
+  speakJa(p.ja, 1, null);
+  document.getElementById("judgeGood").addEventListener("click", function () { judge(p, true); });
+  document.getElementById("judgeAgain").addEventListener("click", function () { judge(p, false); });
+}
+function judge(p, good) {
+  var t = todayStr();
+  var r = store.prog[p.id] || { box: 0, due: t };
+  if (good) {
+    r.box = Math.min(r.box + 1, 5);
+    r.due = addDays(t, INTERVALS[r.box]);
+    session.earned += 1; addStars(1); cheer(false);
+  } else {
+    r.box = 0; r.due = addDays(t, 1);
+    toast("ไม่เป็นไร เดี๋ยวพรุ่งนี้เจอกันใหม่นะ");
+  }
+  store.prog[p.id] = r; save(); updateStats();
+  session.idx++;
+  setTimeout(renderToday, good ? 500 : 150);
+}
+/* ----- Scenes & stamps ----- */
+function sceneDone(si) {
+  return PHRASES.filter(function (p) { return p.scene === si; }).every(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; });
+}
+function renderScenes() {
+  var el = document.getElementById("view-scenes");
+  var stamps = SCENES.map(function (s, si) {
+    return '<div class="stamp' + (sceneDone(si) ? " got" : "") + '" title="' + s.name + '">' + s.stamp + '</div>';
+  }).join("");
+  var html = '<div class="card"><h3>🏅 แสตมป์สะสมของเจน</h3><div class="stamps">' + stamps + '</div>' +
+    '<p class="note">จำครบทั้งฉาก (ทบทวนผ่าน 2 รอบขึ้นไป) จะได้แสตมป์ของฉากนั้น สะสมให้ครบ 8 อันเลยนะ!</p></div>';
+  SCENES.forEach(function (s, si) {
+    var list = PHRASES.filter(function (p) { return p.scene === si; });
+    var done = list.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
+    html += '<div class="scene-head"><h3>' + s.icon + ' ' + s.name + '</h3><span>' + done + '/8</span></div>';
+    list.forEach(function (p) {
+      var r = store.prog[p.id];
+      html += '<div class="card"><div class="ja sm">' + p.ja + (r && r.box >= 2 ? ' <span style="font-size:14px">💮</span>' : '') + '</div>' +
+        '<div class="romaji">' + p.romaji + '</div><div class="th">' + p.th + '</div>' +
+        '<div class="note">' + p.note + '</div>' + playBtns(p) + '</div>';
+    });
+  });
+  el.innerHTML = html;
+}
+/* ----- Listening game ----- */
+var quiz = null;
+function renderQuizStart() {
+  var el = document.getElementById("view-quiz");
+  el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">👂🎵</div>' +
+    '<h3>เกมฟังเสียง</h3><p class="note">ฟังประโยคภาษาญี่ปุ่น แล้วเลือกความหมายที่ถูก มีทั้งหมด 10 ข้อ<br>ตอบถูกได้ ⭐ +1 พร้อมคำชมจากโมโมะ</p>' +
+    '<button type="button" class="btn primary" id="quizStart">เริ่มเกม</button>' +
+    '<p class="note">เปิดเสียงไว้ด้วยนะคะ</p></div>';
+  document.getElementById("quizStart").addEventListener("click", function () {
+    quiz = { ids: shuffle(PHRASES.slice()).slice(0, 10).map(function (p) { return p.id; }), idx: 0, score: 0, answered: false };
+    renderQuiz();
+  });
+}
+function renderQuiz() {
+  var el = document.getElementById("view-quiz");
+  if (quiz.idx >= quiz.ids.length) {
+    el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">' + (quiz.score >= 8 ? "🏆" : "🌷") + '</div>' +
+      '<h3>จบเกม! ได้ ' + quiz.score + ' / 10 คะแนน</h3>' +
+      '<p class="note">' + (quiz.score >= 8 ? "หูดีมาก! ฟังเก่งขึ้นเยอะเลย" : "เก่งมากแล้ว ฝึกอีกนิดหูจะยิ่งไวขึ้น") + '</p>' +
+      '<button type="button" class="btn primary" id="quizAgain">เล่นอีกครั้ง</button></div>';
+    if (quiz.score >= 5) cheer(true);
+    document.getElementById("quizAgain").addEventListener("click", renderQuizStart);
+    return;
+  }
+  var p = BY_ID[quiz.ids[quiz.idx]];
+  var others = shuffle(PHRASES.filter(function (q) { return q.id !== p.id; })).slice(0, 3);
+  var choices = shuffle([p].concat(others));
+  el.innerHTML = '<div class="note">ข้อ ' + (quiz.idx + 1) + ' / 10 ・ คะแนน ' + quiz.score + '</div>' +
+    '<div class="card" style="text-align:center"><div style="font-size:34px">🎧</div>' +
+    '<div class="row" style="justify-content:center;margin-top:6px"><button type="button" class="btn primary" id="qPlay">🔊 ฟังเสียง</button>' +
+    '<button type="button" class="btn" id="qPlaySlow">🐢 ช้า ๆ</button></div>' +
+    '<p class="note">ประโยคนี้แปลว่าอะไรนะ?</p>' +
+    '<div class="choices">' + choices.map(function (c) { return '<button type="button" data-choice="' + c.id + '">' + c.th + '</button>'; }).join("") + '</div></div>';
+  speakJa(p.ja, 1, null);
+  document.getElementById("qPlay").addEventListener("click", function () { speakJa(p.ja, 1, this); });
+  document.getElementById("qPlaySlow").addEventListener("click", function () { speakJa(p.ja, 0.6, this); });
+  el.querySelectorAll("[data-choice]").forEach(function (b) {
+    b.addEventListener("click", function () { answerQuiz(b, p); });
+  });
+}
+function answerQuiz(btn, p) {
+  if (quiz.answered) return;
+  quiz.answered = true;
+  var right = btn.getAttribute("data-choice") === p.id;
+  document.querySelectorAll("#view-quiz [data-choice]").forEach(function (b) {
+    if (b.getAttribute("data-choice") === p.id) b.classList.add("right");
+    else if (b === btn) b.classList.add("wrong");
+    b.disabled = true;
+  });
+  if (right) { quiz.score++; addStars(1); cheer(false); }
+  else toast("เกือบแล้ว! คำตอบคือ: " + p.th);
+  setTimeout(function () { quiz.idx++; quiz.answered = false; renderQuiz(); }, 2100);
+}
+/* ----- Conversation ----- */
+var talk = null;
+function renderTalkList() {
+  talk = null;
+  var el = document.getElementById("view-talk");
+  var html = '<div class="card"><h3>💬 ฝึกสนทนากับเพื่อนญี่ปุ่น</h3>' +
+    '<p class="note">เพื่อนจะพูดก่อน พอถึงตาเจน ให้กดปุ่มไมค์แล้วพูดภาษาญี่ปุ่นตามเลย<br>เครื่องจะฟังและบอกว่าพูดรู้เรื่องไหม (ต้องใช้เน็ต และ Safari บน iPhone)<br>ถ้าไมค์ใช้ไม่ได้ กดปุ่ม "พูดได้แล้ว" เพื่อไปต่อได้ค่ะ</p></div>';
+  DIALOGUES.forEach(function (d, di) {
+    var total = d.turns.filter(function (t) { return t.w === "u"; }).length;
+    var best = store.talk[di];
+    html += '<div class="card"><button type="button" class="btn primary dlg-item" data-dlg="' + di + '">' +
+      '<span>' + d.title + ' — ' + d.sub + '</span><span>' + (best != null ? "🏅 " + best + "/" + total : "▶") + '</span></button></div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll("[data-dlg]").forEach(function (b) {
+    b.addEventListener("click", function () { startTalk(parseInt(b.getAttribute("data-dlg"), 10)); });
+  });
+}
+function startTalk(di) {
+  talk = { di: di, ti: 0, passed: 0 };
+  renderTalkTurn(true);
+}
+function renderTalkTurn(autoplay) {
+  var el = document.getElementById("view-talk");
+  var d = DIALOGUES[talk.di];
+  var html = '<div class="note">' + d.title + ' — ' + d.sub + '</div><div class="card">';
+  d.turns.slice(0, talk.ti + 1).forEach(function (t) {
+    html += '<div class="bubble-chat ' + t.w + '"><div class="who">' + (t.w === "p" ? "ゆき (เพื่อน)" : "เจน") + '</div>' +
+      '<div>' + t.ja + '</div><div class="sub">' + t.romaji + ' ・ ' + t.th + '</div></div>';
+  });
+  html += '<div id="talkCtl"></div></div>';
+  el.innerHTML = html;
+  var cur = d.turns[talk.ti];
+  var ctl = document.getElementById("talkCtl");
+  if (cur.w === "p") {
+    if (autoplay) speakJa(cur.ja, 1, null);
+    ctl.innerHTML = '<div class="row"><button type="button" class="btn" id="tReplay">🔊 ฟังอีกครั้ง</button>' +
+      '<button type="button" class="btn primary" id="tNext">ต่อไป ➜</button></div>';
+    document.getElementById("tReplay").addEventListener("click", function () { speakJa(cur.ja, 1, this); });
+    document.getElementById("tNext").addEventListener("click", function () { advanceTalk(); });
+  } else {
+    ctl.innerHTML = '<p class="note">ตาเจนแล้ว! พูดประโยคนี้เป็นภาษาญี่ปุ่นเลย: <b>' + cur.ja + '</b> (' + cur.romaji + ')</p>' +
+      '<div class="row"><button type="button" class="btn primary" id="tMic">🎤 พูดเลย</button>' +
+      '<button type="button" class="btn" id="tModel">🔊 ฟังตัวอย่าง</button>' +
+      '<button type="button" class="btn" id="tSelf">พูดได้แล้ว ✓</button>' +
+      '<button type="button" class="btn" id="tSkip">ข้าม</button></div><div id="tVerdict"></div>';
+    document.getElementById("tModel").addEventListener("click", function () { speakJa(cur.ja, 0.85, this); });
+    document.getElementById("tSkip").addEventListener("click", function () { advanceTalk(); });
+    document.getElementById("tSelf").addEventListener("click", function () { talkVerdict(true, 1, "", true); });
+    document.getElementById("tMic").addEventListener("click", function () {
+      var btn = this;
+      var ok = listenJa(cur.ja, btn, function (score, heard) {
+        if (score === null) { document.getElementById("tVerdict").innerHTML = '<p class="verdict ng">ไมค์ใช้ไม่ได้ค่ะ ลองกด "พูดได้แล้ว" หรือ "ข้าม" นะ</p>'; return; }
+        talkVerdict(score >= 0.55, score, heard, false);
+      });
+      if (!ok) document.getElementById("tVerdict").innerHTML = '<p class="verdict ng">เครื่องนี้ใช้ไมค์ไม่ได้ค่ะ กด "พูดได้แล้ว" เพื่อไปต่อได้เลย</p>';
+    });
+  }
+  window.scrollTo(0, document.body.scrollHeight);
+}
+function talkVerdict(pass, score, heard, self) {
+  var v = document.getElementById("tVerdict");
+  var d = DIALOGUES[talk.di];
+  var cur = d.turns[talk.ti];
+  if (pass) {
+    talk.passed++;
+    addStars(2); cheer(false);
+    v.innerHTML = '<p class="verdict ok">' + (self ? "เก่งมาก! ไปต่อกันเลย" : score >= 0.85 ? "🎉 完璧! ออกเสียงเป๊ะเลย!" : "✅ 通じた! พูดรู้เรื่องแล้ว!") + '</p>';
+    setTimeout(function () { advanceTalk(); }, 1200);
+  } else {
+    v.innerHTML = '<p class="verdict ng">เกือบแล้ว! เครื่องได้ยินว่า: ' + (heard || "—") + '<br>ประโยคที่ถูก: ' + cur.ja + ' ลองอีกครั้งหรือกดข้ามก็ได้ค่ะ</p>';
+  }
+}
+function advanceTalk() {
+  var d = DIALOGUES[talk.di];
+  talk.ti++;
+  if (talk.ti >= d.turns.length) {
+    var total = d.turns.filter(function (t) { return t.w === "u"; }).length;
+    var prev = store.talk[talk.di];
+    if (prev == null || talk.passed > prev) { store.talk[talk.di] = talk.passed; save(); }
+    var el = document.getElementById("view-talk");
+    el.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:40px">🎊</div>' +
+      '<h3>จบสนทนาแล้ว!</h3><p>พูดรู้เรื่อง ' + talk.passed + ' / ' + total + ' ประโยค</p>' +
+      '<p class="note">' + (talk.passed === total ? "สุดยอด! คุยครบทุกประโยคเลย" : "เก่งมาก! เล่นซ้ำอีกครั้งก็ได้นะ จะยิ่งคล่องขึ้น") + '</p>' +
+      '<button type="button" class="btn primary" id="backDlg">กลับไปเลือกสนทนา</button></div>';
+    cheer(true);
+    document.getElementById("backDlg").addEventListener("click", renderTalkList);
+    talk = null;
+    return;
+  }
+  renderTalkTurn(true);
+}
+/* ----- Grammar ----- */
+function renderGrammar() {
+  var el = document.getElementById("view-grammar");
+  var html = '<div class="card"><h3>🧩 แพทเทิร์นสนทนา 10 แบบ</h3>' +
+    '<p class="note">จำแพทเทิร์นพวกนี้ไว้ จะแต่งประโยคของตัวเองได้เยอะเลย<br>แต่ละอันมีเกมพูดสั้น ๆ ให้ลองด้วย</p></div>';
+  PATTERNS.forEach(function (pt, pi) {
+    html += '<details class="card"><summary>' + pt.title + '</summary>' +
+      '<p class="note">' + pt.form + '</p>' +
+      pt.ex.map(function (e) {
+        return '<div class="ex"><div class="ja sm">' + e.ja + '</div><div class="romaji">' + e.romaji + '</div><div class="th">' + e.th + '</div>' + playBtns(e) + '</div>';
+      }).join("") +
+      '<div class="ex"><b>🎮 ลองพูด:</b> <span class="th">' + pt.drill.th + '</span>' +
+      '<div class="row" style="margin-top:6px"><button type="button" class="btn primary" data-drill="' + pi + '">🎤 พูดเลย</button>' +
+      '<button type="button" class="btn" data-reveal="' + pi + '">ดูเฉลย</button></div>' +
+      '<div id="drill-' + pi + '"></div></div></details>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll("[data-drill]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var pt = PATTERNS[parseInt(b.getAttribute("data-drill"), 10)];
+      var out = document.getElementById("drill-" + b.getAttribute("data-drill"));
+      var ok = listenJa(pt.drill.ja, b, function (score, heard) {
+        if (score === null) { out.innerHTML = '<p class="verdict ng">ไมค์ใช้ไม่ได้ค่ะ ดูเฉลยแล้วพูดตามก็ได้นะ</p>'; return; }
+        if (score >= 0.55) { addStars(2); cheer(false); out.innerHTML = '<p class="verdict ok">' + (score >= 0.85 ? "🎉 完璧! เป๊ะเลย!" : "✅ 通じた! พูดรู้เรื่องแล้ว!") + '</p>'; }
+        else out.innerHTML = '<p class="verdict ng">เกือบแล้ว! ได้ยินว่า: ' + (heard || "—") + ' ลองดูเฉลยแล้วพูดอีกครั้งนะ</p>';
+      });
+      if (!ok) out.innerHTML = '<p class="verdict ng">เครื่องนี้ใช้ไมค์ไม่ได้ค่ะ ดูเฉลยแล้วพูดตามก็ได้นะ</p>';
+    });
+  });
+  el.querySelectorAll("[data-reveal]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var pt = PATTERNS[parseInt(b.getAttribute("data-reveal"), 10)];
+      var out = document.getElementById("drill-" + b.getAttribute("data-reveal"));
+      out.innerHTML = '<div class="ja sm" style="margin-top:8px">' + pt.drill.ja + '</div><div class="romaji">' + pt.drill.romaji + '</div>' + playBtns(pt.drill);
+    });
+  });
+}
+/* ===== Init ===== */
+(function init() {
+  var h = HERO_LINES[Math.floor(Math.random() * HERO_LINES.length)];
+  document.getElementById("heroJa").textContent = h.ja;
+  document.getElementById("heroTh").textContent = h.th;
+  updateStats();
+  renderToday();
+})();
+</script>
+</body>
+</html>
