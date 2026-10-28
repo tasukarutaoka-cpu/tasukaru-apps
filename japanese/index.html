@@ -322,11 +322,18 @@ var PRAISES = [
   { ja: "もう覚えたの？早い！", th: "จำได้แล้วเหรอ เร็วมาก!" },
   { ja: "楽しいね！", th: "เรียนกับโมโมะสนุกเนอะ!" }
 ];
-var HERO_LINES = [
-  { ja: "เจนจัง、こんにちは！", th: "สวัสดีเจน! วันนี้มาเรียนภาษาญี่ปุ่นกันเถอะ โมโมะอยู่ข้าง ๆ เสมอ" },
+var HERO_FIRST = [
+  { ja: "ジェン、はじめまして！", th: "ยินดีที่ได้รู้จัก เจน! โมโมะเอง จะช่วยเจนเรียนภาษาญี่ปุ่นทุกวันเลย" },
+  { ja: "モモと楽しく覚えよう！", th: "มาเรียนสนุก ๆ กับโมโมะกันเถอะ เริ่มจากประโยคง่าย ๆ ก่อนเลย" }
+];
+var HERO_MID = [
   { ja: "今日もがんばろう！", th: "วันนี้ก็สู้ ๆ นะ เรียนวันละนิด เดี๋ยวก็พูดคล่อง" },
-  { ja: "เจนならできる！", th: "เจนทำได้แน่นอน โมโมะเชื่อแบบนั้น" },
-  { ja: "少しずつ上手になってるよ", th: "เจนเก่งขึ้นทีละนิดทุกวันเลย โมโมะเห็นนะ" }
+  { ja: "ジェンならできる！", th: "เจนทำได้แน่นอน โมโมะเชื่อแบบนั้น" },
+  { ja: "少しずつで大丈夫だよ", th: "ค่อย ๆ เรียนทีละนิดก็พอ ไม่ต้องรีบเลยนะ" }
+];
+var HERO_PRO = [
+  { ja: "少しずつ上手になってるよ", th: "เจนเก่งขึ้นทีละนิดทุกวันเลย โมโมะเห็นนะ" },
+  { ja: "その調子！", th: "ดีมากเลย รักษาจังหวะแบบนี้ไว้นะ" }
 ];
 var LEVELS = [
   { min: 0, label: "🥚 เริ่มต้น" }, { min: 15, label: "🌱 มือใหม่" },
@@ -741,7 +748,9 @@ function renderGrammar() {
 }
 /* ===== Init ===== */
 (function init() {
-  var h = HERO_LINES[Math.floor(Math.random() * HERO_LINES.length)];
+  var learned0 = learnedCount();
+  var pool = learned0 === 0 ? HERO_FIRST : learned0 < 20 ? HERO_MID : HERO_MID.concat(HERO_PRO);
+  var h = pool[Math.floor(Math.random() * pool.length)];
   document.getElementById("heroJa").textContent = h.ja;
   document.getElementById("heroTh").textContent = h.th;
   updateStats();
