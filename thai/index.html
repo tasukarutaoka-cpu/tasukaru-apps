@@ -168,6 +168,7 @@
         padding: 2px 9px; background: var(--good-bg); color: var(--good); margin-left: 8px; vertical-align: middle;
       }
       .badge.new { background: var(--amber-bg); color: var(--amber); }
+      .badge.todo { background: var(--surface2); color: var(--muted); }
 
       .quiz-q { text-align: center; padding: 26px 18px 20px; }
       .quiz-q .q-cap { color: var(--muted); font-size: 15px; margin-bottom: 14px; }
@@ -434,6 +435,14 @@
           '<button type="button" class="btn slow" data-play="' + p.id + '-slow">' + ICON_PLAY + 'ゆっくり</button>' +
           '</div>';
       }
+      function statusChip(p) {
+        var r = store.prog[p.id];
+        if (!r) return '<span class="badge todo">⬜ まだ</span>';
+        if (r.box >= 2) return '<span class="badge">✅ 言える</span>';
+        var t = todayStr();
+        var when = r.due <= t ? "今日" : r.due === addDays(t, 1) ? "明日" : r.due.slice(5).replace("-", "/");
+        return '<span class="badge new">📖 練習中（次の復習：' + when + '）</span>';
+      }
       function partsHTML(p) {
         if (!p.parts) return "";
         return '<div class="parts">' + p.parts.map(function (w) { return '<span class="pw">' + w[0] + '</span>（' + w[1] + '）'; }).join('・') + '</div>';
@@ -480,10 +489,18 @@
           var msg = session.total === 0
             ? "今日の復習はありません。新しいフレーズも出し尽くしました。"
             : "今日の練習はおしまいです。おつかれさまでした。";
+          var seenIds = [];
+          session.queue.forEach(function (q) { if (seenIds.indexOf(q) < 0) seenIds.push(q); });
+          var doneList = session.total === 0 ? "" : '<h2 class="scene-title">今日のフレーズ（見返し用）</h2>' + seenIds.map(function (q) {
+            var p = BY_ID[q];
+            return '<div class="phrase-row"><div class="kana">' + p.kana + statusChip(p) + '</div>' +
+              '<div class="thai-text thai">' + p.th + '</div><p class="meaning">' + p.ja + '</p>' +
+              partsHTML(p) + formHTML(p) + playButtons(p) + '</div>';
+          }).join("");
           el.innerHTML = '<div class="card done-box"><div class="face">よくできました</div><p>' + msg + '</p>' +
             '<p>言えるようになったフレーズ: ' + learnedCount() + ' / 64</p>' +
             '<button type="button" class="btn primary" id="moreBtn" style="width:100%;">場面から自由に練習する</button>' +
-            (session.total > 0 ? '<button type="button" class="btn slow" id="reviewBtn" style="width:100%;margin-top:8px;">今日のフレーズを見返す</button>' : '') + '</div>';
+            (session.total > 0 ? '<button type="button" class="btn slow" id="reviewBtn" style="width:100%;margin-top:8px;">今日のフレーズを見返す</button>' : '') + '</div>' + doneList;
           var mb = document.getElementById("moreBtn");
           if (mb) mb.addEventListener("click", function () { switchView("scenes"); });
           var rb = document.getElementById("reviewBtn");
@@ -558,16 +575,16 @@
       /* ============ 場面から探す ============ */
       function renderScenes() {
         var el = document.getElementById("view-scenes");
-        var html = "";
+        var learnedN = PHRASES.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
+        var studyingN = PHRASES.filter(function (p) { var r = store.prog[p.id]; return r && r.box < 2; }).length;
+        var html = '<p class="small" style="margin:4px 0 6px;">状態の見方：✅ 言える ' + learnedN + '件 ・ 📖 練習中 ' + studyingN + '件 ・ ⬜ まだ ' + (64 - learnedN - studyingN) + '件<br>どのフレーズも、ここでいつでも音声つきで見返せます。</p>';
         SCENES.forEach(function (name, si) {
           var list = PHRASES.filter(function (p) { return p.scene === si; });
           var done = list.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
           html += '<h2 class="scene-title">' + name + '<span class="cnt">言える ' + done + ' / ' + list.length + '</span></h2>';
           list.forEach(function (p) {
-            var r = store.prog[p.id];
-            var badge = r ? (r.box >= 2 ? '<span class="badge">言える</span>' : '<span class="badge new">練習中</span>') : "";
             html += '<div class="phrase-row">' +
-              '<div class="kana">' + p.kana + badge + '</div>' +
+              '<div class="kana">' + p.kana + statusChip(p) + '</div>' +
               '<div class="thai-text thai">' + p.th + '</div>' +
               '<p class="meaning">' + p.ja + '</p>' +
               partsHTML(p) +
