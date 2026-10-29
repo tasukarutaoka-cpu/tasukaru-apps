@@ -706,6 +706,7 @@
       ];
       var talk = null;
       var talkRec = null;
+      var talkRecTimer = null;
 
       function talkUserTotal(d) { return d.turns.filter(function (t) { return t.w === "u"; }).length; }
       function normTh(s) { return (s || "").replace(/[\s.,!?…"'、。，．！？：:;・「」『』（）()\-]/g, ""); }
@@ -782,13 +783,11 @@
           playButtons(cp, false) +
           '<button type="button" class="mic-btn" id="micBtn">🎤 タップして話す</button>' +
           '<div id="talkResult"></div>' +
-          '<div class="row-btns"><button type="button" class="btn slow" id="talkSelfOk">言えた（自己判定で進む）</button><button type="button" class="btn slow" id="talkSkip">スキップ</button></div>' +
+          '<p class="small">アプリが聞き取って「通じた」と判定するまで、次には進めません。自己判定はありません。</p>' +
           '</div>';
         el.innerHTML = html2;
         document.getElementById("talkQuit").addEventListener("click", function () { stopRec(); talk = null; renderTalk(); });
         document.getElementById("micBtn").addEventListener("click", startRec);
-        document.getElementById("talkSelfOk").addEventListener("click", function () { passTalk(false); });
-        document.getElementById("talkSkip").addEventListener("click", function () { skipTalk(); });
         var tc = document.getElementById("turnCard");
         if (tc && tc.scrollIntoView) tc.scrollIntoView({ block: "center", behavior: "smooth" });
       }
@@ -814,6 +813,7 @@
         save();
       }
       function passTalk(byVoice) {
+        stopRec();
         var cur = talk.dlg.turns[talk.idx];
         talk.done.push({ w: "u", id: cur.id, skip: false });
         talk.passed++;
@@ -828,15 +828,17 @@
         stepTalk(false);
       }
       function stopRec() {
+        if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; }
         if (talkRec) { try { talkRec.abort(); } catch (e) {} talkRec = null; }
         var mb = document.getElementById("micBtn");
         if (mb) { mb.classList.remove("listening"); mb.textContent = "🎤 タップして話す"; }
       }
       function startRec() {
+        if (talkRec) { stopRec(); return; }
         var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         var res = document.getElementById("talkResult");
         if (!SR) {
-          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。「お手本を聞く」で確認してから、自己判定で進んでください。</p>';
+          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。iPhoneはSafari、AndroidはChromeで開いてください。音声で「通じた」になるまで次に進めない仕組みです。</p>';
           return;
         }
         var cur = talk.dlg.turns[talk.idx];
@@ -862,11 +864,18 @@
           stopRec();
           var r2 = document.getElementById("talkResult");
           if (!r2) return;
-          if (ev.error === "not-allowed") r2.innerHTML = '<p class="judge-ng">マイクが許可されていません</p><p class="small">ブラウザの設定でマイクを許可してください。または「お手本を聞く」＋自己判定でも進めます。</p>';
+          if (ev.error === "not-allowed") r2.innerHTML = '<p class="judge-ng">マイクが許可されていません</p><p class="small">ブラウザの設定でマイクを許可してから、もう一度マイクを押してください。</p>';
           else if (ev.error === "no-speech") r2.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">もう一度、マイクの近くではっきり話してみてください。</p>';
-          else r2.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度試すか、自己判定で進んでください。</p>';
+          else r2.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
         };
-        rec.onend = function () { if (talkRec === rec) { talkRec = null; var m2 = document.getElementById("micBtn"); if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; } } };
+        rec.onend = function () { if (talkRec === rec) { if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; } talkRec = null; var m2 = document.getElementById("micBtn"); if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; } } };
+        talkRecTimer = setTimeout(function () {
+          if (talkRec === rec) {
+            stopRec();
+            var r3 = document.getElementById("talkResult");
+            if (r3) r3.innerHTML = '<p class="judge-ng">聞き取りが終わりませんでした</p><p class="small">通信や端末の状態で音声認識が止まることがあります。もう一度マイクを押して話してください。「通じた」になるまで次には進めません。</p>';
+          }
+        }, 12000);
         try { rec.start(); } catch (e) { stopRec(); }
       }
       function judgeTalk(score, heard, target) {
@@ -878,7 +887,7 @@
           if (res) res.innerHTML = '<p class="judge-ok">' + (perfect ? "🎉 完璧！通じました" : "✓ 通じました！") + '</p><div class="heard-box">聞き取り：' + heard + '</div>';
           setTimeout(function () { passTalk(true); }, 1100);
         } else {
-          if (res) res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (heard || "（聞き取れませんでした）") + '<br>お手本：' + target.th + '（' + target.kana + '）</div><p class="small">お手本を聞いて、もう一度どうぞ。どうしても難しいときはスキップできます。</p>';
+          if (res) res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (heard || "（聞き取れませんでした）") + '<br>お手本：' + target.th + '（' + target.kana + '）</div><p class="small">お手本を聞いて、もう一度マイクで話してください。通じるまで次に進めません。</p>';
         }
       }
 
@@ -973,11 +982,17 @@
           if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。「読み方を見る」で確認して、声に出して練習してください。</p>';
           return;
         }
+        if (btn.dataset.rec === "1") { if (btn._rec) { try { btn._rec.abort(); } catch (e) {} } if (btn._to) clearTimeout(btn._to); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; return; }
         var rec = new SR();
+        btn._rec = rec; btn.dataset.rec = "1";
         rec.lang = "th-TH"; rec.interimResults = false; rec.maxAlternatives = 3;
         btn.classList.add("listening"); btn.textContent = "🎙 聞き取り中…話してください";
         if (res) res.innerHTML = "";
+        btn._to = setTimeout(function () {
+          if (btn.dataset.rec === "1") { try { rec.abort(); } catch (e) {} btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度試してください。</p>'; }
+        }, 12000);
         rec.onresult = function (ev) {
+          if (btn._to) clearTimeout(btn._to); btn.dataset.rec = "";
           var best = 0, bestTxt = "";
           for (var i = 0; i < ev.results[0].length; i++) {
             var tr = ev.results[0][i].transcript || "";
@@ -990,15 +1005,17 @@
           }
         };
         rec.onerror = function (ev) {
+          if (btn._to) clearTimeout(btn._to); btn.dataset.rec = "";
           if (res) res.innerHTML = '<p class="small">聞き取りに失敗しました。もう一度試してみてください。</p>';
         };
-        rec.onend = function () { btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; };
+        rec.onend = function () { if (btn._to) clearTimeout(btn._to); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; };
         try { rec.start(); } catch (e) { btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; }
       }
 
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
+        stopRec();
         document.querySelectorAll("nav.tabs button").forEach(function (b) {
           b.setAttribute("aria-selected", b.getAttribute("data-view") === name ? "true" : "false");
         });
