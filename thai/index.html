@@ -787,7 +787,7 @@
           '</div>';
         el.innerHTML = html2;
         document.getElementById("talkQuit").addEventListener("click", function () { stopRec(); talk = null; renderTalk(); });
-        document.getElementById("micBtn").addEventListener("click", startRec);
+        document.getElementById("micBtn").addEventListener("click", function () { startRec(false); });
         var tc = document.getElementById("turnCard");
         if (tc && tc.scrollIntoView) tc.scrollIntoView({ block: "center", behavior: "smooth" });
       }
@@ -828,11 +828,11 @@
       }
       function stopRec() {
         if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; }
-        if (talkRec) { try { talkRec.abort(); } catch (e) {} talkRec = null; }
+        if (talkRec) { try { talkRec.stop(); } catch (e) { try { talkRec.abort(); } catch (e2) {} } talkRec = null; }
         var mb = document.getElementById("micBtn");
         if (mb) { mb.classList.remove("listening"); mb.textContent = "🎤 タップして話す"; }
       }
-      function startRec() {
+      function startRec(isRetry) {
         if (talkRec) { stopRec(); return; }
         var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         var res = document.getElementById("talkResult");
@@ -860,16 +860,17 @@
             }
           }, 12000);
         }
-        var judged = false, bestScore = 0, bestHeard = "", stableTimer = null;
+        var judged = false, bestScore = 0, bestHeard = "", stableTimer = null, gotEvent = false;
         function judgeNow() {
           if (judged || !bestHeard || talkRec !== rec) return;
           judged = true;
           if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
           judgeTalk(bestScore, bestHeard, target);
         }
-        rec.onstart = armWatch;
-        rec.onspeechstart = armWatch;
+        rec.onstart = function () { gotEvent = true; armWatch(); };
+        rec.onspeechstart = function () { gotEvent = true; armWatch(); };
         rec.onresult = function (ev) {
+          gotEvent = true;
           armWatch();
           var interim = "";
           for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
@@ -911,6 +912,11 @@
           }
         };
         armWatch();
+        if (!isRetry) {
+          setTimeout(function () {
+            if (!gotEvent && talkRec === rec) { stopRec(); startRec(true); }
+          }, 3500);
+        }
         try { rec.start(); } catch (e) { stopRec(); }
       }
       function judgeTalk(score, heard, target) {
@@ -1017,7 +1023,7 @@
           if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。「読み方を見る」で確認して、声に出して練習してください。</p>';
           return;
         }
-        if (btn.dataset.rec === "1") { if (btn._rec) { try { btn._rec.abort(); } catch (e) {} } if (btn._to) clearTimeout(btn._to); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; return; }
+        if (btn.dataset.rec === "1") { if (btn._rec) { try { btn._rec.stop(); } catch (e) { try { btn._rec.abort(); } catch (e2) {} } } if (btn._to) clearTimeout(btn._to); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; return; }
         var rec = new SR();
         btn._rec = rec; btn.dataset.rec = "1";
         rec.lang = "th-TH"; rec.interimResults = true; rec.maxAlternatives = 3;
@@ -1039,7 +1045,7 @@
         btn._to = setTimeout(function () {
           if (btn.dataset.rec === "1") {
             if (dBestTxt && !dJudged) { dJudge(); return; }
-            try { rec.abort(); } catch (e) {} btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度試してください。</p>';
+            try { rec.stop(); } catch (e) { try { rec.abort(); } catch (e2) {} } btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度試してください。</p>';
           }
         }, 12000);
         rec.onresult = function (ev) {
