@@ -802,7 +802,6 @@
         }
         talk.tries = 0;
         renderTalk();
-        if (lastP) playAudio("assets/audio/" + lastP.id + ".mp3", null);
         if (talk.idx >= d.turns.length) finishTalkRecord();
       }
       function finishTalkRecord() {
@@ -847,18 +846,41 @@
         var rec = new SR();
         talkRec = rec;
         rec.lang = "th-TH";
-        rec.interimResults = false;
+        rec.interimResults = true;
         rec.maxAlternatives = 3;
         if (mb) { mb.classList.add("listening"); mb.textContent = "🎙 聞き取り中…話してください"; }
-        if (res) res.innerHTML = "";
+        if (res) res.innerHTML = '<p class="small">聞き取り中…話し終わるまで待ってください</p>';
+        function armWatch() {
+          if (talkRecTimer) clearTimeout(talkRecTimer);
+          talkRecTimer = setTimeout(function () {
+            if (talkRec === rec) {
+              stopRec();
+              var r3 = document.getElementById("talkResult");
+              if (r3) r3.innerHTML = '<p class="judge-ng">聞き取りが終わりませんでした</p><p class="small">声が届いていないか、音声認識が止まっています。もう一度マイクを押して、スマホの近くではっきり話してください。「通じた」になるまで次には進めません。</p>';
+            }
+          }, 12000);
+        }
+        rec.onstart = armWatch;
+        rec.onspeechstart = armWatch;
         rec.onresult = function (ev) {
-          var best = 0, bestTxt = "";
-          for (var i = 0; i < ev.results[0].length; i++) {
-            var tr = ev.results[0][i].transcript || "";
-            var sc = scoreHeard(tr, target.th);
-            if (sc > best) { best = sc; bestTxt = tr; }
+          armWatch();
+          var interim = "";
+          for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
+            var rr = ev.results[ri];
+            if (rr.isFinal) {
+              var best = 0, bestTxt = "";
+              for (var i = 0; i < rr.length; i++) {
+                var tr = rr[i].transcript || "";
+                var sc = scoreHeard(tr, target.th);
+                if (sc > best) { best = sc; bestTxt = tr; }
+              }
+              judgeTalk(best, bestTxt, target);
+              return;
+            }
+            interim += rr[0].transcript || "";
           }
-          judgeTalk(best, bestTxt, target);
+          var r4 = document.getElementById("talkResult");
+          if (r4 && interim) r4.innerHTML = '<div class="heard-box">聞き取り中：' + interim + '</div>';
         };
         rec.onerror = function (ev) {
           stopRec();
@@ -869,13 +891,7 @@
           else r2.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
         };
         rec.onend = function () { if (talkRec === rec) { if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; } talkRec = null; var m2 = document.getElementById("micBtn"); if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; } } };
-        talkRecTimer = setTimeout(function () {
-          if (talkRec === rec) {
-            stopRec();
-            var r3 = document.getElementById("talkResult");
-            if (r3) r3.innerHTML = '<p class="judge-ng">聞き取りが終わりませんでした</p><p class="small">通信や端末の状態で音声認識が止まることがあります。もう一度マイクを押して話してください。「通じた」になるまで次には進めません。</p>';
-          }
-        }, 12000);
+        armWatch();
         try { rec.start(); } catch (e) { stopRec(); }
       }
       function judgeTalk(score, heard, target) {
