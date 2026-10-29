@@ -692,7 +692,7 @@
       /* ============ かいわモード（音声認識つき） ============ */
       var DIALOGUES = [
         { id:"d1", title:"あいさつ・自己紹介", turns:[
-          {w:"p", id:"s1p1"},{w:"u", id:"s1p1"},{w:"p", id:"s2p5"},{w:"u", id:"s2p2"},{w:"p", id:"s8p5"},{w:"u", id:"s2p6"},{w:"p", id:"s1p8"},{w:"u", id:"s1p3"} ]},
+          {w:"p", id:"s1p1"},{w:"u", id:"s1p1"},{w:"u", id:"s2p1"},{w:"u", id:"s2p2"},{w:"p", id:"s8p5"},{w:"u", id:"s2p6"},{w:"p", id:"s1p8"},{w:"u", id:"s1p3"} ]},
         { id:"d2", title:"買い物", turns:[
           {w:"p", id:"s1p1"},{w:"u", id:"s3p4"},{w:"u", id:"s3p1"},{w:"u", id:"s3p2"},{w:"u", id:"s3p3"},{w:"p", id:"s1p6"},{w:"u", id:"s3p6"},{w:"p", id:"s1p3"},{w:"u", id:"s1p4"} ]},
         { id:"d3", title:"食事", turns:[
@@ -905,6 +905,10 @@
           talkRec = null;
           var m2 = document.getElementById("micBtn");
           if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; }
+          if (!judged && !bestHeard) {
+            var r5 = document.getElementById("talkResult");
+            if (r5) r5.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">マイクを押してから合図を待って、スマホの近くではっきり話してください。もう一度どうぞ。</p>';
+          }
         };
         armWatch();
         try { rec.start(); } catch (e) { stopRec(); }
