@@ -252,6 +252,7 @@
         <button role="tab" data-view="scenes" aria-selected="false">場面から探す</button>
         <button role="tab" data-view="quiz" aria-selected="false">聞き取り</button>
         <button role="tab" data-view="talk" aria-selected="false">かいわ</button>
+        <button role="tab" data-view="free" aria-selected="false">フリー会話</button>
         <button role="tab" data-view="grammar" aria-selected="false">ぶんぽう</button>
         <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
       </nav>
@@ -261,6 +262,7 @@
         <section class="view" id="view-scenes"></section>
         <section class="view" id="view-quiz"></section>
         <section class="view" id="view-talk"></section>
+        <section class="view" id="view-free"></section>
         <section class="view" id="view-grammar"></section>
         <section class="view" id="view-tones"></section>
       </main>
@@ -1077,10 +1079,210 @@
         try { rec.start(); } catch (e) { btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; }
       }
 
+      /* ============ フリー会話 ============ */
+      var freeChat = null;
+      var freeRec = null;
+      var freeRecTimer = null;
+      function P(th, kana, ja) { return { w: "p", th: th, kana: kana, ja: ja }; }
+      function freeQuestions() {
+        return [
+          { line: P("วันนี้คุณจะไปไหนครับ", "ワン・ニー・クン・ヂャ・パイ・ナイ・クラップ", "今日はどこへ行きますか？"), hints: ["s2p4", "s1p3"] },
+          { line: P("คุณชอบอาหารไทยไหมครับ", "クン・チョープ・アーハーン・タイ・マイ・クラップ", "タイ料理は好きですか？"), hints: ["s4p3", "s2p3"] },
+          { line: P("พูดอีกครั้งได้ไหมครับ", "プート・イーク・クラン・ダイ・マイ・クラップ", "もう一度言ってもらえますか？"), hints: ["s2p8", "s2p3"] }
+        ];
+      }
+      var freeQIdx = 0;
+      function partnerThink(heard) {
+        var h = normTh(heard);
+        var st = freeChat.flags;
+        function R(lines, hints, set) {
+          if (set) for (var k in set) st[k] = set[k];
+          return { lines: lines, hints: hints || [] };
+        }
+        if (/ลาก่อน|แล้วเจอกัน|ไปก่อน/.test(h)) return R([P("แล้วเจอกันใหม่ครับ โชคดีครับ", "レーオ・ヂャー・ガン・マイ・クラップ。チョーク・ディー・クラップ", "また会いましょう。幸運を祈ります")], ["s1p3"]);
+        if (h.indexOf("ขอบคุณ") >= 0) { var q1 = freeQuestions()[freeQIdx++ % 3]; return R([P("ด้วยความยินดีครับ", "ドゥアイ・クワーム・イン・ディー・クラップ", "どういたしまして"), q1.line], q1.hints); }
+        if (h.indexOf("ชื่อ") >= 0 && (h.indexOf("อะไร") >= 0 || h.indexOf("คุณ") >= 0) && h.indexOf("ผมชื่อ") < 0) return R([P("ผมชื่อมาร์คครับ คุณชื่ออะไรครับ", "ポム・チュー・マーク・クラップ。クン・チュー・アライ・クラップ", "私はマークです。お名前は何ですか？")], ["s2p6", "s2p1", "s2p2"]);
+        if (h.indexOf("ผมชื่อ") >= 0) return R([P("ยินดีที่ได้รู้จักครับ คุณมาจากประเทศอะไรครับ", "イン・ディー・ティー・ダイ・ルー・ヂャック・クラップ。クン・マー・ヂャーク・プラテート・アライ・クラップ", "はじめまして。どこの国から来ましたか？")], ["s2p2", "s2p1"], { named: true });
+        if (h.indexOf("มาจากญี่ปุ่น") >= 0 || h.indexOf("เป็นคนญี่ปุ่น") >= 0) return R([P("อ๋อ คุณเป็นคนญี่ปุ่นนะครับ", "オー、クン・ペン・コン・イープン・ナ・クラップ", "ああ、日本の方ですね"), P("คุณมาทำอะไรที่ประเทศไทยครับ", "クン・マー・タム・アライ・ティー・プラテート・タイ・クラップ", "タイには何をしに来たのですか？")], ["s2p4", "s2p3"], { origin: true });
+        if (h.indexOf("เรียนภาษาไทย") >= 0) return R([P("เก่งมากครับ สู้ๆ ครับ", "ゲン・マーク・クラップ。スー・スー・クラップ", "とても上手です。頑張ってください"), P("คุณเรียนภาษาไทยมานานไหมครับ", "クン・リアン・パーサー・タイ・マー・ナーン・マイ・クラップ", "タイ語は長く勉強していますか？")], ["s2p3", "s2p4"]);
+        if (h.indexOf("พูดภาษาไทย") >= 0 && h.indexOf("ญี่ปุ่น") < 0) return R([P("ดีมากครับ พูดเก่งจังเลยครับ", "ディー・マーク・クラップ。プート・ゲン・ヂャン・ルーイ・クラップ", "いいですね。とても上手に話せています")], ["s2p4", "s1p3"]);
+        if (h.indexOf("ภาษาญี่ปุ่น") >= 0 && h.indexOf("ได้ไหม") >= 0) return R([P("ผมพูดภาษาญี่ปุ่นได้นิดหน่อยครับ", "ポム・プート・パーサー・イープン・ダイ・ニッノイ・クラップ", "私は日本語を少し話せます")], ["s2p3", "s2p7"]);
+        if (h.indexOf("ช้าๆ") >= 0 || h.indexOf("ช้า") >= 0) return R([P("ได้ครับ ผมจะพูดช้าๆ ครับ", "ダイ・クラップ。ポム・ヂャ・プート・チャーチャー・クラップ", "いいですよ。ゆっくり話します")], ["s2p3"]);
+        if (h.indexOf("ไม่เผ็ด") >= 0) return R([P("เข้าใจแล้วครับ ไม่เผ็ดนะครับ", "カオ・ヂャイ・レーオ・クラップ。マイ・ペッ・ナ・クラップ", "わかりました。辛くしませんね")], ["s3p1", "s1p3"]);
+        if (h.indexOf("เท่าไหร่") >= 0) return R([P("ห้าสิบบาทครับ", "ハー・シッ・バート・クラップ", "50バーツです")], ["s1p3", "s3p4"]);
+        if (h.indexOf("อยู่ไหน") >= 0 || h.indexOf("อยู่ที่ไหน") >= 0) return R([P("อยู่ใกล้ๆ นี่เองครับ นั่งแท็กซี่ประมาณสิบนาทีครับ", "ユー・グライ・グライ・ニー・エーン・クラップ。ナン・テークシー・プラマーン・シッ・ナーティー・クラップ", "すぐ近くです。タクシーで10分くらいです")], ["s1p3"]);
+        if (h.indexOf("ขอ") >= 0 && h.length <= 22) return R([P("ได้ครับ รอสักครู่ครับ", "ダイ・クラップ。ロー・サック・クルー・クラップ", "かしこまりました。少々お待ちください"), P("เอาเผ็ดไหมครับ", "アオ・ペッ・マイ・クラップ", "辛くしますか？")], ["s4p3", "s1p3"]);
+        if (h.indexOf("หิว") >= 0 || h.indexOf("กิน") >= 0 || h.indexOf("อาหาร") >= 0 || h.indexOf("ข้าว") >= 0) return R([P("คุณอยากกินอะไรครับ", "クン・ヤーク・ギン・アライ・クラップ", "何を食べたいですか？"), P("ผัดไทยอร่อยมากครับ ลองไหมครับ", "パッタイ・アロイ・マーク・クラップ。ローン・マイ・クラップ", "パッタイはとても美味しいです。試しますか？")], ["s3p4", "s4p3"]);
+        if (h.indexOf("ชอบ") >= 0) return R([P("ดีครับ คุณชอบอะไรครับ", "ディー・クラップ。クン・チョープ・アライ・クラップ", "いいですね。何が好きですか？")], ["s4p3", "s2p3"]);
+        if (h.indexOf("ไป") >= 0 && (h.indexOf("โรงแรม") >= 0 || h.indexOf("สนามบิน") >= 0 || h.indexOf("ตลาด") >= 0 || h.indexOf("สถานี") >= 0)) return R([P("นั่งแท็กซี่ไปสะดวกครับ", "ナン・テークシー・パイ・サドゥアーク・クラップ", "タクシーで行くと便利です")], ["s1p3"]);
+        if (h.indexOf("สวัสดี") >= 0) { var q2 = freeQuestions()[freeQIdx++ % 3]; return R([P("สวัสดีครับ สบายดีไหมครับ", "サワッディー・クラップ。サバーイ・ディー・マイ・クラップ", "こんにちは。元気ですか？"), q2.line], q2.hints); }
+        if (h.indexOf("เผ็ด") >= 0) return R([P("โอเคครับ เผ็ดๆ เลยครับ", "オーケー・クラップ。ペッ・ペッ・ルーイ・クラップ", "OKです。辛くしますね")], ["s3p1", "s1p3"]);
+        var pool = [
+          [P("อ๋อ เข้าใจแล้วครับ", "オー、カオ・ヂャイ・レーオ・クラップ", "ああ、わかりました")],
+          [P("ดีมากครับ", "ディー・マーク・クラップ", "とてもいいですね")],
+          [P("จริงหรือครับ น่าสนใจมากครับ", "ヂン・ルー・クラップ。ナー・ソン・ヂャイ・マーク・クラップ", "本当ですか。とても面白いですね")]
+        ];
+        var base = pool[freeChat.turns.length % pool.length];
+        var q3 = freeQuestions()[freeQIdx++ % 3];
+        return R(base.concat([q3.line]), q3.hints);
+      }
+      function renderFree() {
+        var el = document.getElementById("view-free");
+        if (!freeChat || !freeChat.started) {
+          el.innerHTML = '<div class="sec-head"><h2>フリー会話</h2></div>' +
+            '<p class="small">タイ人のマークと自由に会話する練習です。マイクを押して、覚えたタイ語で話しかけてください。アプリが聞き取って、タイ語で返事をします（音声つき）。覚えた単語や文法で会話が成立するか、試してみましょう。</p>' +
+            '<button type="button" class="btn primary" id="freeStart">フリー会話をはじめる</button>';
+          document.getElementById("freeStart").addEventListener("click", function () {
+            freeChat = { started: true, turns: [], flags: {}, hints: ["s2p6", "s2p1", "s2p2"], count: 0 };
+            freeChat.turns.push(P("สวัสดีครับ ผมชื่อมาร์คครับ", "サワッディー・クラップ。ポム・チュー・マーク・クラップ", "こんにちは。私はマークです"));
+            freeChat.turns.push(P("ยินดีที่ได้รู้จักครับ คุณชื่ออะไรครับ", "イン・ディー・ティー・ダイ・ルー・ヂャック・クラップ。クン・チュー・アライ・クラップ", "はじめまして。お名前は何ですか？"));
+            renderFree();
+            speakTh("สวัสดีครับ ผมชื่อมาร์คครับ ยินดีที่ได้รู้จักครับ คุณชื่ออะไรครับ");
+          });
+          return;
+        }
+        var html = '<div class="sec-head"><h2>フリー会話（マークと）</h2></div>' +
+          '<p class="small">あなたの発言 ' + freeChat.count + ' 回　<button type="button" class="btn slow" id="freeReset">最初からやり直す</button></p>';
+        freeChat.turns.forEach(function (t, i) {
+          if (t.w === "p") html += '<div class="bubble p"><div>🗣 ' + t.th + '</div><div class="b-kana">' + t.kana + '</div><div class="b-ja">' + t.ja + '</div><button type="button" class="btn slow" data-say="' + i + '">もう一度聞く</button></div>';
+          else html += '<div class="bubble u"><div>' + t.th + '</div><div class="b-ja">（あなたの発言）</div></div>';
+        });
+        html += '<div class="turn-card"><div class="small">マイクを押して、タイ語で話しかけてください</div>' +
+          '<button type="button" class="mic-btn" id="freeMicBtn">🎤 タップして話す</button>' +
+          '<div id="freeStatus"></div></div>';
+        if (freeChat.hints && freeChat.hints.length) {
+          html += '<div class="sec-head"><h2>言い方のヒント</h2></div><p class="small">タップするとお手本の音声が流れます。そのまま真似して話してみてください。</p>';
+          freeChat.hints.forEach(function (id) {
+            var p = BY_ID[id];
+            if (!p) return;
+            html += '<div class="heard-box">' + p.ja + '：' + p.kana + ' <button type="button" class="btn slow" data-play="' + p.id + '">聞く</button></div>';
+          });
+        }
+        el.innerHTML = html;
+        document.getElementById("freeReset").addEventListener("click", function () { stopFreeRec(); try { speechSynthesis.cancel(); } catch (e) {} freeChat = null; renderFree(); });
+        document.getElementById("freeMicBtn").addEventListener("click", function () { startFreeRec(false); });
+        el.querySelectorAll("[data-say]").forEach(function (b) {
+          b.addEventListener("click", function () { var t = freeChat.turns[+b.getAttribute("data-say")]; if (t) speakTh(t.th); });
+        });
+        var bubbles = el.querySelectorAll(".bubble");
+        if (bubbles.length) bubbles[bubbles.length - 1].scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+      function stopFreeRec() {
+        if (freeRecTimer) { clearTimeout(freeRecTimer); freeRecTimer = null; }
+        if (freeRec) { try { freeRec.stop(); } catch (e) { try { freeRec.abort(); } catch (e2) {} } freeRec = null; }
+        var mb = document.getElementById("freeMicBtn");
+        if (mb) { mb.classList.remove("listening"); mb.textContent = "🎤 タップして話す"; }
+      }
+      function freeHeard(text) {
+        stopFreeRec();
+        if (!freeChat) return;
+        if (!/[\u0E00-\u0E7F]/.test(text || "")) {
+          var st = document.getElementById("freeStatus");
+          if (st) st.innerHTML = '<p class="judge-ng">タイ語として聞き取れませんでした</p><p class="small">もう一度、ゆっくりはっきり話してみてください。下の「言い方のヒント」の音声を真似するのもおすすめです。</p>';
+          return;
+        }
+        freeChat.turns.push({ w: "u", th: text });
+        freeChat.count++;
+        renderFree();
+        var st2 = document.getElementById("freeStatus");
+        if (st2) st2.innerHTML = '<p class="small">マークが考えています…</p>';
+        setTimeout(function () {
+          if (!freeChat) return;
+          var rep = partnerThink(text);
+          rep.lines.forEach(function (ln) { freeChat.turns.push(ln); });
+          if (rep.hints && rep.hints.length) freeChat.hints = rep.hints;
+          renderFree();
+          speakTh(rep.lines.map(function (ln) { return ln.th; }).join(" "));
+        }, 900);
+      }
+      function startFreeRec(isRetry) {
+        if (freeRec) { stopFreeRec(); return; }
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var st = document.getElementById("freeStatus");
+        if (!SR) {
+          if (st) st.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。iPhoneはSafari、AndroidはChromeで開いてください。</p>';
+          return;
+        }
+        var mb = document.getElementById("freeMicBtn");
+        var rec = new SR();
+        freeRec = rec;
+        rec.lang = "th-TH";
+        rec.interimResults = true;
+        rec.maxAlternatives = 3;
+        if (mb) { mb.classList.add("listening"); mb.textContent = "🎙 聞き取り中…話してください"; }
+        if (st) st.innerHTML = '<p class="small">聞き取り中…話し終わるまで待ってください</p>';
+        var done = false, bestTxt = "", stableTimer = null, gotEvent = false;
+        function armWatch() {
+          if (freeRecTimer) clearTimeout(freeRecTimer);
+          freeRecTimer = setTimeout(function () {
+            if (freeRec === rec) {
+              stopFreeRec();
+              var s3 = document.getElementById("freeStatus");
+              if (s3) s3.innerHTML = '<p class="judge-ng">聞き取りが終わりませんでした</p><p class="small">声が届いていないか、音声認識が止まっています。もう一度マイクを押して、スマホの近くではっきり話してください。</p>';
+            }
+          }, 12000);
+        }
+        function finish() {
+          if (done || !bestTxt || freeRec !== rec) return;
+          done = true;
+          if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
+          freeHeard(bestTxt);
+        }
+        rec.onstart = function () { gotEvent = true; armWatch(); };
+        rec.onspeechstart = function () { gotEvent = true; armWatch(); };
+        rec.onresult = function (ev) {
+          gotEvent = true;
+          armWatch();
+          var interim = "";
+          for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
+            var rr = ev.results[ri];
+            var tr0 = rr[0].transcript || "";
+            if (tr0) bestTxt = tr0;
+            if (rr.isFinal) { finish(); return; }
+            interim += tr0;
+          }
+          var s4 = document.getElementById("freeStatus");
+          if (s4 && interim) s4.innerHTML = '<div class="heard-box">聞き取り中：' + interim + '</div>';
+          if (bestTxt) {
+            if (stableTimer) clearTimeout(stableTimer);
+            stableTimer = setTimeout(finish, 2500);
+          }
+        };
+        rec.onerror = function (ev) {
+          stopFreeRec();
+          var s5 = document.getElementById("freeStatus");
+          if (!s5) return;
+          if (ev.error === "not-allowed") s5.innerHTML = '<p class="judge-ng">マイクが許可されていません</p><p class="small">ブラウザの設定でマイクを許可してから、もう一度マイクを押してください。</p>';
+          else if (ev.error === "no-speech") s5.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">もう一度、マイクの近くではっきり話してみてください。</p>';
+          else s5.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
+        };
+        rec.onend = function () {
+          if (freeRec !== rec) return;
+          if (!done && bestTxt) { finish(); return; }
+          if (freeRecTimer) { clearTimeout(freeRecTimer); freeRecTimer = null; }
+          if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
+          freeRec = null;
+          var m2 = document.getElementById("freeMicBtn");
+          if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; }
+          if (!done && !bestTxt) {
+            var s6 = document.getElementById("freeStatus");
+            if (s6) s6.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">マイクを押してから少し待って、スマホの近くではっきり話してください。もう一度どうぞ。</p>';
+          }
+        };
+        armWatch();
+        if (!isRetry) {
+          setTimeout(function () {
+            if (!gotEvent && freeRec === rec) { stopFreeRec(); startFreeRec(true); }
+          }, 3500);
+        }
+        try { rec.start(); } catch (e) { stopFreeRec(); }
+      }
+
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
         stopRec();
+        stopFreeRec();
         document.querySelectorAll("nav.tabs button").forEach(function (b) {
           b.setAttribute("aria-selected", b.getAttribute("data-view") === name ? "true" : "false");
         });
@@ -1090,6 +1292,7 @@
         if (name === "scenes") renderScenes();
         if (name === "quiz") renderQuiz();
         if (name === "talk") renderTalk();
+        if (name === "free") renderFree();
         if (name === "grammar") renderGrammar();
         if (name === "tones") renderTones();
         window.scrollTo({ top: 0 });
