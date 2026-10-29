@@ -977,10 +977,10 @@
           ex:["s6p6"],
           drill:{ ja:"朝食は何時ですか？", th:"อาหารเช้ากี่โมงครับ", kana:"アーハーン・チャーオ・ギー・モーン・クラップ" } }
       ];
-      function speakTh(text) {
+      function speakTh(text, rate) {
         try {
           var u = new SpeechSynthesisUtterance(text);
-          u.lang = "th-TH"; u.rate = 0.85;
+          u.lang = "th-TH"; u.rate = rate || 0.85;
           speechSynthesis.cancel(); speechSynthesis.speak(u);
         } catch (e) {}
       }
@@ -1088,7 +1088,9 @@
         return [
           { line: P("วันนี้คุณจะไปไหนครับ", "ワン・ニー・クン・ヂャ・パイ・ナイ・クラップ", "今日はどこへ行きますか？"), hints: ["s2p4", "s1p3"] },
           { line: P("คุณชอบอาหารไทยไหมครับ", "クン・チョープ・アーハーン・タイ・マイ・クラップ", "タイ料理は好きですか？"), hints: ["s4p3", "s2p3"] },
-          { line: P("พูดอีกครั้งได้ไหมครับ", "プート・イーク・クラン・ダイ・マイ・クラップ", "もう一度言ってもらえますか？"), hints: ["s2p8", "s2p3"] }
+          { line: P("พูดอีกครั้งได้ไหมครับ", "プート・イーク・クラン・ダイ・マイ・クラップ", "もう一度言ってもらえますか？"), hints: ["s2p8", "s2p3"] },
+          { line: P("คุณมาเที่ยวกับใครครับ", "クン・マー・ティアオ・ガッ・クライ・クラップ", "誰と旅行に来ましたか？"), hints: ["s2p3", "s1p3"] },
+          { line: P("คุณอยากไปเที่ยวที่ไหนครับ", "クン・ヤーク・パイ・ティアオ・ティー・ナイ・クラップ", "どこへ遊びに行きたいですか？"), hints: ["s2p4", "s1p3"] }
         ];
       }
       var freeQIdx = 0;
@@ -1100,7 +1102,17 @@
           return { lines: lines, hints: hints || [] };
         }
         if (/ลาก่อน|แล้วเจอกัน|ไปก่อน/.test(h)) return R([P("แล้วเจอกันใหม่ครับ โชคดีครับ", "レーオ・ヂャー・ガン・マイ・クラップ。チョーク・ディー・クラップ", "また会いましょう。幸運を祈ります")], ["s1p3"]);
-        if (h.indexOf("ขอบคุณ") >= 0) { var q1 = freeQuestions()[freeQIdx++ % 3]; return R([P("ด้วยความยินดีครับ", "ドゥアイ・クワーム・イン・ディー・クラップ", "どういたしまして"), q1.line], q1.hints); }
+        if (h.indexOf("ขอบคุณ") >= 0) { var q1 = freeQuestions()[freeQIdx++ % 5]; return R([P("ด้วยความยินดีครับ", "ドゥアイ・クワーム・イン・ディー・クラップ", "どういたしまして"), q1.line], q1.hints); }
+        if (h.indexOf("ไม่เข้าใจ") >= 0) {
+          var lastP = null;
+          for (var li = freeChat.turns.length - 1; li >= 0; li--) { if (freeChat.turns[li].w === "p") { lastP = freeChat.turns[li]; break; } }
+          var lines2 = [P("ได้ครับ ไม่เป็นไรครับ", "ダイ・クラップ。マイ・ペン・ライ・クラップ", "いいですよ。大丈夫です")];
+          if (lastP) lines2.push(P(lastP.th, lastP.kana, lastP.ja));
+          return { lines: lines2, hints: ["s2p8", "s2p3"], slow: true };
+        }
+        if (h.indexOf("ไม่รู้") >= 0) { var q4 = freeQuestions()[freeQIdx++ % 5]; return R([P("อ๋อ ไม่เป็นไรครับ", "オー、マイ・ペン・ライ・クラップ", "ああ、大丈夫です"), q4.line], q4.hints); }
+        if (h.indexOf("ไม่ได้") >= 0 || h.indexOf("ไม่เป็น") >= 0) return R([P("ไม่เป็นไรครับ ค่อยๆ ฝึกไปครับ", "マイ・ペン・ライ・クラップ。コイ・コイ・フック・パイ・クラップ", "大丈夫です。少しずつ練習していきましょう")], ["s2p8", "s2p3"]);
+        if (h.indexOf("สบายดี") >= 0) { var q5 = freeQuestions()[freeQIdx++ % 5]; return R([P("สบายดีครับ ขอบคุณครับ", "サバーイ・ディー・クラップ。コープクン・クラップ", "元気です。ありがとうございます"), q5.line], q5.hints); }
         if (h.indexOf("ชื่อ") >= 0 && (h.indexOf("อะไร") >= 0 || h.indexOf("คุณ") >= 0) && h.indexOf("ผมชื่อ") < 0) return R([P("ผมชื่อมาร์คครับ คุณชื่ออะไรครับ", "ポム・チュー・マーク・クラップ。クン・チュー・アライ・クラップ", "私はマークです。お名前は何ですか？")], ["s2p6", "s2p1", "s2p2"]);
         if (h.indexOf("ผมชื่อ") >= 0) return R([P("ยินดีที่ได้รู้จักครับ คุณมาจากประเทศอะไรครับ", "イン・ディー・ティー・ダイ・ルー・ヂャック・クラップ。クン・マー・ヂャーク・プラテート・アライ・クラップ", "はじめまして。どこの国から来ましたか？")], ["s2p2", "s2p1"], { named: true });
         if (h.indexOf("มาจากญี่ปุ่น") >= 0 || h.indexOf("เป็นคนญี่ปุ่น") >= 0) return R([P("อ๋อ คุณเป็นคนญี่ปุ่นนะครับ", "オー、クン・ペン・コン・イープン・ナ・クラップ", "ああ、日本の方ですね"), P("คุณมาทำอะไรที่ประเทศไทยครับ", "クン・マー・タム・アライ・ティー・プラテート・タイ・クラップ", "タイには何をしに来たのですか？")], ["s2p4", "s2p3"], { origin: true });
@@ -1113,24 +1125,50 @@
         if (h.indexOf("อยู่ไหน") >= 0 || h.indexOf("อยู่ที่ไหน") >= 0) return R([P("อยู่ใกล้ๆ นี่เองครับ นั่งแท็กซี่ประมาณสิบนาทีครับ", "ユー・グライ・グライ・ニー・エーン・クラップ。ナン・テークシー・プラマーン・シッ・ナーティー・クラップ", "すぐ近くです。タクシーで10分くらいです")], ["s1p3"]);
         if (h.indexOf("ขอ") >= 0 && h.length <= 22) return R([P("ได้ครับ รอสักครู่ครับ", "ダイ・クラップ。ロー・サック・クルー・クラップ", "かしこまりました。少々お待ちください"), P("เอาเผ็ดไหมครับ", "アオ・ペッ・マイ・クラップ", "辛くしますか？")], ["s4p3", "s1p3"]);
         if (h.indexOf("หิว") >= 0 || h.indexOf("กิน") >= 0 || h.indexOf("อาหาร") >= 0 || h.indexOf("ข้าว") >= 0) return R([P("คุณอยากกินอะไรครับ", "クン・ヤーク・ギン・アライ・クラップ", "何を食べたいですか？"), P("ผัดไทยอร่อยมากครับ ลองไหมครับ", "パッタイ・アロイ・マーク・クラップ。ローン・マイ・クラップ", "パッタイはとても美味しいです。試しますか？")], ["s3p4", "s4p3"]);
+        if (h.indexOf("คุณชอบ") >= 0) return R([P("ผมชอบอาหารไทยครับ โดยเฉพาะผัดไทยครับ", "ポム・チョープ・アーハーン・タイ・クラップ。ドーイ・チャポッ・パッタイ・クラップ", "私はタイ料理が好きです。特にパッタイです"), P("คุณล่ะครับ ชอบอะไรครับ", "クン・ラ・クラップ。チョープ・アライ・クラップ", "あなたは？何が好きですか？")], ["s4p3", "s2p3"]);
+        if (h.indexOf("คุณอยู่") >= 0) return R([P("ผมอยู่กรุงเทพฯครับ", "ポム・ユー・クルンテープ・クラップ", "私はバンコクに住んでいます")], ["s1p3", "s2p2"]);
+        if (h.indexOf("คุณทำอะไร") >= 0 || h.indexOf("ทำงานอะไร") >= 0) return R([P("ผมทำงานที่ร้านอาหารไทยครับ", "ポム・タム・ガーン・ティー・ラーン・アーハーン・タイ・クラップ", "私はタイ料理店で働いています")], ["s3p4", "s1p3"]);
         if (h.indexOf("ชอบ") >= 0) return R([P("ดีครับ คุณชอบอะไรครับ", "ディー・クラップ。クン・チョープ・アライ・クラップ", "いいですね。何が好きですか？")], ["s4p3", "s2p3"]);
         if (h.indexOf("ไป") >= 0 && (h.indexOf("โรงแรม") >= 0 || h.indexOf("สนามบิน") >= 0 || h.indexOf("ตลาด") >= 0 || h.indexOf("สถานี") >= 0)) return R([P("นั่งแท็กซี่ไปสะดวกครับ", "ナン・テークシー・パイ・サドゥアーク・クラップ", "タクシーで行くと便利です")], ["s1p3"]);
-        if (h.indexOf("สวัสดี") >= 0) { var q2 = freeQuestions()[freeQIdx++ % 3]; return R([P("สวัสดีครับ สบายดีไหมครับ", "サワッディー・クラップ。サバーイ・ディー・マイ・クラップ", "こんにちは。元気ですか？"), q2.line], q2.hints); }
+        if (h.indexOf("สวัสดี") >= 0) { var q2 = freeQuestions()[freeQIdx++ % 5]; return R([P("สวัสดีครับ สบายดีไหมครับ", "サワッディー・クラップ。サバーイ・ディー・マイ・クラップ", "こんにちは。元気ですか？"), q2.line], q2.hints); }
         if (h.indexOf("เผ็ด") >= 0) return R([P("โอเคครับ เผ็ดๆ เลยครับ", "オーケー・クラップ。ペッ・ペッ・ルーイ・クラップ", "OKです。辛くしますね")], ["s3p1", "s1p3"]);
-        var pool = [
-          [P("อ๋อ เข้าใจแล้วครับ", "オー、カオ・ヂャイ・レーオ・クラップ", "ああ、わかりました")],
-          [P("ดีมากครับ", "ディー・マーク・クラップ", "とてもいいですね")],
-          [P("จริงหรือครับ น่าสนใจมากครับ", "ヂン・ルー・クラップ。ナー・ソン・ヂャイ・マーク・クラップ", "本当ですか。とても面白いですね")]
+        if (/เที่ยว|วัด|ทะเล|เกาะ|ภูเขา|เชียงใหม่|พัทยา|ภูเก็ต/.test(h)) return R([P("ดีครับ น่าไปมากครับ", "ディー・クラップ。ナー・パイ・マーク・クラップ", "いいですね。とても行ってみたいところです"), P("ไปเที่ยวให้สนุกนะครับ", "パイ・ティアオ・ハイ・サヌック・ナ・クラップ", "楽しんできてくださいね")], ["s1p3", "s2p4"]);
+        if (h.indexOf("ลด") >= 0 && h.indexOf("ได้ไหม") >= 0) return R([P("ลดได้นิดหน่อยครับ เอาไหมครับ", "ロッ・ダイ・ニッノイ・クラップ。アオ・マイ・クラップ", "少しだけ値引きできます。いかがですか？")], ["s1p3", "s3p4"]);
+        if (h.indexOf("แพง") >= 0) return R([P("ไม่แพงครับ คุณภาพดีมากครับ", "マイ・ペーン・クラップ。クンナパープ・ディー・マーク・クラップ", "高くないですよ。品質がとても良いです")], ["s3p1", "s1p3"]);
+        if (h.indexOf("ซื้อ") >= 0 || h.indexOf("ร้าน") >= 0) return R([P("ร้านนี้ดีครับ ลองดูได้เลยครับ", "ラーン・ニー・ディー・クラップ。ローン・ドゥー・ダイ・ルーイ・クラップ", "このお店は良いですよ。見てみてください")], ["s3p1", "s1p3"]);
+        if (h.indexOf("ฝน") >= 0) return R([P("ช่วงนี้ฝนตกบ่อยครับ ระวังนะครับ", "チュアン・ニー・フォン・トック・ボイ・クラップ。ラワン・ナ・クラップ", "最近はよく雨が降ります。気をつけてください")], ["s1p3"]);
+        if (h.indexOf("ร้อน") >= 0 || h.indexOf("อากาศ") >= 0) return R([P("วันนี้ร้อนมากครับ ดื่มน้ำเยอะๆ นะครับ", "ワン・ニー・ローン・マーク・クラップ。ドゥーム・ナーム・ユッ・ユッ・ナ・クラップ", "今日はとても暑いです。水をたくさん飲んでくださいね")], ["s1p3"]);
+        if (h.indexOf("สนุก") >= 0) return R([P("ดีใจที่สนุกครับ", "ディー・ヂャイ・ティー・サヌック・クラップ", "楽しんでもらえて嬉しいです")], ["s1p3", "s2p3"]);
+        if (h.indexOf("เหนื่อย") >= 0) return R([P("พักผ่อนหน่อยนะครับ", "パック・ポーン・ノイ・ナ・クラップ", "少し休んでくださいね")], ["s1p3"]);
+        if (h.indexOf("มาจาก") >= 0) return R([P("อ๋อ ครับ ดีมากครับ", "オー、クラップ。ディー・マーク・クラップ", "ああ、そうですか。とてもいいですね"), P("มาเที่ยวหรือครับ", "マー・ティアオ・ルー・クラップ", "旅行で来たのですか？")], ["s2p4", "s1p3"]);
+        var TOPICS = [
+          [["\u0e41\u0e21\u0e27"], P("\u0e19\u0e48\u0e32\u0e23\u0e31\u0e01\u0e08\u0e31\u0e07\u0e04\u0e23\u0e31\u0e1a \u0e1c\u0e21\u0e01\u0e47\u0e0a\u0e2d\u0e1a\u0e41\u0e21\u0e27\u0e04\u0e23\u0e31\u0e1a", "\u30ca\u30fc\u30fb\u30e9\u30c3\u30af\u30fb\u30c2\u30e3\u30f3\u30fb\u30af\u30e9\u30c3\u30d7\u3002\u30dd\u30e0\u30fb\u30b4\u30fc\u30fb\u30c1\u30e7\u30fc\u30d7\u30fb\u30e1\u30fc\u30aa\u30fb\u30af\u30e9\u30c3\u30d7", "\u53ef\u611b\u3044\u3067\u3059\u306d\u3002\u79c1\u3082\u732b\u304c\u597d\u304d\u3067\u3059")],
+          [["\u0e2b\u0e21\u0e32", "\u0e2a\u0e38\u0e19\u0e31\u0e02"], P("\u0e2a\u0e38\u0e19\u0e31\u0e02\u0e19\u0e48\u0e32\u0e23\u0e31\u0e01\u0e04\u0e23\u0e31\u0e1a \u0e1c\u0e21\u0e01\u0e47\u0e0a\u0e2d\u0e1a\u0e04\u0e23\u0e31\u0e1a", "\u30b9\u30ca\u30c3\u30af\u30fb\u30ca\u30fc\u30fb\u30e9\u30c3\u30af\u30fb\u30af\u30e9\u30c3\u30d7\u3002\u30dd\u30e0\u30fb\u30b4\u30fc\u30fb\u30c1\u30e7\u30fc\u30d7\u30fb\u30af\u30e9\u30c3\u30d7", "\u72ac\u306f\u53ef\u611b\u3044\u3067\u3059\u306d\u3002\u79c1\u3082\u597d\u304d\u3067\u3059")],
+          [["\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e19"], P("\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e19\u0e2a\u0e33\u0e04\u0e31\u0e0d\u0e21\u0e32\u0e01\u0e04\u0e23\u0e31\u0e1a", "\u30d7\u30a2\u30f3\u30fb\u30b5\u30e0\u30ab\u30f3\u30fb\u30de\u30fc\u30af\u30fb\u30af\u30e9\u30c3\u30d7", "\u53cb\u9054\u306f\u3068\u3066\u3082\u5927\u5207\u3067\u3059\u306d")],
+          [["\u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e23\u0e31\u0e27"], P("\u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e23\u0e31\u0e27\u0e2a\u0e33\u0e04\u0e31\u0e0d\u0e17\u0e35\u0e48\u0e2a\u0e38\u0e14\u0e04\u0e23\u0e31\u0e1a", "\u30af\u30ed\u30fc\u30d7\u30fb\u30af\u30eb\u30a2\u30fb\u30b5\u30e0\u30ab\u30f3\u30fb\u30c6\u30a3\u30fc\u30fb\u30b9\u30c3\u30fb\u30af\u30e9\u30c3\u30d7", "\u5bb6\u65cf\u304c\u3044\u3061\u3070\u3093\u5927\u5207\u3067\u3059\u306d")],
+          [["\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e1a\u0e34\u0e19"], P("\u0e40\u0e14\u0e34\u0e19\u0e17\u0e32\u0e07\u0e1b\u0e25\u0e2d\u0e14\u0e20\u0e31\u0e22\u0e19\u0e30\u0e04\u0e23\u0e31\u0e1a", "\u30c9\u30a5\u30fc\u30f3\u30fb\u30bf\u30fc\u30f3\u30fb\u30d7\u30ed\u30fc\u30c8\u30fb\u30d1\u30a4\u30fb\u30ca\u30fb\u30af\u30e9\u30c3\u30d7", "\u5b89\u5168\u306a\u65c5\u3092")],
+          [["\u0e23\u0e16\u0e44\u0e1f"], P("\u0e23\u0e16\u0e44\u0e1f\u0e2a\u0e30\u0e14\u0e27\u0e01\u0e14\u0e35\u0e04\u0e23\u0e31\u0e1a", "\u30ed\u30c3\u30c8\u30fb\u30d5\u30a1\u30a4\u30fb\u30b5\u30c9\u30a5\u30a2\u30fc\u30af\u30fb\u30c7\u30a3\u30fc\u30fb\u30af\u30e9\u30c3\u30d7", "\u96fb\u8eca\u306f\u4fbf\u5229\u3067\u3059\u306d")],
+          [["\u0e40\u0e1a\u0e35\u0e22\u0e23\u0e4c"], P("\u0e40\u0e1a\u0e35\u0e22\u0e23\u0e4c\u0e44\u0e17\u0e22\u0e2d\u0e23\u0e48\u0e2d\u0e22\u0e04\u0e23\u0e31\u0e1a \u0e41\u0e15\u0e48\u0e14\u0e37\u0e48\u0e21\u0e1e\u0e2d\u0e14\u0e35\u0e46 \u0e19\u0e30\u0e04\u0e23\u0e31\u0e1a", "\u30d3\u30a2\u30fb\u30bf\u30a4\u30fb\u30a2\u30ed\u30a4\u30fb\u30af\u30e9\u30c3\u30d7\u3002\u30c6\u30fc\u30fb\u30c9\u30a5\u30fc\u30e0\u30fb\u30dd\u30fc\u30fb\u30c7\u30a3\u30fc\u30fb\u30dd\u30fc\u30fb\u30c7\u30a3\u30fc\u30fb\u30ca\u30fb\u30af\u30e9\u30c3\u30d7", "\u30bf\u30a4\u30d3\u30fc\u30eb\u306f\u7f8e\u5473\u3057\u3044\u3067\u3059\u3002\u307b\u3069\u307b\u3069\u306b\u3069\u3046\u305e")],
+          [["\u0e01\u0e32\u0e41\u0e1f"], P("\u0e1c\u0e21\u0e01\u0e47\u0e0a\u0e2d\u0e1a\u0e01\u0e32\u0e41\u0e1f\u0e04\u0e23\u0e31\u0e1a", "\u30dd\u30e0\u30fb\u30b4\u30fc\u30fb\u30c1\u30e7\u30fc\u30d7\u30fb\u30ac\u30fc\u30d5\u30a7\u30fc\u30fb\u30af\u30e9\u30c3\u30d7", "\u79c1\u3082\u30b3\u30fc\u30d2\u30fc\u304c\u597d\u304d\u3067\u3059")],
+          [["\u0e1c\u0e25\u0e44\u0e21\u0e49"], P("\u0e1c\u0e25\u0e44\u0e21\u0e49\u0e44\u0e17\u0e22\u0e2d\u0e23\u0e48\u0e2d\u0e22\u0e21\u0e32\u0e01\u0e04\u0e23\u0e31\u0e1a", "\u30dd\u30f3\u30e9\u30de\u30a4\u30fb\u30bf\u30a4\u30fb\u30a2\u30ed\u30a4\u30fb\u30de\u30fc\u30af\u30fb\u30af\u30e9\u30c3\u30d7", "\u30bf\u30a4\u306e\u679c\u7269\u306f\u3068\u3066\u3082\u7f8e\u5473\u3057\u3044\u3067\u3059")],
+          [["\u0e40\u0e1e\u0e25\u0e07"], P("\u0e1c\u0e21\u0e0a\u0e2d\u0e1a\u0e1f\u0e31\u0e07\u0e40\u0e1e\u0e25\u0e07\u0e44\u0e17\u0e22\u0e04\u0e23\u0e31\u0e1a", "\u30dd\u30e0\u30fb\u30c1\u30e7\u30fc\u30d7\u30fb\u30d5\u30a1\u30f3\u30fb\u30d7\u30ec\u30fc\u30f3\u30fb\u30bf\u30a4\u30fb\u30af\u30e9\u30c3\u30d7", "\u79c1\u306f\u30bf\u30a4\u306e\u6b4c\u3092\u8074\u304f\u306e\u304c\u597d\u304d\u3067\u3059")],
+          [["\u0e2b\u0e19\u0e31\u0e07"], P("\u0e2b\u0e19\u0e31\u0e07\u0e40\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e19\u0e31\u0e49\u0e19\u0e2a\u0e19\u0e38\u0e01\u0e04\u0e23\u0e31\u0e1a", "\u30ca\u30f3\u30fb\u30eb\u30a2\u30f3\u30fb\u30ca\u30f3\u30fb\u30b5\u30cc\u30c3\u30af\u30fb\u30af\u30e9\u30c3\u30d7", "\u305d\u306e\u6620\u753b\u306f\u9762\u767d\u3044\u3067\u3059\u306d")],
+          [["\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25"], P("\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25\u0e2a\u0e19\u0e38\u0e01\u0e21\u0e32\u0e01\u0e04\u0e23\u0e31\u0e1a", "\u30d5\u30c3\u30c8\u30dc\u30fc\u30eb\u30fb\u30b5\u30cc\u30c3\u30af\u30fb\u30de\u30fc\u30af\u30fb\u30af\u30e9\u30c3\u30d7", "\u30b5\u30c3\u30ab\u30fc\u306f\u3068\u3066\u3082\u697d\u3057\u3044\u3067\u3059\u306d")]
         ];
-        var base = pool[freeChat.turns.length % pool.length];
-        var q3 = freeQuestions()[freeQIdx++ % 3];
-        return R(base.concat([q3.line]), q3.hints);
+        for (var ti = 0; ti < TOPICS.length; ti++) {
+          var keys = TOPICS[ti][0], hit = false;
+          for (var ki = 0; ki < keys.length; ki++) { if (h.indexOf(keys[ki]) >= 0) { hit = true; break; } }
+          if (hit) { var qt = freeQuestions()[freeQIdx++ % 5]; return R([TOPICS[ti][1], qt.line], qt.hints); }
+        }
+        var q3 = freeQuestions()[freeQIdx++ % 5];
+        var short = heard.length > 42 ? heard.slice(0, 42) : heard;
+        return R([P("\u0e2d\u0e4b\u0e2d \u0e04\u0e38\u0e13\u0e1e\u0e39\u0e14\u0e27\u0e48\u0e32 " + short + " \u0e43\u0e0a\u0e48\u0e44\u0e2b\u0e21\u0e04\u0e23\u0e31\u0e1a", "\u30aa\u30fc\u3002\u30af\u30f3\u30fb\u30d7\u30fc\u30c8\u30fb\u30ef\u30fc \u2026 \u30c1\u30e3\u30a4\u30fb\u30de\u30a4\u30fb\u30af\u30e9\u30c3\u30d7", "\u3042\u3042\u3001\u300c" + short + "\u300d\u3067\u3059\u306d\uff1f"), P("\u0e40\u0e01\u0e48\u0e07\u0e21\u0e32\u0e01\u0e04\u0e23\u0e31\u0e1a \u0e1e\u0e39\u0e14\u0e44\u0e14\u0e49\u0e14\u0e35\u0e40\u0e25\u0e22\u0e04\u0e23\u0e31\u0e1a", "\u30b2\u30f3\u30fb\u30de\u30fc\u30af\u30fb\u30af\u30e9\u30c3\u30d7\u3002\u30d7\u30fc\u30c8\u30fb\u30c0\u30a4\u30fb\u30c7\u30a3\u30fc\u30fb\u30eb\u30fc\u30a4\u30fb\u30af\u30e9\u30c3\u30d7", "\u3068\u3066\u3082\u4e0a\u624b\u3067\u3059\u3002\u3088\u304f\u8a00\u3048\u3066\u3044\u307e\u3059"), q3.line], q3.hints);
       }
       function renderFree() {
         var el = document.getElementById("view-free");
         if (!freeChat || !freeChat.started) {
           el.innerHTML = '<div class="sec-head"><h2>フリー会話</h2></div>' +
-            '<p class="small">タイ人のマークと自由に会話する練習です。マイクを押して、覚えたタイ語で話しかけてください。アプリが聞き取って、タイ語で返事をします（音声つき）。覚えた単語や文法で会話が成立するか、試してみましょう。</p>' +
+            '<p class="small">タイ人のマークと自由に会話する練習です。マイクを押して、覚えたタイ語で話しかけてください。アプリが聞き取って、タイ語で返事をします（音声つき）。アプリの外で覚えたタイ語もどんどん試せます。終わりはなく、好きなときにやめられます。</p>' +
             '<button type="button" class="btn primary" id="freeStart">フリー会話をはじめる</button>';
           document.getElementById("freeStart").addEventListener("click", function () {
             freeChat = { started: true, turns: [], flags: {}, hints: ["s2p6", "s2p1", "s2p2"], count: 0 };
@@ -1192,7 +1230,7 @@
           rep.lines.forEach(function (ln) { freeChat.turns.push(ln); });
           if (rep.hints && rep.hints.length) freeChat.hints = rep.hints;
           renderFree();
-          speakTh(rep.lines.map(function (ln) { return ln.th; }).join(" "));
+          speakTh(rep.lines.map(function (ln) { return ln.th; }).join(" "), rep.slow ? 0.6 : null);
         }, 900);
       }
       function startFreeRec(isRetry) {
