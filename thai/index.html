@@ -253,6 +253,7 @@
         <button role="tab" data-view="quiz" aria-selected="false">聞き取り</button>
         <button role="tab" data-view="talk" aria-selected="false">かいわ</button>
         <button role="tab" data-view="free" aria-selected="false">フリー会話</button>
+        <button role="tab" data-view="listen" aria-selected="false">聞き流し</button>
         <button role="tab" data-view="grammar" aria-selected="false">ぶんぽう</button>
         <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
       </nav>
@@ -263,6 +264,7 @@
         <section class="view" id="view-quiz"></section>
         <section class="view" id="view-talk"></section>
         <section class="view" id="view-free"></section>
+        <section class="view" id="view-listen"></section>
         <section class="view" id="view-grammar"></section>
         <section class="view" id="view-tones"></section>
       </main>
@@ -1381,6 +1383,34 @@
         try { rec.start(); } catch (e) { stopFreeRec(); }
       }
 
+      /* ============ 聞き流しリンク集 ============ */
+      function listenCard(title, meta, desc, url) {
+        return '<div class="card"><h3 style="margin:0 0 4px;font-size:17px">' + title + '</h3>' +
+          '<p class="note" style="margin-top:0">' + meta + '</p>' +
+          '<p style="margin:6px 0 0">' + desc + '</p>' +
+          '<p style="margin-top:10px"><a class="btn listen" style="display:inline-block;text-decoration:none" href="' + url + '" target="_blank" rel="noopener">▶ YouTubeで開く</a></p></div>';
+      }
+      function renderListen() {
+        var el = document.getElementById("view-listen");
+        var html = '<div class="card"><h2>聞き流しリンク集</h2>' +
+          '<p style="margin-top:6px">分からなくて大丈夫です。アプリで覚えた単語が「聞こえた」と思えたら、その日は勝ちです。</p>' +
+          '<div class="note">聞き方のコツ<br>・1日20〜30分、家事や移動の「ながら」でOKです<br>・同じ動画を何日か繰り返すと、聞き取れる単語が増えていきます<br>・止まって調べないこと。流しっぱなしが続けるコツです</div></div>';
+        html += '<h3 style="margin:18px 4px 8px">まずここから</h3>';
+        html += '<div class="card"><h3 style="margin:0 0 4px;font-size:17px">Comprehensible Thai（本命）</h3>' +
+          '<p class="note" style="margin-top:0">YouTubeチャンネル／再生リスト「Beginner 0」から／約1,000時間分</p>' +
+          '<p style="margin:6px 0 0">全部タイ語ですが、身ぶり手ぶりと絵で意味が分かるように話してくれます。「何を言っているかは分からないけれど、場面は分かる」状態がちょうどいい練習です。YouTubeアプリで「Comprehensible Thai」と検索して、再生リストの Beginner 0 から始めてください。</p></div>';
+        html += listenCard("超初心者向けタイ語フレーズ100選 リスニングVer.（タイトレ）", "約25分／日本語→タイ語", "短くて始めやすい聞き流し。アプリの64フレーズと重なる言い回しも多く、聞き取れる手応えを早めに感じられます。", "https://www.youtube.com/watch?v=eh6h9Oj8KAk");
+        html += '<h3 style="margin:18px 4px 8px">フレーズ聞き流し（意味が先に分かるタイプ）</h3>';
+        html += listenCard("初心者向けタイ語フレーズ300選 リスニングVer.（タイトレ）", "約55分／日本語→タイ語", "300のフレーズが順に流れます。意味が分かる分、音と意味を結びつける答え合わせになります。", "https://www.youtube.com/watch?v=z2mEUz4tIhU");
+        html += listenCard("短いタイ語100｜2語で言える表現だけ（タイトレ）", "短い表現だけを集めた聞き流し", "「ご飯を食べる」「水を飲む」のような2語の組み合わせだけ。短いので音の塊がつかみやすいです。", "https://www.youtube.com/watch?v=-llVSwF94fE");
+        html += listenCard("はじめてのタイ語基本フレーズ600（Kendra's Language School）", "約2時間／日本語→タイ語", "聞き流しの定番チャンネル。長めに流しっぱなしにしたい日に。", "https://www.youtube.com/watch?v=WTCSGlG3QZc");
+        html += listenCard("タイ語の重要単語1000（タイトレ）", "約1時間／単語中心", "フレーズではなく単語を増やしたい日に。聞き流しにも使えます。", "https://www.youtube.com/watch?v=TyWnZbbOzq4");
+        html += '<h3 style="margin:18px 4px 8px">寝る前・次のステップ</h3>';
+        html += listenCard("寝る前に聴くタイ語リスニング2", "約1時間19分／フレーズ200＋BGM", "寝る前の流し聞き用。画面を見なくて大丈夫です。", "https://www.youtube.com/watch?v=639I6EJTCIM");
+        html += listenCard("タイ語聞き流し ちょ〜ロング第2弾（MARUICHI）", "約1時間10分／初心者から中級者向け", "フレーズ系に慣れてきたら。観光地の紹介も入ります。", "https://www.youtube.com/watch?v=g_gKlqrYqHo");
+        el.innerHTML = html;
+      }
+
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
@@ -1396,6 +1426,7 @@
         if (name === "quiz") renderQuiz();
         if (name === "talk") renderTalk();
         if (name === "free") renderFree();
+        if (name === "listen") renderListen();
         if (name === "grammar") renderGrammar();
         if (name === "tones") renderTones();
         window.scrollTo({ top: 0 });
