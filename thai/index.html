@@ -860,6 +860,13 @@
             }
           }, 12000);
         }
+        var judged = false, bestScore = 0, bestHeard = "", stableTimer = null;
+        function judgeNow() {
+          if (judged || !bestHeard || talkRec !== rec) return;
+          judged = true;
+          if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
+          judgeTalk(bestScore, bestHeard, target);
+        }
         rec.onstart = armWatch;
         rec.onspeechstart = armWatch;
         rec.onresult = function (ev) {
@@ -867,20 +874,20 @@
           var interim = "";
           for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
             var rr = ev.results[ri];
-            if (rr.isFinal) {
-              var best = 0, bestTxt = "";
-              for (var i = 0; i < rr.length; i++) {
-                var tr = rr[i].transcript || "";
-                var sc = scoreHeard(tr, target.th);
-                if (sc > best) { best = sc; bestTxt = tr; }
-              }
-              judgeTalk(best, bestTxt, target);
-              return;
+            for (var i = 0; i < rr.length; i++) {
+              var tr = rr[i].transcript || "";
+              var sc = scoreHeard(tr, target.th);
+              if (sc > bestScore) { bestScore = sc; bestHeard = tr; }
             }
+            if (rr.isFinal) { judgeNow(); return; }
             interim += rr[0].transcript || "";
           }
           var r4 = document.getElementById("talkResult");
           if (r4 && interim) r4.innerHTML = '<div class="heard-box">聞き取り中：' + interim + '</div>';
+          if (bestHeard) {
+            if (stableTimer) clearTimeout(stableTimer);
+            stableTimer = setTimeout(judgeNow, 2500);
+          }
         };
         rec.onerror = function (ev) {
           stopRec();
@@ -890,7 +897,15 @@
           else if (ev.error === "no-speech") r2.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">もう一度、マイクの近くではっきり話してみてください。</p>';
           else r2.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
         };
-        rec.onend = function () { if (talkRec === rec) { if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; } talkRec = null; var m2 = document.getElementById("micBtn"); if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; } } };
+        rec.onend = function () {
+          if (talkRec !== rec) return;
+          if (!judged && bestHeard) { judgeNow(); return; }
+          if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; }
+          if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
+          talkRec = null;
+          var m2 = document.getElementById("micBtn");
+          if (m2) { m2.classList.remove("listening"); m2.textContent = "🎤 タップして話す"; }
+        };
         armWatch();
         try { rec.start(); } catch (e) { stopRec(); }
       }
@@ -1001,30 +1016,54 @@
         if (btn.dataset.rec === "1") { if (btn._rec) { try { btn._rec.abort(); } catch (e) {} } if (btn._to) clearTimeout(btn._to); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; return; }
         var rec = new SR();
         btn._rec = rec; btn.dataset.rec = "1";
-        rec.lang = "th-TH"; rec.interimResults = false; rec.maxAlternatives = 3;
+        rec.lang = "th-TH"; rec.interimResults = true; rec.maxAlternatives = 3;
         btn.classList.add("listening"); btn.textContent = "🎙 聞き取り中…話してください";
         if (res) res.innerHTML = "";
+        var dJudged = false, dBest = 0, dBestTxt = "", dStable = null;
+        function dJudge() {
+          if (dJudged || !dBestTxt || btn.dataset.rec !== "1") return;
+          dJudged = true;
+          if (dStable) { clearTimeout(dStable); dStable = null; }
+          if (btn._to) clearTimeout(btn._to);
+          try { rec.stop(); } catch (e) {}
+          btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
+          if (res) {
+            if (dBest >= 0.55) res.innerHTML = '<p class="judge-ok">' + (dBest >= 0.85 ? "🎉 完璧！通じました" : "✓ 通じました！") + '</p><div class="heard-box">聞き取り：' + dBestTxt + '</div>';
+            else res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + dBestTxt + '<br>お手本：' + pt.drill.th + '（' + pt.drill.kana + '）</div>';
+          }
+        }
         btn._to = setTimeout(function () {
-          if (btn.dataset.rec === "1") { try { rec.abort(); } catch (e) {} btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度試してください。</p>'; }
+          if (btn.dataset.rec === "1") {
+            if (dBestTxt && !dJudged) { dJudge(); return; }
+            try { rec.abort(); } catch (e) {} btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度試してください。</p>';
+          }
         }, 12000);
         rec.onresult = function (ev) {
-          if (btn._to) clearTimeout(btn._to); btn.dataset.rec = "";
-          var best = 0, bestTxt = "";
-          for (var i = 0; i < ev.results[0].length; i++) {
-            var tr = ev.results[0][i].transcript || "";
-            var sc = scoreHeard(tr, pt.drill.th);
-            if (sc > best) { best = sc; bestTxt = tr; }
+          var interim = "";
+          for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
+            var rr = ev.results[ri];
+            for (var i = 0; i < rr.length; i++) {
+              var tr = rr[i].transcript || "";
+              var sc = scoreHeard(tr, pt.drill.th);
+              if (sc > dBest) { dBest = sc; dBestTxt = tr; }
+            }
+            if (rr.isFinal) { dJudge(); return; }
+            interim += rr[0].transcript || "";
           }
-          if (res) {
-            if (best >= 0.55) res.innerHTML = '<p class="judge-ok">' + (best >= 0.85 ? "🎉 完璧！通じました" : "✓ 通じました！") + '</p><div class="heard-box">聞き取り：' + bestTxt + '</div>';
-            else res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (bestTxt || "（聞き取れませんでした）") + '<br>お手本：' + pt.drill.th + '（' + pt.drill.kana + '）</div>';
+          if (res && interim) res.innerHTML = '<div class="heard-box">聞き取り中：' + interim + '</div>';
+          if (dBestTxt) {
+            if (dStable) clearTimeout(dStable);
+            dStable = setTimeout(dJudge, 2500);
           }
         };
         rec.onerror = function (ev) {
-          if (btn._to) clearTimeout(btn._to); btn.dataset.rec = "";
+          if (btn._to) clearTimeout(btn._to); if (dStable) clearTimeout(dStable); btn.dataset.rec = "";
           if (res) res.innerHTML = '<p class="small">聞き取りに失敗しました。もう一度試してみてください。</p>';
         };
-        rec.onend = function () { if (btn._to) clearTimeout(btn._to); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; };
+        rec.onend = function () {
+          if (!dJudged && dBestTxt && btn.dataset.rec === "1") { dJudge(); return; }
+          if (btn._to) clearTimeout(btn._to); if (dStable) clearTimeout(dStable); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
+        };
         try { rec.start(); } catch (e) { btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; }
       }
 
