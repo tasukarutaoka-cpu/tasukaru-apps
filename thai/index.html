@@ -233,6 +233,27 @@
       .judge-ng { color:var(--bad); font-weight:800; font-size:16px; }
       .row-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
       .row-btns button { flex:1; min-width:120px; }
+
+      /* ============ もじ入門 ============ */
+      .cons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-top: 10px; }
+      .cons-cell { border: 1px solid var(--line, #e3e6ea); border-radius: 12px; padding: 10px 6px 8px; text-align: center; background: #fff; }
+      .cons-cell .ch { font-size: 34px; line-height: 1.15; display: block; }
+      .cons-cell .nm { font-size: 15px; display: block; margin-top: 2px; }
+      .cons-cell .kn { font-size: 11px; color: #666; display: block; }
+      .cons-cell .ja { font-size: 11px; color: #666; display: block; }
+      .cons-cell .btn { margin-top: 6px; padding: 4px 10px; font-size: 12px; }
+      .rare-tag { font-size: 10px; color: #b06000; border: 1px solid #e8c48a; border-radius: 6px; padding: 0 4px; margin-left: 4px; }
+      .tone-rule { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+      .tone-rule th, .tone-rule td { border: 1px solid #e3e6ea; padding: 6px 8px; text-align: left; }
+      .tone-rule th { background: #f4f8fb; }
+      .demo-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .demo-chip { border: 1px solid #e3e6ea; border-radius: 10px; padding: 6px 10px; text-align: center; background: #fff; }
+      .demo-chip .thai { font-size: 22px; display: block; }
+      .demo-chip .tn { font-size: 11px; color: #666; display: block; }
+      .demo-chip .btn { margin-top: 4px; padding: 3px 9px; font-size: 12px; }
+      .vowel-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed #e3e6ea; }
+      .vowel-row .thai { font-size: 24px; min-width: 64px; }
+      .quiz-opts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     </style>
   </head>
   <body>
@@ -261,6 +282,7 @@
         <button role="tab" data-view="listen" aria-selected="false">聞き流し</button>
         <button role="tab" data-view="grammar" aria-selected="false">ぶんぽう</button>
         <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
+        <button role="tab" data-view="script" aria-selected="false">もじ入門</button>
       </nav>
 
       <main>
@@ -272,6 +294,7 @@
         <section class="view" id="view-listen"></section>
         <section class="view" id="view-grammar"></section>
         <section class="view" id="view-tones"></section>
+        <section class="view" id="view-script"></section>
       </main>
 
       <footer>
@@ -717,6 +740,187 @@
         });
         html += '<div class="card"><p style="margin:0;">練習のコツ: 意味を考える前に、まず<strong>線の形を声でなぞる</strong>こと。タイの人は言葉の意味より先に、この高さの型で聞き分けています。</p></div>';
         el.innerHTML = html;
+      }
+
+
+      /* ============ もじ入門（タイ文字と声調の仕組み） ============ */
+      var CONS_MID = [
+        { ch: "ก", nm: "ไก่", kn: "ゴー・ガイ", ja: "鶏" }, { ch: "จ", nm: "จาน", kn: "ゴー・ジャーン", ja: "皿" },
+        { ch: "ฎ", nm: "ชฎา", kn: "ゴー・チャダー", ja: "冠" }, { ch: "ฏ", nm: "ปฏัก", kn: "ゴー・パタック", ja: "槍" },
+        { ch: "ด", nm: "เด็ก", kn: "ドー・デック", ja: "子ども" }, { ch: "ต", nm: "เต่า", kn: "トー・タオ", ja: "亀" },
+        { ch: "บ", nm: "ใบไม้", kn: "ボー・バイマーイ", ja: "葉" }, { ch: "ป", nm: "ปลา", kn: "ポー・プラー", ja: "魚" },
+        { ch: "อ", nm: "อ่าง", kn: "オー・アーン", ja: "たらい" }
+      ];
+      var CONS_HIGH = [
+        { ch: "ข", nm: "ไข่", kn: "コー・カイ", ja: "卵" }, { ch: "ฉ", nm: "ฉิ่ง", kn: "コー・チン", ja: "シンバル" },
+        { ch: "ฐ", nm: "ฐาน", kn: "コー・ターン", ja: "台座" }, { ch: "ถ", nm: "ถุง", kn: "コー・トゥン", ja: "袋" },
+        { ch: "ผ", nm: "ผึ้ง", kn: "ポー・プン", ja: "蜂" }, { ch: "ฝ", nm: "ฝา", kn: "フォー・ファー", ja: "蓋" },
+        { ch: "ศ", nm: "ศาลา", kn: "ソー・サーラー", ja: "東屋" }, { ch: "ษ", nm: "ฤๅษี", kn: "ソー・ルーシー", ja: "仙人" },
+        { ch: "ส", nm: "เสือ", kn: "ソー・スア", ja: "虎" }, { ch: "ห", nm: "หีบ", kn: "ホー・ヒープ", ja: "箱" }
+      ];
+      var CONS_LOW = [
+        { ch: "ค", nm: "ควาย", kn: "コー・クワーイ", ja: "水牛" }, { ch: "ฆ", nm: "ระฆัง", kn: "コー・ラカン", ja: "鐘", rare: 1 },
+        { ch: "ง", nm: "งู", kn: "ンゴー・グー", ja: "蛇" }, { ch: "ช", nm: "ช้าง", kn: "チョー・チャーン", ja: "象" },
+        { ch: "ซ", nm: "โซ่", kn: "ソー・ソー", ja: "鎖" }, { ch: "ฌ", nm: "เฌอ", kn: "チョー・チョー", ja: "木", rare: 1 },
+        { ch: "ญ", nm: "หญิง", kn: "ヨー・イン", ja: "女性" }, { ch: "ฑ", nm: "มณโฑ", kn: "トー・モントー", ja: "人名", rare: 1 },
+        { ch: "ฒ", nm: "ผู้เฒ่า", kn: "トー・プータオ", ja: "老人", rare: 1 }, { ch: "ณ", nm: "เณร", kn: "ノー・ネーン", ja: "見習い僧" },
+        { ch: "ท", nm: "ทหาร", kn: "トー・タハーン", ja: "兵士" }, { ch: "ธ", nm: "ธง", kn: "トー・トン", ja: "旗" },
+        { ch: "น", nm: "หนู", kn: "ノー・ヌー", ja: "ネズミ" }, { ch: "พ", nm: "พาน", kn: "ポー・パーン", ja: "台" },
+        { ch: "ฟ", nm: "ฟัน", kn: "フォー・ファン", ja: "歯" }, { ch: "ภ", nm: "สำเภา", kn: "ポー・サムパオ", ja: "船" },
+        { ch: "ม", nm: "ม้า", kn: "モー・マー", ja: "馬" }, { ch: "ย", nm: "ยักษ์", kn: "ヨー・ヤック", ja: "鬼" },
+        { ch: "ร", nm: "เรือ", kn: "ロー・ルア", ja: "船" }, { ch: "ล", nm: "ลิง", kn: "ロー・リン", ja: "猿" },
+        { ch: "ว", nm: "แหวน", kn: "ウォー・ウェーン", ja: "指輪" }, { ch: "ฬ", nm: "จุฬา", kn: "ロー・ジュラー", ja: "凧", rare: 1 },
+        { ch: "ฮ", nm: "นกฮูก", kn: "ホー・ノックフーク", ja: "フクロウ" }
+      ];
+      var CONS_ALL = [];
+      CONS_MID.forEach(function (c, i) { CONS_ALL.push({ ch: c.ch, nm: c.nm, kn: c.kn, ja: c.ja, g: "中子音", id: "cons" + ("0" + (i + 1)).slice(-2) }); });
+      CONS_HIGH.forEach(function (c, i) { CONS_ALL.push({ ch: c.ch, nm: c.nm, kn: c.kn, ja: c.ja, g: "高子音", id: "cons" + (10 + i) }); });
+      CONS_LOW.forEach(function (c, i) { CONS_ALL.push({ ch: c.ch, nm: c.nm, kn: c.kn, ja: c.ja, g: "低子音", rare: c.rare, id: "cons" + (20 + i) }); });
+      var DEMO_MID = [["กา", "中声"], ["ก่า", "下声"], ["ก้า", "下降"], ["ก๊า", "高声"], ["ก๋า", "上昇"]];
+      var DEMO_HIGH = [["ขา", "上昇"], ["ข่า", "下声"], ["ข้า", "下降"]];
+      var DEMO_LOW = [["คา", "中声"], ["ค่า", "下降"], ["ค้า", "高声"]];
+      var VOWEL_PAIRS = [
+        ["กะ", "ガ（短い）", "กา", "ガー（長い）"], ["กิ", "ギ（短い）", "กี", "ギー（長い）"],
+        ["กึ", "グ（短い）", "กือ", "グー（長い）"], ["กุ", "グ（短い）", "กู", "グー（長い）"],
+        ["เกะ", "ゲッ（短い）", "เก", "ゲー（長い）"], ["แกะ", "ゲッ（短い）", "แก", "ゲー（長い）"],
+        ["โกะ", "ゴッ（短い）", "โก", "ゴー（長い）"], ["เกาะ", "ゴッ（短い）", "กอ", "ゴー（長い）"],
+        ["เกอะ", "グッ（短い）", "เกอ", "グー（長い）"]
+      ];
+      var READ_WORDS = [
+        { w: "ขอบคุณ", kn: "コープクン", ja: "ありがとう", note: "ข は高子音。最初の関門の単語" },
+        { w: "สวัสดี", kn: "サワッディー", ja: "こんにちは", note: "ส は高子音" },
+        { w: "เจน", kn: "ジェーン", ja: "ジェン（彼女の名前）", note: "จ は中子音。記号なし＋末尾の น で中声" },
+        { w: "ผม", kn: "ポム", ja: "僕", note: "ผ は高子音" },
+        { w: "ครับ", kn: "クラップ", ja: "男性の丁寧語", note: "ค は低子音" },
+        { w: "อร่อย", kn: "アローイ", ja: "おいしい", note: "อ は中子音" },
+        { w: "เหนื่อย", kn: "ヌアイ", ja: "疲れた", note: "ห は高子音（この単語では音を変える役）" },
+        { w: "พัก", kn: "パック", ja: "休む", note: "พ は低子音" }
+      ];
+      var SCRIPT_KEY = "thaiScript.v1";
+      var scriptStore = { qa: { ok: 0, total: 0 }, qb: { ok: 0, total: 0 } };
+      try { var sr = localStorage.getItem(SCRIPT_KEY); if (sr) scriptStore = JSON.parse(sr); } catch (e) {}
+      function saveScript() { try { localStorage.setItem(SCRIPT_KEY, JSON.stringify(scriptStore)); } catch (e) {} }
+      var sqA = null, sqB = null;
+
+      function consGrid(list, startIdx) {
+        var h = '<div class="cons-grid">';
+        list.forEach(function (c, i) {
+          h += '<div class="cons-cell"><span class="ch thai">' + c.ch + '</span>' +
+            '<span class="nm thai">' + c.ch + ' ' + c.nm + (c.rare ? '<span class="rare-tag">レア</span>' : '') + '</span>' +
+            '<span class="kn">' + c.kn + '</span><span class="ja">' + c.ja + '</span>' +
+            '<button type="button" class="btn" data-play="cons' + ("0" + (startIdx + i)).slice(-2) + '">' + ICON_PLAY + '聞く</button></div>';
+        });
+        return h + '</div>';
+      }
+      function demoRow(set, startIdx) {
+        var h = '<div class="demo-row">';
+        set.forEach(function (d, i) {
+          h += '<div class="demo-chip"><span class="thai">' + d[0] + '</span><span class="tn">' + d[1] + '</span>' +
+            '<button type="button" class="btn" data-play="dm' + ("0" + (startIdx + i)).slice(-2) + '">' + ICON_PLAY + '</button></div>';
+        });
+        return h + '</div>';
+      }
+
+      function renderScript() {
+        var el = document.getElementById("view-script");
+        var html = '<div class="sec-head"><h2>もじ入門（タイ文字と声調）</h2></div>' +
+          '<div class="card"><p style="margin:0;">タイ文字は<strong>声調を決める仕組み</strong>そのものです。子音は3つのグループに分かれていて、グループと声調記号の組み合わせで声調が決まります。文字が読めると、初めて見る単語でも声調が導けるようになります。会話の練習の補助輪として、少しずつ進めてください。</p></div>';
+
+        html += '<div class="card"><h3 style="margin:0 0 6px;">1. 声調のルール（この表が全て）</h3>' +
+          '<table class="tone-rule"><tr><th>グループ</th><th>記号なし</th><th>่（下げる印）</th><th>้</th><th>๊</th><th>๋</th></tr>' +
+          '<tr><th>中子音（9字）</th><td>中声</td><td>下声</td><td>下降</td><td>高声</td><td>上昇</td></tr>' +
+          '<tr><th>高子音（10字）</th><td>上昇</td><td>下声</td><td>下降</td><td>使わない</td><td>使わない</td></tr>' +
+          '<tr><th>低子音（24字）</th><td>中声</td><td>下降</td><td>高声</td><td>使わない</td><td>使わない</td></tr></table>' +
+          '<p class="small" style="margin:8px 0 0;">まずは中子音の5つを聞き比べてください。同じ「ガー」でも高さの型が全部違います。</p>' +
+          '<p class="small" style="margin:10px 0 0;"><strong>中子音 ガー</strong></p>' + demoRow(DEMO_MID, 1) +
+          '<p class="small" style="margin:10px 0 0;"><strong>高子音 カー</strong>（記号なしで上昇）</p>' + demoRow(DEMO_HIGH, 6) +
+          '<p class="small" style="margin:10px 0 0;"><strong>低子音 カー</strong>（ ่ で下降、 ้ で高声）</p>' + demoRow(DEMO_LOW, 9) + '</div>';
+
+        html += '<div class="card"><h3 style="margin:0;">2. 中子音（9字）</h3>' +
+          '<p class="small" style="margin:4px 0 0;">全ての声調が作れる基本のグループ。文字の名前（「ゴー・ガイ＝鶏」のように動物や物の名前で覚える伝統の覚え方）で読みます。</p>' +
+          consGrid(CONS_MID, 1) + '</div>';
+
+        html += '<div class="card"><h3 style="margin:0;">3. 高子音（10字）</h3>' +
+          '<p class="small" style="margin:4px 0 0;">記号なしで「上昇」になるグループ。</p>' + consGrid(CONS_HIGH, 10) + '</div>';
+
+        html += '<div class="card"><h3 style="margin:0;">4. 低子音（24字）</h3>' +
+          '<p class="small" style="margin:4px 0 0;">一番多いグループ。「レア」は、めったに出ない文字なので後回しで大丈夫です。</p>' + consGrid(CONS_LOW, 20) + '</div>';
+
+        html += '<div class="card"><h3 style="margin:0 0 6px;">5. 母音（短い・長いのペア）</h3>' +
+          '<p class="small" style="margin:0;">タイ語は母音の長さで意味が変わります。短い・長いを聞き比べてください（子音は全部 ゴー です）。</p>';
+        VOWEL_PAIRS.forEach(function (p, i) {
+          html += '<div class="vowel-row"><span class="thai">' + p[0] + '</span><span class="kana">' + p[1] + '</span>' +
+            '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 1)).slice(-2) + '">' + ICON_PLAY + '</button>' +
+            '<span class="thai">' + p[2] + '</span><span class="kana">' + p[3] + '</span>' +
+            '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 2)).slice(-2) + '">' + ICON_PLAY + '</button></div>';
+        });
+        html += '</div>';
+
+        html += '<div class="card"><h3 style="margin:0 0 6px;">6. 知っている単語を読んでみる</h3>';
+        READ_WORDS.forEach(function (w, i) {
+          html += '<div class="example"><span class="thai-text thai">' + w.w + '</span><span class="kana">' + w.kn + '</span><span class="meaning">' + w.ja + '</span>' +
+            '<button type="button" class="btn" data-play="wd' + ("0" + (i + 1)).slice(-2) + '">' + ICON_PLAY + '聞く</button></div>' +
+            '<p class="small" style="margin:2px 0 8px;">' + w.note + '</p>';
+        });
+        html += '</div>';
+
+        html += '<div class="card"><h3 style="margin:0;">7. クイズ：どのグループ？</h3>' +
+          '<p class="small" style="margin:4px 0 0;">累計： ' + scriptStore.qa.ok + ' / ' + scriptStore.qa.total + ' 正解</p>' +
+          '<div id="sqA"></div></div>';
+        html += '<div class="card"><h3 style="margin:0;">8. クイズ：声調はどれ？</h3>' +
+          '<p class="small" style="margin:4px 0 0;">ルール表で考えてから答えて、最後に音で確かめてください。累計： ' + scriptStore.qb.ok + ' / ' + scriptStore.qb.total + ' 正解</p>' +
+          '<div id="sqB"></div></div>';
+        el.innerHTML = html;
+        nextQuizA(); nextQuizB();
+      }
+
+      function nextQuizA() {
+        var box = document.getElementById("sqA"); if (!box) return;
+        sqA = CONS_ALL[Math.floor(Math.random() * CONS_ALL.length)];
+        var h = '<div style="text-align:center;"><span class="thai" style="font-size:56px;">' + sqA.ch + '</span>' +
+          '<p class="small">この文字はどのグループ？（' + sqA.kn + '）</p></div>' +
+          '<div class="quiz-opts" style="justify-content:center;">' +
+          ["中子音", "高子音", "低子音"].map(function (g) { return '<button type="button" class="btn" data-qa="' + g + '">' + g + '</button>'; }).join("") + '</div>' +
+          '<p class="small" id="sqAFb" style="text-align:center;"></p>';
+        box.innerHTML = h;
+        box.querySelectorAll("[data-qa]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            box.querySelectorAll("[data-qa]").forEach(function (x) { x.disabled = true; });
+            scriptStore.qa.total++;
+            var fb = document.getElementById("sqAFb");
+            if (b.getAttribute("data-qa") === sqA.g) { scriptStore.qa.ok++; fb.textContent = "正解！ " + sqA.ch + " は" + sqA.g + "（" + sqA.ch + " " + sqA.nm + "＝" + sqA.ja + "）"; fb.style.color = "var(--good)"; }
+            else { fb.textContent = "正解は " + sqA.g + " でした（" + sqA.ch + " " + sqA.nm + "＝" + sqA.ja + "）"; fb.style.color = "var(--bad)"; }
+            saveScript();
+            setTimeout(nextQuizA, 2200);
+          });
+        });
+      }
+      var TONE_NAMES = ["中声", "下声", "下降", "高声", "上昇"];
+      var DEMO_ALL = [];
+      DEMO_MID.forEach(function (d, i) { DEMO_ALL.push({ s: d[0], t: d[1], id: "dm" + ("0" + (i + 1)).slice(-2), g: "中子音" }); });
+      DEMO_HIGH.forEach(function (d, i) { DEMO_ALL.push({ s: d[0], t: d[1], id: "dm" + ("0" + (i + 6)).slice(-2), g: "高子音" }); });
+      DEMO_LOW.forEach(function (d, i) { DEMO_ALL.push({ s: d[0], t: d[1], id: "dm" + ("0" + (i + 9)).slice(-2), g: "低子音" }); });
+      function nextQuizB() {
+        var box = document.getElementById("sqB"); if (!box) return;
+        sqB = DEMO_ALL[Math.floor(Math.random() * DEMO_ALL.length)];
+        var h = '<div style="text-align:center;"><span class="thai" style="font-size:56px;">' + sqB.s + '</span>' +
+          '<p class="small">' + sqB.g + 'の単語です。声調はどれ？</p></div>' +
+          '<div class="quiz-opts" style="justify-content:center;">' +
+          TONE_NAMES.map(function (t) { return '<button type="button" class="btn" data-qb="' + t + '">' + t + '</button>'; }).join("") + '</div>' +
+          '<p class="small" id="sqBFb" style="text-align:center;"></p><div id="sqBPlay" style="text-align:center;"></div>';
+        box.innerHTML = h;
+        box.querySelectorAll("[data-qb]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            box.querySelectorAll("[data-qb]").forEach(function (x) { x.disabled = true; });
+            scriptStore.qb.total++;
+            var fb = document.getElementById("sqBFb");
+            if (b.getAttribute("data-qb") === sqB.t) { scriptStore.qb.ok++; fb.textContent = "正解！ " + sqB.s + " は" + sqB.t + "です"; fb.style.color = "var(--good)"; }
+            else { fb.textContent = "正解は " + sqB.t + " でした"; fb.style.color = "var(--bad)"; }
+            saveScript();
+            document.getElementById("sqBPlay").innerHTML = '<button type="button" class="btn primary" data-play="' + sqB.id + '">' + ICON_PLAY + '音で確かめる</button>';
+            setTimeout(nextQuizB, 6500);
+          });
+        });
       }
 
       /* ============ かいわモード（音声認識つき） ============ */
@@ -1462,6 +1666,7 @@
         if (name === "listen") renderListen();
         if (name === "grammar") renderGrammar();
         if (name === "tones") renderTones();
+        if (name === "script") renderScript();
         window.scrollTo({ top: 0 });
       }
       document.querySelectorAll("nav.tabs button").forEach(function (b) {
