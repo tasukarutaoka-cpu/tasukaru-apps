@@ -264,6 +264,20 @@
       .sym-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #e3e6ea; }
       .sym-row .sym { font-size: 26px; min-width: 74px; text-align: center; }
       .sym-row .exp { font-size: 13px; }
+      /* ============ コース ============ */
+      .course-picks { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+      .course-pick { border: 2px solid #e3e6ea; border-radius: 12px; padding: 10px 12px; background: #fff; text-align: left; width: 100%; cursor: pointer; }
+      .course-pick.sel { border-color: var(--accent); background: #f2f9fd; }
+      .course-pick .nm { font-weight: 800; font-size: 16px; }
+      .course-pick .ds { font-size: 12px; color: #555; display: block; margin-top: 2px; }
+      .step-card { border: 1px solid #e3e6ea; border-radius: 12px; padding: 10px 12px; margin-top: 8px; background: #fff; display: flex; gap: 10px; align-items: flex-start; }
+      .step-card.next { border: 2px solid var(--accent); background: #f2f9fd; }
+      .step-card.done { opacity: .62; }
+      .step-num { font-weight: 800; font-size: 18px; min-width: 30px; text-align: center; }
+      .step-body { flex: 1; }
+      .step-body .tt { font-weight: 700; font-size: 15px; }
+      .step-body .dd { font-size: 12px; color: #555; margin-top: 2px; }
+      .step-next-tag { font-size: 10px; color: #fff; background: var(--accent); border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
     </style>
   </head>
   <body>
@@ -284,7 +298,8 @@
       </header>
 
       <nav class="tabs" role="tablist" aria-label="練習メニュー">
-        <button role="tab" data-view="today" aria-selected="true">今日の練習</button>
+        <button role="tab" data-view="course" aria-selected="true">コース</button>
+        <button role="tab" data-view="today" aria-selected="false">今日の練習</button>
         <button role="tab" data-view="scenes" aria-selected="false">場面から探す</button>
         <button role="tab" data-view="quiz" aria-selected="false">聞き取り</button>
         <button role="tab" data-view="talk" aria-selected="false">かいわ</button>
@@ -297,7 +312,8 @@
       </nav>
 
       <main>
-        <section class="view active" id="view-today"></section>
+        <section class="view active" id="view-course"></section>
+        <section class="view" id="view-today"></section>
         <section class="view" id="view-scenes"></section>
         <section class="view" id="view-quiz"></section>
         <section class="view" id="view-talk"></section>
@@ -646,7 +662,7 @@
         SCENES.forEach(function (name, si) {
           var list = PHRASES.filter(function (p) { return p.scene === si; });
           var done = list.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
-          html += '<h2 class="scene-title">' + name + '<span class="cnt">言える ' + done + ' / ' + list.length + '</span></h2>';
+          html += '<h2 class="scene-title" id="scene-' + si + '">' + name + '<span class="cnt">言える ' + done + ' / ' + list.length + '</span></h2>';
           list.forEach(function (p) {
             html += '<div class="phrase-row">' +
               '<div class="kana">' + (p.sKana || p.kana) + statusChip(p) + '</div>' +
@@ -1703,6 +1719,132 @@
         el.innerHTML = html;
       }
 
+      /* ============ コース（順番どおりに進む道筋） ============ */
+      var COURSES = [
+        { id: "fast", name: "最短コース", sub: "日常会話を最短で",
+          desc: "聞く→声に出す、だけ。読み書きなしで、場面の順に64フレーズを進みます。旅行やタイ人との日常のやりとりが目的なら、これ一本です。",
+          steps: [
+            { v: "scenes", sc: 0, t: "あいさつのフレーズ", d: "最初の8フレーズ。音を聞いて、声に出して真似するところから。" },
+            { v: "scenes", sc: 1, t: "自己紹介のフレーズ", d: "名前・出身・「少し話せます」。相手との距離が縮まる場面です。" },
+            { v: "scenes", sc: 2, t: "買い物のフレーズ", d: "値段を聞く・交渉する。市場や屋台でそのまま使えます。" },
+            { v: "scenes", sc: 3, t: "食事のフレーズ", d: "注文と味の希望。タイの食卓で一番出番が多い場面です。" },
+            { v: "scenes", sc: 4, t: "移動のフレーズ", d: "行き先を伝える・道を聞く。移動が不安でなくなる場面です。" },
+            { v: "scenes", sc: 5, t: "ホテルのフレーズ", d: "チェックインとお願いごと。旅行の土台です。" },
+            { v: "scenes", sc: 6, t: "困ったときのフレーズ", d: "聞き取れない・体調が悪い。いざという時の命綱です。" },
+            { v: "scenes", sc: 7, t: "気持ちを伝えるフレーズ", d: "嬉しい・楽しい・また会いたい。会話が「用事」から「気持ち」に変わる場面です。" },
+            { v: "quiz", t: "聞き取りクイズで確認", d: "覚えたフレーズが耳で分かるか確認。5問正解が目安です。" },
+            { v: "talk", t: "かいわモードで通し練習", d: "相手役との会話形式で、一連の流れを体験して仕上げます。" }
+          ] },
+        { id: "solid", name: "しっかりコース", sub: "会話が続く中級へ",
+          desc: "フレーズに、声調・ぶんぽう・聞き取りを混ぜた順番で進みます。「言える」から「相手の返事も聞き取れて、会話が続く」までが目標です。",
+          steps: [
+            { v: "tones", t: "声調ガイド：5つの声調を聞き比べる", d: "タイ語の土台。意味より先に「音の高さの型」を耳に入れます。" },
+            { v: "scenes", sc: 0, t: "あいさつのフレーズ", d: "声調を意識しながら、最初の場面を進めます。" },
+            { v: "scenes", sc: 1, t: "自己紹介のフレーズ", d: "自分のことが言えると、会話の入口が広がります。" },
+            { v: "grammar", t: "ぶんぽう前半（型を上から半分）", d: "フレーズの「型」が見えると、単語の入れ替えで言えることが一気に増えます。" },
+            { v: "scenes", sc: 2, t: "買い物のフレーズ", d: "型を使って、値段交渉まで。" },
+            { v: "scenes", sc: 3, t: "食事のフレーズ", d: "注文の型は応用がききます。" },
+            { v: "quiz", t: "聞き取りクイズ（中間チェック）", d: "ここまでの定着を確認します。" },
+            { v: "scenes", sc: 4, t: "移動のフレーズ", d: "場所と方向の言い方を増やします。" },
+            { v: "scenes", sc: 5, t: "ホテルのフレーズ", d: "お願いごとの型を固めます。" },
+            { v: "grammar", t: "ぶんぽう後半（残りの型）", d: "ドリルで声に出して仕上げます。" },
+            { v: "scenes", sc: 6, t: "困ったときのフレーズ", d: "聞き返しと助けの求め方。" },
+            { v: "scenes", sc: 7, t: "気持ちを伝えるフレーズ", d: "感情の表現で会話に温度が出ます。" },
+            { v: "visual", t: "視覚言語：スタンプと記号", d: "LINEのやりとりの読み方。555や合掌の意味を押さえます。" },
+            { v: "free", t: "フリー会話に挑戦", d: "相手役との自由な会話で総仕上げです。" }
+          ] },
+        { id: "native", name: "ネイティブコース", sub: "本格的に、時間をかけて",
+          desc: "文字と声調の仕組みから入る本格コース。読めるようになると、看板・メニュー・チャットの文字まで世界が広がります。",
+          steps: [
+            { v: "script", t: "もじ入門：声調ルールの仕組み", d: "子音の3グループと声調の決まり方。最初に全体像をつかみます。" },
+            { v: "script", t: "もじ入門：子音42字", d: "伝統の名前と一緒に、音で覚えます。" },
+            { v: "script", t: "もじ入門：母音の短長ペア", d: "短い・長いの聞き分けが読みの鍵です。" },
+            { v: "script", t: "もじ入門：読む練習とクイズ", d: "知っている単語を文字で読んで、仕組みを定着させます。" },
+            { v: "tones", t: "声調ガイド：聞き分け上級", d: "文字と音の高さを結びつけます。" },
+            { v: "scenes", t: "フレーズを文字とセットで覚え直す", d: "場面から探すで、タイ文字を見ながら全場面を進めます。" },
+            { v: "grammar", t: "ぶんぽう全型＋ドリル", d: "型を文字でも確認しながら一周します。" },
+            { v: "quiz", t: "聞き取りクイズ", d: "耳の定着を確認します。" },
+            { v: "talk", t: "かいわモード全場面", d: "場面ごとの会話を通しで練習します。" },
+            { v: "listen", t: "聞き流しで長文に慣れる", d: "長い音の流れに耳を慣らします。" },
+            { v: "free", t: "フリー会話", d: "自由な会話で運用力を試します。" },
+            { v: "visual", t: "視覚言語：チャットの作法まで", d: "スタンプ・記号・写真の読み方で、文字の外の会話までカバーします。" }
+          ] }
+      ];
+      var COURSE_KEY = "thaiCourse.v1";
+      var cstate = { cur: "fast", done: {} };
+      try {
+        var craw = localStorage.getItem(COURSE_KEY);
+        if (craw) { var cp = JSON.parse(craw); if (cp && cp.cur) cstate = cp; }
+      } catch (e) {}
+      function saveCourse() { try { localStorage.setItem(COURSE_KEY, JSON.stringify(cstate)); } catch (e) {} }
+      function courseById(id) { for (var i = 0; i < COURSES.length; i++) if (COURSES[i].id === id) return COURSES[i]; return COURSES[0]; }
+      function renderCourse() {
+        var el = document.getElementById("view-course");
+        var cur = courseById(cstate.cur);
+        var doneMap = cstate.done[cur.id] || {};
+        var doneN = 0; cur.steps.forEach(function (_, i) { if (doneMap[i]) doneN++; });
+        var nextIdx = -1; cur.steps.forEach(function (_, i) { if (nextIdx < 0 && !doneMap[i]) nextIdx = i; });
+        var t = todayStr(), dueN = 0;
+        PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.due <= t) dueN++; });
+        var html = '<div class="sec-head"><h2>コース</h2></div>' +
+          '<div class="card"><p style="margin:0;">コースを選んだら、あとは<strong>上から順番に進むだけ</strong>です。終わったステップには「できた」を押してください。続きはここに残ります。</p></div>';
+        if (dueN > 0) {
+          html += '<div class="card" style="margin-top:8px;"><p style="margin:0 0 6px;">今日の復習が <strong>' + dueN + ' 件</strong> 待っています。</p>' +
+            '<div class="row-btns"><button type="button" class="btn" id="courseToToday">今日の練習へ</button></div></div>';
+        }
+        html += '<h3 style="margin:18px 4px 8px">コースを選ぶ</h3><div class="course-picks">';
+        COURSES.forEach(function (c) {
+          var dm = cstate.done[c.id] || {}; var dn = 0;
+          c.steps.forEach(function (_, i) { if (dm[i]) dn++; });
+          html += '<button type="button" class="course-pick' + (c.id === cur.id ? ' sel' : '') + '" data-course="' + c.id + '">' +
+            '<span class="nm">' + c.name + '（' + c.sub + '）</span>' +
+            '<span class="ds">' + c.desc + '</span>' +
+            '<span class="ds">進み具合：' + dn + ' / ' + c.steps.length + ' ステップ</span></button>';
+        });
+        html += '</div>';
+        html += '<h3 style="margin:18px 4px 8px">' + cur.name + 'の道筋（' + doneN + ' / ' + cur.steps.length + '）</h3>';
+        html += '<div class="bar"><div class="track"><div class="fill" style="width:' + (doneN / cur.steps.length * 100) + '%"></div></div></div>';
+        cur.steps.forEach(function (st, i) {
+          var isDone = !!doneMap[i], isNext = (i === nextIdx);
+          html += '<div class="step-card' + (isDone ? ' done' : '') + (isNext ? ' next' : '') + '">' +
+            '<div class="step-num">' + (isDone ? '✅' : (i + 1)) + '</div>' +
+            '<div class="step-body"><div class="tt">' + st.t + (isNext ? '<span class="step-next-tag">次のステップ</span>' : '') + '</div>' +
+            '<div class="dd">' + st.d + '</div>' +
+            '<div class="row-btns"><button type="button" class="btn" data-go="' + st.v + '" data-sc="' + (st.sc != null ? st.sc : -1) + '">始める</button>' +
+            '<button type="button" class="btn slow" data-done="' + i + '">' + (isDone ? '戻す' : 'できた ✓') + '</button></div></div></div>';
+        });
+        if (nextIdx < 0) {
+          html += '<div class="card" style="margin-top:10px;"><p style="margin:0;">🎉 このコースは一周しました。あとは「今日の練習」の復習を回すのが、忘れないコツです。別のコースに挑戦してもよいですし、同じコースをもう一周しても大丈夫です。</p></div>';
+        }
+        html += '<p class="small" style="margin-top:10px;">タブから各コーナーを自由に開くこともできます。コースの記録は、この端末のブラウザの中にだけ保存されます。</p>';
+        el.innerHTML = html;
+        var tt = document.getElementById("courseToToday");
+        if (tt) tt.addEventListener("click", function () { switchView("today"); });
+        el.querySelectorAll("[data-course]").forEach(function (b) {
+          b.addEventListener("click", function () { cstate.cur = b.getAttribute("data-course"); saveCourse(); renderCourse(); });
+        });
+        el.querySelectorAll("[data-go]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var v = b.getAttribute("data-go"), sc = +b.getAttribute("data-sc");
+            switchView(v);
+            if (v === "scenes" && sc >= 0) {
+              setTimeout(function () {
+                var tEl = document.getElementById("scene-" + sc);
+                if (tEl) tEl.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 80);
+            }
+          });
+        });
+        el.querySelectorAll("[data-done]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var i = b.getAttribute("data-done");
+            if (!cstate.done[cur.id]) cstate.done[cur.id] = {};
+            if (cstate.done[cur.id][i]) delete cstate.done[cur.id][i]; else cstate.done[cur.id][i] = 1;
+            saveCourse(); renderCourse();
+          });
+        });
+      }
+
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
@@ -1722,6 +1864,7 @@
         if (name === "grammar") renderGrammar();
         if (name === "tones") renderTones();
         if (name === "script") renderScript();
+        if (name === "course") renderCourse();
         if (name === "visual") renderVisual();
         window.scrollTo({ top: 0 });
       }
@@ -1746,7 +1889,7 @@
       });
 
       updateProgress();
-      renderToday();
+      renderCourse();
     </script>
   </body>
 </html>
