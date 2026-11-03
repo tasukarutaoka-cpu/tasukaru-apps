@@ -254,6 +254,16 @@
       .vowel-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed #e3e6ea; }
       .vowel-row .thai { font-size: 24px; min-width: 64px; }
       .quiz-opts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      /* ============ 視覚言語 ============ */
+      .stamp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+      .stamp-cell { border: 1px solid #e3e6ea; border-radius: 12px; padding: 10px 8px; text-align: center; background: #fff; }
+      .stamp-cell .emo { font-size: 40px; line-height: 1.2; display: block; }
+      .stamp-cell .ttl { font-weight: 700; font-size: 14px; display: block; margin-top: 4px; }
+      .stamp-cell .dsc { font-size: 12px; color: #555; display: block; margin-top: 2px; text-align: left; }
+      .temp-tag { font-size: 10px; border-radius: 6px; padding: 0 5px; margin-left: 4px; border: 1px solid #bcd8ea; color: #22648c; }
+      .sym-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #e3e6ea; }
+      .sym-row .sym { font-size: 26px; min-width: 74px; text-align: center; }
+      .sym-row .exp { font-size: 13px; }
     </style>
   </head>
   <body>
@@ -283,6 +293,7 @@
         <button role="tab" data-view="grammar" aria-selected="false">ぶんぽう</button>
         <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
         <button role="tab" data-view="script" aria-selected="false">もじ入門</button>
+        <button role="tab" data-view="visual" aria-selected="false">視覚言語</button>
       </nav>
 
       <main>
@@ -295,6 +306,7 @@
         <section class="view" id="view-grammar"></section>
         <section class="view" id="view-tones"></section>
         <section class="view" id="view-script"></section>
+        <section class="view" id="view-visual"></section>
       </main>
 
       <footer>
@@ -1648,6 +1660,49 @@
         el.innerHTML = html;
       }
 
+      /* ============ 視覚言語（スタンプ・絵文字・記号の読み方） ============ */
+      function renderVisual() {
+        var el = document.getElementById("view-visual");
+        var stamps = [
+          ["😴💤", "おやすみ・休息", "「疲れたね、休んで」の合図。徹夜明けの相手への締めに最適。返信が要らない形で優しく終われる。", "優しい"],
+          ["👍", "OK・了解", "軽い承諾。約束や確認への返事に万能。ただし会話の締めに使うと少し事務的。", "中立"],
+          ["🙏", "合掌（ワイ）", "タイの万能スタンプ。ありがとう・すみません・お願い・挨拶、全部これ1つで届く。迷ったらこれ。", "丁寧"],
+          ["😆", "大笑い", "「冗談が届いたよ」の合図。相手の冗談には、言葉より先にこれで返すと軽くて自然。", "楽しい"],
+          ["😅", "照れ・困り笑い", "照れ隠しや、軽い謝罪を柔らかくする時に。重くならない魔法の顔。", "柔らかい"],
+          ["🥺", "うるうる", "甘え・お願いの入り口。相手がこれを出したら、弱音や頼みが続くことが多い。", "甘え"],
+          ["👋", "バイバイ", "締めの挨拶。「またね」の軽い版。追いかけない終わり方に。", "軽い"],
+          ["🐱", "動物・猫系", "タイで一番人気のモチーフ。可愛い＝ナーラックは年齢性別を問わない褒め言葉。男性が使っても自然。", "無害"]
+        ];
+        var html = '<div class="sec-head"><h2>視覚言語（スタンプと絵文字）</h2></div>' +
+          '<div class="card"><p style="margin:0;">タイ人とのLINEは、意味の半分をスタンプと絵文字が運びます。文章が素っ気なくなるのを防ぎ、「重くないよ」「返信は急がなくていいよ」という配慮（グレンチャイ）を届けるのが役割です。ここでは、よく来るものの読み方と、送る時の目安をまとめます。</p></div>';
+        html += '<h3 style="margin:18px 4px 8px">よく来るスタンプの意味</h3><div class="stamp-grid">';
+        stamps.forEach(function (st) {
+          html += '<div class="stamp-cell"><span class="emo">' + st[0] + '</span><span class="ttl">' + st[1] +
+            '<span class="temp-tag">' + st[3] + '</span></span><span class="dsc">' + st[2] + '</span></div>';
+        });
+        html += '</div>';
+        html += '<h3 style="margin:18px 4px 8px">ハートの温度段階（読み方）</h3>' +
+          '<div class="card">' +
+          '<div class="sym-row"><span class="sym">❤️</span><span class="exp"><strong>小</strong>：いいね・ありがとう程度の日常の通貨。スタンプ1個だけなら「好意の挨拶」くらいに読む。</span></div>' +
+          '<div class="sym-row"><span class="sym">💕🫶</span><span class="exp"><strong>中</strong>：喜びや親しさの表現。言葉や写真とセットで来たら温度は高め。</span></div>' +
+          '<div class="sym-row"><span class="sym">🤟😘</span><span class="exp"><strong>大</strong>：🤟は「I love you」のハンドサイン。キス系と一緒に来たら、はっきりした好意として読んでよい。</span></div>' +
+          '<p style="margin:8px 0 0;">読むコツ：スタンプ単体ではなく、<strong>言葉とセットか・自分から送ってくるか・頻度が上がっているか</strong>の組み合わせで判断する。</p></div>';
+        html += '<h3 style="margin:18px 4px 8px">タイのチャット記号</h3><div class="card">' +
+          '<div class="sym-row"><span class="sym">555</span><span class="exp"><strong>ハハハ</strong>。タイ語で5は「ハー」と読むので、笑い声そのもの。数が多いほど大笑い（55555）。</span></div>' +
+          '<div class="sym-row"><span class="sym">อิอิ</span><span class="exp"><strong>イイ</strong>。含み笑い・照れ笑い。「ふふ」という感じ。</span></div>' +
+          '<div class="sym-row"><span class="sym">ฮ่าๆ</span><span class="exp"><strong>ハー</strong>。笑いのタイ文字表記。555と同じ意味。</span></div>' +
+          '<div class="sym-row"><span class="sym">งับ</span><span class="exp"><strong>ンガップ</strong>。「クラップ（男性の丁寧語）」の可愛い崩し方。親しい相手や若い女性が使うと、距離の近さのサイン。</span></div>' +
+          '<div class="sym-row"><span class="sym">🙏</span><span class="exp"><strong>万能の合掌</strong>。ありがとう・ごめんなさい・お願いします・こんにちは、まで全部カバー。絵文字でも同じ。</span></div>' +
+          '</div>';
+        html += '<h3 style="margin:18px 4px 8px">送る時の目安</h3><div class="card">' +
+          '<p style="margin:0 0 6px;">・<strong>1回に1個</strong>。連打は騒がしく、前のめりに見える。</p>' +
+          '<p style="margin:0 0 6px;">・<strong>締めは相手の状態で選ぶ</strong>。夜更け・徹夜明けならおやすみ系、約束の確認なら👍、冗談には😆。</p>' +
+          '<p style="margin:0 0 6px;">・<strong>弱音や大事な話にはスタンプで返さない</strong>。そこは言葉で受ける場面。</p>' +
+          '<p style="margin:0 0 6px;">・<strong>写真や動画が来たら</strong>、写っている内容にだけ反応する。「誰と・どこで」は聞かない。送ってくれたこと自体が信頼のサイン。</p>' +
+          '<p style="margin:0;">・<strong>告白系の重いスタンプ</strong>は、言葉と同じく今の段階では使わない。軽さが武器。</p></div>';
+        el.innerHTML = html;
+      }
+
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
@@ -1667,6 +1722,7 @@
         if (name === "grammar") renderGrammar();
         if (name === "tones") renderTones();
         if (name === "script") renderScript();
+        if (name === "visual") renderVisual();
         window.scrollTo({ top: 0 });
       }
       document.querySelectorAll("nav.tabs button").forEach(function (b) {
