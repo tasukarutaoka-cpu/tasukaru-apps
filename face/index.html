@@ -216,6 +216,10 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 }
 .phase-step.now{border-color:var(--accent);background:var(--accent-soft);}
 .phase-step.ph{font-weight:700;}
+.slot-row{display:flex;gap:10px;align-items:center;padding-top:8px;}
+.slot{width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:transparent;font-size:17px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;}
+.slot.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.slot-note{font-size:12px;color:var(--ink2);}
 </style>
 
 <style>
@@ -233,7 +237,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <!-- ============ セットアップ ============ -->
 <section id="setupView" class="hidden">
 <h1>顔ケアをはじめましょう</h1>
-<p class="small">51歳・自宅ケア用に調べた内容をもとにした、続けるためのアプリです。合言葉は「朝3分・夜5分」。まず土台（保湿＋日焼け止め）を固めてから、攻めの成分を1つずつ足していきます。</p>
+<p class="small">51歳・自宅ケア用に調べた内容をもとにした、続けるためのアプリです。合言葉は「朝5分・夜3分」。やることは洗顔・保湿・日焼け止めの3つだけ。少ないから続く、を狙います。</p>
 
 <div class="goal">
 <div class="g-title">目標：見た目マイナス20歳／目を大きく、二重に</div>
@@ -316,16 +320,15 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 </div>
 
 <div class="card flush">
-<div class="sec-head"><h2>内側ケア</h2><span class="time">1日4つだけ</span></div>
-<div id="innerList"></div>
-<div class="prog"><div id="innerProg" style="width:0%"></div></div>
-<div id="innerDone"></div>
-<p class="small" style="padding:0 16px 14px;margin:0;">厳しい食事制限ではありません。「少ないルールを続ける」ための4つです。できない日があっても、翌日戻ればそれでOK。理由はガイドの「内側ケアの話」にまとめています。</p>
+<div class="sec-head"><h2>今週のケア</h2><span class="time" id="weekRange"></span></div>
+<div id="weekList"></div>
+<div class="prog"><div id="weekProg" style="width:0%"></div></div>
+<p class="small" style="padding:0 16px 14px;margin:0;">週の最低ラインは「早歩き2回・青魚2日」。全部できなくても、最低ラインを守れれば十分です。酵素洗顔は任意で、週1〜2回まで。丸をタップすると記録できます。</p>
 </div>
 
 <div class="card">
 <h2>今日の顔の状態</h2>
-<p class="small">タップで記録すると、下に状態に合わせたアドバイスが出ます。赤みがある日は、夜のレチノールが自動で「お休み」になります。</p>
+<p class="small">タップで記録すると、下に状態に合わせたアドバイスが出ます。赤みや乾燥が強い日は、無理せず保湿中心の守りの日にしてください。</p>
 <div id="condArea"></div>
 </div>
 
@@ -702,7 +705,8 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <script>
 (function(){
 "use strict";
-var LS_KEY = "facecare.browser.v1";
+var LS_KEY_OLD = "facecare.browser.v1";
+var LS_KEY = "facecare.browser.v2";
 var PHOTO_KEY = "facecare.browser.photos.v1";
 
 function $(id){ return document.getElementById(id);}
@@ -724,12 +728,23 @@ clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.add("hid
 /* ---------- 状態の保存 ---------- */
 var state=null;
 function defaultState(){
-return { settings:null, logs:{}, retinolAnchor:null, bodySessions:[]};
+return { settings:null, logs:{}, retinolAnchor:null, bodySessions:[], weekly:{}, routineV:2};
 }
 function load(){
 try{
 var raw=localStorage.getItem(LS_KEY);
-if(raw){ state=JSON.parse(raw); if(!state.logs) state.logs={}; if(!state.bodySessions) state.bodySessions=[]; return;}
+if(raw){ state=JSON.parse(raw); if(!state.logs) state.logs={}; if(!state.bodySessions) state.bodySessions=[]; if(!state.weekly) state.weekly={}; return;}
+var oldRaw=localStorage.getItem(LS_KEY_OLD);
+if(oldRaw){
+state=JSON.parse(oldRaw);
+if(!state.logs) state.logs={};
+if(!state.bodySessions) state.bodySessions=[];
+if(!state.weekly) state.weekly={};
+state.routineV=2;
+save();
+try{ localStorage.removeItem(LS_KEY_OLD);}catch(e){}
+return;
+}
 }catch(e){}
 state=defaultState();
 }
@@ -783,50 +798,77 @@ return (dow===1 || dow===3 || dow===5); // 月・水・金
 
 /* ---------- ルーティン定義 ---------- */
 function amTasks(){
-var plan=state.settings.plan;
-var list=[
-{ id:"wash", name:"水洗顔", desc:"30秒。べたつく場合のみ洗顔料。タオルは押さえるだけ", time:"0.5分"},
-{ id:"allinone", name:"オールインワンを顔全体＋首に", desc:"ナイアシンアミド入りジェル。余りは目の下・ほうれい線に重ね付け", time:"1分"}
+return [
+{ id:"foam", name:"泡洗顔", desc:"2分。泡でなでるだけ、こすらない。タオルは押さえるだけ", time:"2分"},
+{ id:"moist", name:"保湿（ワセリンを薄く）", desc:"1分。顔全体に薄く伸ばす。乾きやすい部分は少し多めに", time:"1分"},
+{ id:"sun", name:"日焼け止め", desc:"2分。顔・首・耳に。鼻と額は重ね塗り。曇りの日も", time:"2分"}
 ];
-if(plan==="std"){
-list.splice(1,0,{ id:"vitc", name:"ビタミンC美容液 4〜5滴", desc:"メラノCCプレミアム等。オールインワンの前に", time:"0.5分"});
-}
-list.push({ id:"sunscreen", name:"日焼け止め（朝の最重要）", desc:"顔・首・耳に500円玉大×2回に分けて。曇りの日も", time:"1分"});
-list.push({ id:"eye", name:"目元ケア（任意）", desc:"蒸しタオルで温める／眉固定の開閉×5回。むくみが強い日だけでも", time:"0.5分", optional:true});
-return list;
 }
 function pmTasks(){
-var log=dayLog(todayKey());
-var redToday = log.cond && log.cond.red>=1;
-var p=phase();
-var list=[
-{ id:"cleanse", name:"洗顔料で洗う", desc:"日焼け止めと皮脂を落とす。擦らない・熱い湯は使わない", time:"1分"},
-{ id:"allinone", name:"オールインワン（保湿の土台）", desc:"全顔＋首に。乾燥する日は重ね付け", time:"1分"}
+return [
+{ id:"foam", name:"泡洗顔", desc:"2分。日焼け止めと皮脂を落とす。こすらない・熱い湯は使わない", time:"2分"},
+{ id:"moist", name:"お風呂上がり5分以内に保湿", desc:"1分。ワセリンを薄く。肌が乾く前に塗るのがコツ", time:"1分"},
+{ id:"phone", name:"寝る30分前にスマホを置く", desc:"7時間眠れる時刻に就寝するのが目安", time:""}
 ];
-if(state.settings.plan==="std" && p>=2){
-if(redToday){
-list.push({ id:"retinol", name:"レチノール", desc:"", badge:"今日はお休み", badgeCls:"rest", disabled:true, forceUndone:true});
-} else if(isRetinolDay()){
-list.push({ id:"retinol", name:"レチノール（今日は使う日）", desc:"額・目の周囲（粘膜際を除く）・ほうれい線に薄く。保湿の後＝サンドイッチが刺激対策", badge:"使う日", badgeCls:"info", time:"1分"});
-} else {
-list.push({ id:"retinol", name:"レチノール", desc: p===2? "使う日は月・木です。今日はオールインワンの重ね付けだけでOK": "隔晩ペースです。今日はお休みの日", badge:"お休みの日", badgeCls:"", disabled:true, forceUndone:true});
-}
-}
-if(trainDay()){
-list.push({ id:"train", name:"顔トレ3種（週2〜3回）", desc:"①下まぶた「眩しい目」5秒×5回 ②頬リフト（線を手で押さえて）×5回 ③眉固定の開閉×5回＋頭皮マッサージ1分／動きの動画はガイドタブ「お悩み別・動画リンク集」にあります", badge:"トレ日", badgeCls:"info", time:"2〜3分"});
-} else {
-list.push({ id:"train", name:"顔トレ3種（任意）", desc:"トレ日は月・水・金。やる場合は皮膚を押さえて・シワを寄せない範囲で", optional:true, time:"2〜3分"});
-}
-return list;
 }
 
-function innerTasks(){
-return [
-{ id:"sweet", name:"甘い飲み物を飲まなかった", desc:"ジュース・加糖コーヒー・スポーツドリンクを避ける。水・お茶・無糖が基本（糖化対策）"},
-{ id:"protein", name:"毎食タンパク質を取れた", desc:"肉・魚・卵・大豆のどれかを毎食。コラーゲンの材料になります"},
-{ id:"sleep", name:"7時間前後眠れた", desc:"睡眠は肌の修復時間。目の下のたるみ・むくみにも関係します"},
-{ id:"salt", name:"酒・塩分を控えめにできた", desc:"むくみ対策。特に寝る前は控えめに"}
-];
+/* ---------- 週次ケア（月曜はじまり） ---------- */
+function weekStartKey(){
+var now=new Date();
+var dow=(now.getDay()+6)%7;
+var mon=addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -dow);
+return dateKey(mon);
+}
+function weekLog(){
+if(!state.weekly) state.weekly={};
+var wk=weekStartKey();
+if(!state.weekly[wk]) state.weekly[wk]={ walk:0, fish:0, enzyme:false};
+return state.weekly[wk];
+}
+function renderWeekly(){
+var wk=weekStartKey();
+var w=weekLog();
+var sun=dateKey(addDays(parseKey(wk),6));
+$("weekRange").textContent=fmtShort(wk)+"（月）〜"+fmtShort(sun)+"（日）";
+var el=$("weekList"); el.innerHTML="";
+function makeRow(name, desc){
+var wrap=document.createElement("div");
+wrap.style.cssText="padding:12px 16px;border-bottom:1px solid var(--line);";
+wrap.innerHTML='<div style="font-weight:600;font-size:15px;">'+esc(name)+'</div>'+(desc? '<div style="font-size:13px;color:var(--ink2);">'+esc(desc)+"</div>": "");
+return wrap;
+}
+function slots(count, max, onSet){
+var row=document.createElement("div"); row.className="slot-row";
+for(var i=0;i<max;i++){
+(function(idx){
+var b=document.createElement("button"); b.type="button";
+b.className="slot"+(count>idx? " on": "");
+b.textContent="✓";
+b.addEventListener("click", function(){ onSet(count===idx+1? idx: idx+1); });
+row.appendChild(b);
+})(i);
+}
+var note=document.createElement("span"); note.className="slot-note";
+note.textContent=count+"／"+max;
+row.appendChild(note);
+return row;
+}
+var r1=makeRow("早歩き30分", "週3回までOK。まず2回できれば最低ライン達成です");
+r1.appendChild(slots(w.walk, 3, function(n){ w.walk=n; save(); renderWeekly(); }));
+if(w.walk>=2){
+var ok1=document.createElement("div"); ok1.className="slot-note"; ok1.style.marginTop="4px";
+ok1.textContent="✓ 最低ライン（週2回）達成";
+r1.appendChild(ok1);
+}
+el.appendChild(r1);
+var r2=makeRow("青魚を食べた日", "サバ・サンマ・イワシ・サケなど。週2日が目標です");
+r2.appendChild(slots(w.fish, 2, function(n){ w.fish=n; save(); renderWeekly(); }));
+el.appendChild(r2);
+var r3=makeRow("酵素洗顔（任意）", "週1〜2回まで。毎日の使用はしません");
+r3.appendChild(slots(w.enzyme?1:0, 1, function(n){ w.enzyme=(n===1); save(); renderWeekly(); }));
+el.appendChild(r3);
+var done=w.walk+w.fish+(w.enzyme?1:0);
+$("weekProg").style.width=Math.round(done/6*100)+"%";
 }
 
 /* ---------- 今日タブ描画 ---------- */
@@ -846,15 +888,14 @@ if(didDay(kk)){ streak++; d=addDays(d,-1);} else break;
 if(streak>3650) break;
 }
 $("streakChip").textContent="継続 "+streak+"日";
-var p=phase();
-$("phaseChip").textContent = state.settings.plan==="min"? "最小版で継続中": ("第"+weekNum()+"週・"+PHASE_NAMES[p]);
-$("planChip").textContent = state.settings.plan==="min"? "最小版": "標準版";
-$("amTime").textContent = state.settings.plan==="min"? "目安2分": "目安3分";
-$("pmTime").textContent = state.settings.plan==="min"? "目安3分": "目安5分";
+$("phaseChip").textContent="開始 "+weekNum()+"週目";
+$("planChip").textContent="最小ルーティン";
+$("amTime").textContent="目安 約5分";
+$("pmTime").textContent="目安 約3分";
 
 renderTaskList("am", amTasks(), log.am);
 renderTaskList("pm", pmTasks(), log.pm);
-renderTaskList("inner", innerTasks(), log.inner);
+renderWeekly();
 renderCond(log);
 renderAdvice(log);
 renderHistory();
@@ -947,32 +988,23 @@ function renderAdvice(log){
 var area=$("adviceArea"); area.innerHTML="";
 var c=log.cond||{red:-1,dry:-1,puff:-1,eye:-1};
 var items=[];
-var p=phase();
 if(c.red>=2){
-items.push({cls:"danger", title:"赤みが強い日：攻めは全部お休み", body:"今日はレチノールはお休みにしました（夜のリストに反映済み）。洗顔はぬるま湯で短く、保湿中心に。セラミド系クリーム（キュレル等）で土台を守る日にしてください。数日続く・悪化する場合は無理せず皮膚科へ。"});
+items.push({cls:"danger", title:"赤みが強い日：守りの日に", body:"洗顔はぬるま湯で短く、保湿（ワセリン）を少し厚めに。こすらないことを最優先にしてください。今週の酵素洗顔は見送りましょう。数日続く・悪化する場合は無理せず皮膚科へ。"});
 } else if(c.red===1){
-items.push({cls:"warn", title:"少し赤み：レチノールは自動でお休み", body:"A反応（慣れる過程の赤み・ヒリつき）の可能性があります。今日はレチノールを止め、保湿を厚めに。次に使うときは頻度を1段落として（例：隔晩→週2回）、保湿の後に塗る「サンドイッチ」で再開を。刺激は効いている証拠ではありません。"});
+items.push({cls:"warn", title:"少し赤み：今日はやさしく", body:"洗顔は短めに、保湿を厚めに。こすらず、押さえるだけを意識してください。赤みが引くまで酵素洗顔はお休みで大丈夫です。"});
 }
 if(c.dry>=1){
-items.push({cls:"warn", title:"乾燥の日：蓋を厚く", body:"オールインワンをもう一度重ね付けして「蓋」を厚く。乾燥で小ジワ・たるみ感は強調されます。洗顔は短く・熱い湯は避けて。レチノールを使う日なら、保湿→レチノール→保湿のサンドイッチが刺激対策になります。"});
+items.push({cls:"warn", title:"乾燥の日：保湿を厚く", body:"ワセリンをいつもより少し多めに、乾きやすい部分へ重ね付け。乾燥で小ジワ・たるみ感は強調されます。洗顔は短く・熱い湯は避けてください。"});
 }
 if(c.puff>=1){
-items.push({cls:"normal", title:"むくみの日：朝のひと手間が効きます", body:"蒸しタオルで目元を温め、「眩しい目」運動（下まぶただけ上げる・5秒×5回）を。夜は塩分とお酒を控えめに、睡眠をしっかり。むくみが取れるだけで目の開きと二重幅は見違えることが多いです。"});
+items.push({cls:"normal", title:"むくみの日：朝のひと手間", body:"蒸しタオルで目元を温めると、むくみが引きやすくなります。夜は塩分とお酒を控えめに、7時間眠れる時刻に就寝を。むくみが取れるだけで目の開きは見違えることが多いです。"});
 }
 if(c.eye===2){
-items.push({cls:"warn", title:"目の開きが悪い日", body:"まず眉固定の開閉トレーニング（眉の上を押さえて額を止め、まぶたの力だけで開閉×5〜10回）と蒸しタオルを。それでも「視界の上が狭い」「夕方に悪化する」「片目だけ急に下がった」があれば、化粧品の範囲外です。ガイドの「受診を考えたいサイン」を確認してください。"});
+items.push({cls:"warn", title:"目の開きが悪い日", body:"まず蒸しタオルで温めてみてください。それでも「視界の上が狭い」「夕方に悪化する」「片目だけ急に下がった」があれば、化粧品の範囲外です。ガイドの「受診を考えたいサイン」を確認してください。"});
 } else if(c.eye===0){
 items.push({cls:"normal", title:"目の開きが良い日です", body:"調子の良い日こそ、こすらない・引っ張らないを守るのが将来のたるみ予防になります。この状態を写真に残すのもおすすめです。"});
 }
-if(state.settings.plan==="std"){
-if(p===0) items.push({cls:"normal", title:"今は土台づくりの2週間", body:"保湿＋日焼け止めだけの期間です。攻め成分はまだ入れません。土台が先に定着すると、後のレチノールで失敗しにくくなります。"});
-else if(p===1) items.push({cls:"normal", title:"ナイアシンアミド定着の期間", body:"オールインワン（ナイアシンアミド）を朝晩続ける時期です。次の段階（レチノール）は第5週から。焦らず土台を固めましょう。"});
-else if(p===2) items.push({cls:"normal", title:"レチノール導入中（週2回・月木）", body:"米粒〜小豆大を額・目の周囲・ほうれい線に薄く。翌朝の日焼け止めを忘れずに。問題がなければ第9週から隔晩に進みます。"});
-else if(p===3) items.push({cls:"normal", title:"レチノール隔晩ペース", body:"問題なければ第13週から毎晩も検討できます。評価ラインは開始から8〜12週。写真で比べるのが一番確実です。"});
-else items.push({cls:"normal", title:"維持フェーズ", body:"毎晩のレチノールが辛い日は休んでOKです。大事なのは「やめない」こと。調子の波に合わせて頻度を調整してください。"});
-} else {
-items.push({cls:"normal", title:"最小版で継続中", body:"土台（日焼け止め＋保湿＋ナイアシンアミド）だけでも、乾燥由来のシワ・くすみ・たるみ感には効きます。3ヶ月続いたら、設定から標準版（レチノール追加）への切り替えも検討してみてください。"});
-}
+items.push({cls:"normal", title:"基本は朝3つ・夜3つだけ", body:"朝は「泡洗顔→保湿→日焼け止め」、夜は「泡洗顔→保湿→スマホを置いて寝る」。これが土台です。週のケア（早歩き・青魚）は、最低ラインを目安に無理なく積み上げればOKです。"});
 if(c.red===-1 && c.dry===-1 && c.puff===-1 && c.eye===-1){
 items.push({cls:"normal", title:"まずは状態を記録してみてください", body:"上の「今日の顔の状態」をタップすると、その日に合わせたアドバイスに切り替わります。"});
 }
@@ -995,13 +1027,11 @@ return cnt>0;
 var total=days.length;
 var last7=0;
 for(var i=0;i<7;i++){ if(days.indexOf(dateKey(addDays(new Date(),-i)))>=0) last7++;}
-var retDays=Object.keys(state.logs).filter(function(kk){ return state.logs[kk].pm && state.logs[kk].pm.retinol;}).length;
 area.innerHTML='<div class="chips" style="margin-top:0;">'+
 '<span class="chip">ケア実施 累計'+total+'日</span>'+
 '<span class="chip plain">直近7日で'+last7+'日</span>'+
-(state.settings.plan==="std"? '<span class="chip plain">レチノール実施 '+retDays+'回</span>': "")+
 "</div>"+
-'<p class="small" style="margin:8px 0 0;">効果の見極めは8〜12週が目安（臨床試験の期間と一致）。続けた日数がそのまま土台になります。</p>';
+'<p class="small" style="margin:8px 0 0;">効果の見極めは8〜12週が目安。続けた日数がそのまま土台になります。</p>';
 }
 
 /* ---------- 写真 ---------- */
@@ -1110,11 +1140,9 @@ var PRODUCTS=[
 ];
 var PREP_KEY="facecare.browser.prep.v1";
 var PREP_ITEMS=[
-{id:"graceone", plan:"all", role:"オールインワン（主役・朝晩）", name:"グレイスワン リンクルケア モイストジェルクリーム（コーセーコスメポート）", price:"100g 3,300円（定価）", url:"https://www.amazon.co.jp/dp/B0G6T4DWRQ", shop:"Amazonで見る"},
-{id:"biore", plan:"all", role:"日焼け止め（朝・最重要）", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", price:"70g 約1,011円〜（リンク先はAmazon限定100g）", url:"https://www.amazon.co.jp/dp/B0DS7WX8QS", shop:"Amazonで見る"},
-{id:"cleanser", plan:"all", role:"洗顔（朝晩）", name:"洗顔料", price:"今お使いのものでOK。無い場合はドラッグストアで", url:"", shop:""},
-{id:"melano", plan:"std", role:"ビタミンC（朝）", name:"メラノCC 薬用しみ集中対策 プレミアム美容液（ロート製薬）", price:"20mL 約1,450円（1本で約5〜6ヶ月）", url:"https://www.amazon.co.jp/dp/B08WMJB5WV", shop:"Amazonで見る"},
-{id:"elixir", plan:"std", role:"レチノール（夜・段階導入）", name:"エリクシール レチノパワー リンクルクリーム ba（資生堂）", price:"S 15g 6,490円／L 22g 8,800円", url:"https://www.amazon.co.jp/dp/B0CJLJZPKS", shop:"Amazonで見る（L・限定セット）"}
+{id:"cleanser", plan:"all", role:"泡洗顔（朝晩）", name:"洗顔料（泡で出るタイプが楽です）", price:"今お使いのものでOK。無い場合はドラッグストアで", url:"", shop:""},
+{id:"vaseline", plan:"all", role:"保湿（朝晩）", name:"ワセリン（白色ワセリン）", price:"ドラッグストアで数百円〜", url:"", shop:""},
+{id:"biore", plan:"all", role:"日焼け止め（朝・最重要）", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", price:"70g 約1,011円〜（リンク先はAmazon限定100g）", url:"https://www.amazon.co.jp/dp/B0DS7WX8QS", shop:"Amazonで見る"}
 ];
 var PREP_OPT=[
 {id:"collagen", role:"コラーゲンペプチド（内側・任意）", name:"明治 アミノコラーゲン プレミアム 196g（約28日分）", price:"約2,900円〜", url:"https://www.amazon.co.jp/dp/B0070SUSC0", shop:"Amazonで見る"},
@@ -1372,7 +1400,7 @@ toast("設定を保存しました");
 });
 $("resetBtn").addEventListener("click", function(){
 if(this.getAttribute("data-arm")==="1"){
-try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(PHOTO_KEY); localStorage.removeItem(PREP_KEY); localStorage.removeItem(GEAR_KEY); prepState={}; gearState={};}catch(e){}
+try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_KEY_OLD); localStorage.removeItem(PHOTO_KEY); localStorage.removeItem(PREP_KEY); localStorage.removeItem(GEAR_KEY); prepState={}; gearState={};}catch(e){}
 state=defaultState(); photos=[]; compareSel=[];
 this.removeAttribute("data-arm"); this.textContent="すべての記録を消して最初からにする";
 showSetup();
