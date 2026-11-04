@@ -354,7 +354,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.04-4（カナの格下げ・カナなしモード・聞き取りメモ・文化カード追加）</p>
+        <p>アプリの版：2026.11.05-1（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
       </footer>
     </div>
 
@@ -2415,39 +2415,161 @@
         }
       }
 
-      /* ============ 聞き流しリンク集 ============ */
+      /* ============ 聞き流し（自前モード＋リンク集） ============ */
       function listenCard(title, meta, desc, url) {
         return '<div class="card"><h3 style="margin:0 0 4px;font-size:17px">' + title + '</h3>' +
           '<p class="note" style="margin-top:0">' + meta + '</p>' +
           '<p style="margin:6px 0 0">' + desc + '</p>' +
           '<p style="margin-top:10px"><a class="btn listen" style="display:inline-block;text-decoration:none" href="' + url + '" target="_blank" rel="noopener">▶ YouTubeで開く</a></p></div>';
       }
+
+      /* --- 自前の聞き流しモード：タイ語の音 → 間（真似する時間） → 日本語訳 --- */
+      var flow = { playing: false, list: [], idx: 0, timer: null, token: 0, setName: "" };
+      function flowList(setKey, sceneIdx) {
+        if (setKey === "essent") return ESSENT30.map(essentPhrase).filter(function (p) { return !!p; });
+        if (setKey === "scene") return PHRASES.filter(function (p) { return p.scene === sceneIdx; });
+        return PHRASES.slice();
+      }
+      function flowStop(silent) {
+        flow.token++;
+        flow.playing = false;
+        if (flow.timer) { clearTimeout(flow.timer); flow.timer = null; }
+        try { stopAudio(); } catch (e) {}
+        try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+        var pb = document.getElementById("flowPlayBtn");
+        if (pb) pb.textContent = "▶ 聞き流しをはじめる";
+        if (!silent) {
+          var st = document.getElementById("flowStatus");
+          var th = document.getElementById("flowThai");
+          var ja = document.getElementById("flowJa");
+          var pr = document.getElementById("flowProg");
+          if (st) st.textContent = "止めました。また聞きたくなったら「はじめる」を押してください。";
+          if (th) th.textContent = "—";
+          if (ja) ja.textContent = "";
+          if (pr) pr.textContent = "";
+        }
+      }
+      function flowStart() {
+        var setSel = document.getElementById("flowSet");
+        var scSel = document.getElementById("flowScene");
+        var setKey = setSel ? setSel.value : "essent";
+        var sceneIdx = scSel ? +scSel.value : 0;
+        flow.list = flowList(setKey, sceneIdx);
+        if (!flow.list.length) return;
+        flow.setName = setKey === "essent" ? "まずこれだけ30" : (setKey === "scene" ? "場面別：" + SCENES[sceneIdx] : "全フレーズ");
+        flow.idx = 0;
+        flow.playing = true;
+        flow.token++;
+        var pb = document.getElementById("flowPlayBtn");
+        if (pb) pb.textContent = "⏸ とめる";
+        flowStep(flow.token);
+      }
+      function flowStep(tok) {
+        if (!flow.playing || tok !== flow.token) return;
+        var thEl = document.getElementById("flowThai");
+        var jaEl = document.getElementById("flowJa");
+        var prEl = document.getElementById("flowProg");
+        var stEl = document.getElementById("flowStatus");
+        if (flow.idx >= flow.list.length) {
+          flow.playing = false;
+          var pb2 = document.getElementById("flowPlayBtn");
+          if (pb2) pb2.textContent = "▶ 聞き流しをはじめる";
+          if (stEl) stEl.textContent = "おつかれさまでした。" + flow.setName + "を最後まで聞きました。";
+          if (thEl) thEl.textContent = "🎉";
+          if (jaEl) jaEl.textContent = "";
+          if (prEl) prEl.textContent = flow.list.length + " / " + flow.list.length + "（" + flow.setName + "）";
+          return;
+        }
+        var p = flow.list[flow.idx];
+        if (thEl) thEl.textContent = p.sTh || p.th;
+        if (jaEl) jaEl.textContent = "";
+        if (prEl) prEl.textContent = (flow.idx + 1) + " / " + flow.list.length + "（" + flow.setName + "）";
+        if (stEl) stEl.textContent = "🔊 まず音だけを聞きましょう";
+        flowPlayThai(p, function () {
+          if (!flow.playing || tok !== flow.token) return;
+          if (stEl) stEl.textContent = "🎤 この間に、声に出して真似してみましょう";
+          flow.timer = setTimeout(function () {
+            if (!flow.playing || tok !== flow.token) return;
+            if (jaEl) jaEl.textContent = p.ja;
+            if (stEl) stEl.textContent = "意味はこれでした。次へ進みます";
+            flow.timer = setTimeout(function () {
+              if (!flow.playing || tok !== flow.token) return;
+              flow.idx++;
+              flowStep(tok);
+            }, 2600);
+          }, 2500);
+        });
+      }
+      function flowPlayThai(p, done) {
+        var finished = false;
+        function finish() { if (!finished) { finished = true; done(); } }
+        if (p.noAudio) {
+          try {
+            var u = new SpeechSynthesisUtterance(p.sTh || p.th);
+            u.lang = "th-TH"; u.rate = 0.85;
+            u.onend = function () { setTimeout(finish, 150); };
+            u.onerror = function () { setTimeout(finish, 150); };
+            speechSynthesis.cancel();
+            speechSynthesis.speak(u);
+            flow.timer = setTimeout(finish, 6000);
+          } catch (e) { flow.timer = setTimeout(finish, 1200); }
+          return;
+        }
+        var pl = document.getElementById("player");
+        function onEnd() { pl.removeEventListener("ended", onEnd); setTimeout(finish, 150); }
+        pl.addEventListener("ended", onEnd);
+        flow.timer = setTimeout(function () { pl.removeEventListener("ended", onEnd); finish(); }, 12000);
+        try { stopAudio(); } catch (e) {}
+        playAudio("assets/audio/" + p.id + "-s.mp3", null);
+      }
+
       function renderListen() {
+        flowStop(true);
         var el = document.getElementById("view-listen");
-        var html = '<div class="card"><h2>聞き流しリンク集</h2>' +
+        var html = '<div class="card"><h2>聞き流しモード（アプリのフレーズ）</h2>' +
+          '<p style="margin-top:6px">タイ語の音が先に流れます。意味は後から出るので、まず耳で音を拾ってください。音のあとの「間」で声に出して真似すると、耳と口の両方に残ります。自分が実際に使うフレーズだけを集めた聞き流しです。</p>' +
+          '<div class="row-btns">' +
+          '<select id="flowSet" aria-label="聞き流しのセット">' +
+          '<option value="essent">まずこれだけ30</option>' +
+          '<option value="scene">場面別</option>' +
+          '<option value="all">全フレーズ（64）</option>' +
+          '</select>' +
+          '<select id="flowScene" aria-label="場面">' +
+          SCENES.map(function (s, i) { return '<option value="' + i + '">' + s + '</option>'; }).join("") +
+          '</select>' +
+          '</div>' +
+          '<div class="row-btns"><button type="button" class="btn primary" id="flowPlayBtn">▶ 聞き流しをはじめる</button></div>' +
+          '<p class="note" id="flowProg" style="margin-top:10px"></p>' +
+          '<div class="thai-text thai" id="flowThai" style="font-size:26px;min-height:40px">—</div>' +
+          '<p class="meaning" id="flowJa" style="min-height:26px"></p>' +
+          '<p class="small" id="flowStatus">セットを選んで「はじめる」を押してください。場面は「場面別」のときだけ使われます。</p>' +
+          '</div>';
+        html += '<div class="card"><h2>聞き流しリンク集（YouTube）</h2>' +
           '<p style="margin-top:6px">分からなくて大丈夫です。アプリで覚えた単語が「聞こえた」と思えたら、その日は勝ちです。</p>' +
-          '<div class="note">聞き方のコツ<br>・1日20〜30分、家事や移動の「ながら」でOKです<br>・同じ動画を何日か繰り返すと、聞き取れる単語が増えていきます<br>・止まって調べないこと。流しっぱなしが続けるコツです</div></div>';
-        html += '<h3 style="margin:18px 4px 8px">まずここから</h3>';
+          '<div class="note">聞き方のコツ<br>・おすすめの順番は、上の「アプリのフレーズ聞き流し」→「音が先の動画」→「意味が先の動画」です<br>・1日20〜30分、家事や移動の「ながら」でOKです<br>・同じ動画を何日か繰り返すと、聞き取れる単語が増えていきます<br>・止まって調べないこと。流しっぱなしが続けるコツです</div></div>';
+        html += '<h3 style="margin:18px 4px 8px">耳を先に使う聞き流し（タイ語の音が先）</h3>';
         html += '<div class="card"><h3 style="margin:0 0 4px;font-size:17px">Comprehensible Thai（本命）</h3>' +
           '<p class="note" style="margin-top:0">YouTubeチャンネル／再生リスト「Beginner 0」から／約1,000時間分</p>' +
           '<p style="margin:6px 0 0">全部タイ語ですが、身ぶり手ぶりと絵で意味が分かるように話してくれます。「何を言っているかは分からないけれど、場面は分かる」状態がちょうどいい練習です。下のボタンから再生リスト（Beginner 0・全40本）を開いて、Lesson 1 から順番にどうぞ。</p>' +
           '<p style="margin-top:10px"><a class="btn listen" style="display:inline-block;text-decoration:none" href="http://www.youtube.com/playlist?list=PLgdZTyVWfUhlxVi68zFEL8Lu5Q0Bocgbp" target="_blank" rel="noopener">▶ 再生リストを開く（Beginner 0）</a></p></div>';
-        html += listenCard("超初心者向けタイ語フレーズ100選 リスニングVer.（タイトレ）", "約25分／日本語→タイ語", "短くて始めやすい聞き流し。アプリの64フレーズと重なる言い回しも多く、聞き取れる手応えを早めに感じられます。", "https://www.youtube.com/watch?v=eh6h9Oj8KAk");
-        html += '<h3 style="margin:18px 4px 8px">日常会話を聞き流す（会話の流れに慣れる）</h3>';
-        html += listenCard("20 Daily Thai Conversations（ThaiPod101）", "約22分／短い会話×20／英語の案内つき", "初心者向けの短い日常会話が20本続く動画です。フレーズの暗記ではなく「会話の流れ」の音に慣れるのに向いています。", "https://www.youtube.com/watch?v=IkNLVXnVCjY");
-        html += listenCard("タイ語のリスニング練習（ミミちゃんねる）", "約12分／日常会話の聞き取り", "日常会話をネイティブの速さで2回、ゆっくり1回読んでくれます。本物の速さと、聞き取れる速さの両方に触れられます。", "https://www.youtube.com/watch?v=qo59nIrQa8U");
-        html += listenCard("ネイティブが選ぶ使える日常会話（Chisa ThaiGo）", "約14分／場面ごとの聞き流し", "カフェ、はじめまして、雑談、タクシー、レストランなど、場面ごとの日常会話の聞き流しです。", "https://www.youtube.com/watch?v=7-8yZFMHxCs");
-        html += listenCard("Easy Thai Listening Practice（Thai Listening Hub）", "ゆっくり・はっきり／初級向けストーリー", "日常の場面を題材にした短いストーリーを、ゆっくり自然なリズムで読み聞かせてくれます。音だけでも場面が追いやすいです。", "https://www.youtube.com/watch?v=BblzhcaRQWs");
-        html += listenCard("タイ語会話練習50 vol.2（タイトレ）", "約25分／Q&A形式", "質問が流れて、間があって、答えの例が流れます。聞き流しながら、頭の中で（慣れたら声に出して）答える練習になります。", "https://www.youtube.com/watch?v=N0iKHkza64A");
+        html += listenCard("タイ語会話練習50 vol.2（タイトレ）", "約25分／Q&A形式", "質問がタイ語で先に流れて、間があって、答えの例が流れます。音が先に来る形なので耳の練習になります。間の時間に、頭の中で（慣れたら声に出して）答えてみましょう。", "https://www.youtube.com/watch?v=N0iKHkza64A");
+        html += listenCard("タイ語のリスニング練習（ミミちゃんねる）", "約12分／日常会話の聞き取り", "日常会話をネイティブの速さで2回、ゆっくり1回読んでくれます。意味より先に音に触れる聞き方で、本物の速さと聞き取れる速さの両方に慣れられます。", "https://www.youtube.com/watch?v=qo59nIrQa8U");
+        html += listenCard("20 Daily Thai Conversations（ThaiPod101）", "約22分／短い会話×20／英語の案内つき", "初心者向けの短い日常会話が20本続く動画です。フレーズの暗記ではなく「会話の流れ」の音に慣れるのに向いています。知っている単語が音の中で聞こえてきたら、それが耳の成長です。", "https://www.youtube.com/watch?v=IkNLVXnVCjY");
+        html += listenCard("ネイティブが選ぶ使える日常会話（Chisa ThaiGo）", "約14分／場面ごとの聞き流し", "カフェ、はじめまして、雑談、タクシー、レストランなど、場面ごとの日常会話です。場面を思い浮かべながら音を聞くと、フレーズが場面と一緒に耳に残ります。", "https://www.youtube.com/watch?v=7-8yZFMHxCs");
+        html += listenCard("Easy Thai Listening Practice（Thai Listening Hub）", "ゆっくり・はっきり／初級向けストーリー", "日常の場面を題材にした短いストーリーを、ゆっくり自然なリズムで読み聞かせてくれます。音だけでも場面が追いやすい、耳を先に使う聞き流しです。", "https://www.youtube.com/watch?v=BblzhcaRQWs");
         html += '<h3 style="margin:18px 4px 8px">フレーズ聞き流し（意味が先に分かるタイプ）</h3>';
-        html += listenCard("初心者向けタイ語フレーズ300選 リスニングVer.（タイトレ）", "約55分／日本語→タイ語", "300のフレーズが順に流れます。意味が分かる分、音と意味を結びつける答え合わせになります。", "https://www.youtube.com/watch?v=z2mEUz4tIhU");
-        html += listenCard("短いタイ語100｜2語で言える表現だけ（タイトレ）", "短い表現だけを集めた聞き流し", "「ご飯を食べる」「水を飲む」のような2語の組み合わせだけ。短いので音の塊がつかみやすいです。", "https://www.youtube.com/watch?v=-llVSwF94fE");
-        html += listenCard("はじめてのタイ語基本フレーズ600（Kendra's Language School）", "約2時間／日本語→タイ語", "聞き流しの定番チャンネル。長めに流しっぱなしにしたい日に。", "https://www.youtube.com/watch?v=WTCSGlG3QZc");
-        html += listenCard("タイ語の重要単語1000（タイトレ）", "約1時間／単語中心", "フレーズではなく単語を増やしたい日に。聞き流しにも使えます。", "https://www.youtube.com/watch?v=TyWnZbbOzq4");
+        html += listenCard("超初心者向けタイ語フレーズ100選 リスニングVer.（タイトレ）", "約25分／日本語→タイ語", "日本語の意味が先に流れて、タイ語が続きます。アプリの64フレーズと重なる言い回しも多く、音と意味が結びついているかの答え合わせに向いています。", "https://www.youtube.com/watch?v=eh6h9Oj8KAk");
+        html += listenCard("初心者向けタイ語フレーズ300選 リスニングVer.（タイトレ）", "約55分／日本語→タイ語", "300のフレーズが順に流れます。意味が先に分かる分、音と意味を結びつける答え合わせになります。量をこなしたい日に。", "https://www.youtube.com/watch?v=z2mEUz4tIhU");
+        html += listenCard("短いタイ語100｜2語で言える表現だけ（タイトレ）", "短い表現だけを集めた聞き流し", "「ご飯を食べる」「水を飲む」のような2語の組み合わせだけ。音の塊が短いので、聞き取りの感触をつかみやすい聞き流しです。", "https://www.youtube.com/watch?v=-llVSwF94fE");
+        html += listenCard("はじめてのタイ語基本フレーズ600（Kendra's Language School）", "約2時間／日本語→タイ語", "聞き流しの定番チャンネル。意味→音の順で、長めに流しっぱなしにしたい日にどうぞ。", "https://www.youtube.com/watch?v=WTCSGlG3QZc");
         html += '<h3 style="margin:18px 4px 8px">寝る前・次のステップ</h3>';
         html += listenCard("寝る前に聴くタイ語リスニング2", "約1時間19分／フレーズ200＋BGM", "寝る前の流し聞き用。画面を見なくて大丈夫です。", "https://www.youtube.com/watch?v=639I6EJTCIM");
         html += listenCard("タイ語聞き流し ちょ〜ロング第2弾（MARUICHI）", "約1時間10分／初心者から中級者向け", "フレーズ系に慣れてきたら。観光地の紹介も入ります。", "https://www.youtube.com/watch?v=g_gKlqrYqHo");
+        html += '<h3 style="margin:18px 4px 8px">単語中心（フレーズに慣れてから）</h3>';
+        html += listenCard("タイ語の重要単語1000（タイトレ）", "約1時間／単語中心", "フレーズではなく単語を集めた動画です。単語は会話のフレーズの中で覚えるのが基本なので、フレーズの聞き流しに慣れてから、語彙を広げたい日にどうぞ。", "https://www.youtube.com/watch?v=TyWnZbbOzq4");
         el.innerHTML = html;
+        var fb = document.getElementById("flowPlayBtn");
+        if (fb) fb.addEventListener("click", function () { if (flow.playing) flowStop(false); else flowStart(); });
       }
 
       /* ============ 視覚言語（スタンプ・絵文字・記号の読み方） ============ */
@@ -2625,6 +2747,7 @@
         stopRec();
         stopFreeRec();
         stopShadowRec();
+        try { flowStop(true); } catch (e) {}
         document.querySelectorAll("nav.tabs button").forEach(function (b) {
           b.setAttribute("aria-selected", b.getAttribute("data-view") === name ? "true" : "false");
         });
