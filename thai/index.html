@@ -969,6 +969,9 @@
       var talk = null;
       var talkRec = null;
       var talkRecTimer = null;
+      var talkRecEnding = null;
+      var talkRecEndWaiter = null;
+      var talkRecEndTimer = null;
 
       function talkUserTotal(d) { return d.turns.filter(function (t) { return t.w === "u"; }).length; }
       function normTh(s) { return (s || "").replace(/[\s.,!?…"'、。，．！？：:;・「」『』（）()\-]/g, ""); }
@@ -1090,12 +1093,39 @@
       }
       function stopRec() {
         if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; }
-        if (talkRec) { try { talkRec.stop(); } catch (e) { try { talkRec.abort(); } catch (e2) {} } talkRec = null; }
+        if (talkRec) {
+          var oldRec = talkRec;
+          talkRec = null;
+          talkRecEnding = oldRec;
+          armTalkEndFallback();
+          try { oldRec.stop(); } catch (e) { try { oldRec.abort(); } catch (e2) {} }
+        }
         var mb = document.getElementById("micBtn");
         if (mb) { mb.classList.remove("listening"); mb.textContent = "🎤 タップして話す"; }
       }
+      function armTalkEndFallback() {
+        if (talkRecEndTimer) return;
+        talkRecEndTimer = setTimeout(function () {
+          talkRecEndTimer = null;
+          talkRecEnding = null;
+          flushTalkEndWaiter();
+        }, 1200);
+      }
+      function flushTalkEndWaiter() {
+        if (talkRecEndTimer) { clearTimeout(talkRecEndTimer); talkRecEndTimer = null; }
+        var w = talkRecEndWaiter;
+        talkRecEndWaiter = null;
+        if (w) setTimeout(w, 200);
+      }
       function startRec(isRetry) {
         if (talkRec) { stopRec(); return; }
+        if (talkRecEnding) {
+          talkRecEndWaiter = function () { if (talk) startRec(isRetry); };
+          armTalkEndFallback();
+          var rw = document.getElementById("talkResult");
+          if (rw) rw.innerHTML = '<p class="small">前の聞き取りの終了を待っています…</p>';
+          return;
+        }
         var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         var res = document.getElementById("talkResult");
         if (!SR) {
@@ -1161,8 +1191,10 @@
           else r2.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
         };
         rec.onend = function () {
-          if (talkRec !== rec) return;
-          if (!judged && bestHeard) { judgeNow(); return; }
+          var wasActive = (talkRec === rec);
+          if (talkRecEnding === rec) { talkRecEnding = null; flushTalkEndWaiter(); }
+          if (!wasActive) return;
+          if (!judged && bestHeard) { judgeNow(); if (talkRecEnding === rec) { talkRecEnding = null; flushTalkEndWaiter(); } return; }
           if (talkRecTimer) { clearTimeout(talkRecTimer); talkRecTimer = null; }
           if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
           talkRec = null;
@@ -1176,10 +1208,18 @@
         armWatch();
         if (!isRetry) {
           setTimeout(function () {
-            if (!gotEvent && talkRec === rec) { stopRec(); startRec(true); }
+            if (!gotEvent && talkRec === rec) {
+              stopRec();
+              talkRecEndWaiter = function () { if (talk) startRec(true); };
+              armTalkEndFallback();
+            }
           }, 3500);
         }
-        try { rec.start(); } catch (e) { stopRec(); }
+        try { rec.start(); } catch (e) {
+          stopRec();
+          var r9 = document.getElementById("talkResult");
+          if (r9) r9.innerHTML = '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">もう一度マイクを押して試してください。</p>';
+        }
       }
       function judgeTalk(score, heard, target) {
         stopRec();
@@ -1285,7 +1325,20 @@
           if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。「読み方を見る」で確認して、声に出して練習してください。</p>';
           return;
         }
-        if (btn.dataset.rec === "1") { if (btn._rec) { try { btn._rec.stop(); } catch (e) { try { btn._rec.abort(); } catch (e2) {} } } if (btn._to) clearTimeout(btn._to); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; return; }
+        if (btn.dataset.rec === "1") {
+          if (btn._rec) { btn._endingRec = btn._rec; try { btn._rec.stop(); } catch (e) { try { btn._rec.abort(); } catch (e2) {} } }
+          if (btn._to) clearTimeout(btn._to);
+          btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
+          return;
+        }
+        if (btn._endingRec) {
+          btn._startWaiter = function () { if (btn.isConnected) startDrillRec(pi, btn); };
+          if (res) res.innerHTML = '<p class="small">前の聞き取りの終了を待っています…</p>';
+          setTimeout(function () {
+            if (btn._startWaiter) { var w9 = btn._startWaiter; btn._startWaiter = null; btn._endingRec = null; w9(); }
+          }, 1200);
+          return;
+        }
         var rec = new SR();
         btn._rec = rec; btn.dataset.rec = "1";
         rec.lang = "th-TH"; rec.interimResults = true; rec.maxAlternatives = 3;
@@ -1297,6 +1350,7 @@
           dJudged = true;
           if (dStable) { clearTimeout(dStable); dStable = null; }
           if (btn._to) clearTimeout(btn._to);
+          btn._endingRec = rec;
           try { rec.stop(); } catch (e) {}
           btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
           if (res) {
@@ -1307,7 +1361,8 @@
         btn._to = setTimeout(function () {
           if (btn.dataset.rec === "1") {
             if (dBestTxt && !dJudged) { dJudge(); return; }
-            try { rec.stop(); } catch (e) { try { rec.abort(); } catch (e2) {} } btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度試してください。</p>';
+            btn._endingRec = rec;
+            try { rec.stop(); } catch (e) { try { rec.abort(); } catch (e2) {} } btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度マイクを押して試してください。</p>';
           }
         }, 12000);
         rec.onresult = function (ev) {
@@ -1330,19 +1385,34 @@
         };
         rec.onerror = function (ev) {
           if (btn._to) clearTimeout(btn._to); if (dStable) clearTimeout(dStable); btn.dataset.rec = "";
-          if (res) res.innerHTML = '<p class="small">聞き取りに失敗しました。もう一度試してみてください。</p>';
+          btn._endingRec = rec;
+          try { rec.stop(); } catch (e) {}
+          btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
+          if (res) res.innerHTML = '<p class="small">聞き取りに失敗しました。もう一度マイクを押して試してみてください。</p>';
         };
         rec.onend = function () {
+          if (btn._endingRec === rec) {
+            btn._endingRec = null;
+            var w8 = btn._startWaiter; btn._startWaiter = null;
+            if (w8) setTimeout(w8, 150);
+          }
           if (!dJudged && dBestTxt && btn.dataset.rec === "1") { dJudge(); return; }
           if (btn._to) clearTimeout(btn._to); if (dStable) clearTimeout(dStable); btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
         };
-        try { rec.start(); } catch (e) { btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す"; }
+        try { rec.start(); } catch (e) {
+          if (btn._to) clearTimeout(btn._to);
+          btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
+          if (res) res.innerHTML = '<p class="small">聞き取りを開始できませんでした。もう一度マイクを押して試してみてください。</p>';
+        }
       }
 
       /* ============ フリー会話 ============ */
       var freeChat = null;
       var freeRec = null;
       var freeRecTimer = null;
+      var freeRecEnding = null;
+      var freeRecEndWaiter = null;
+      var freeRecEndTimer = null;
       function P(th, kana, ja) { return { w: "p", th: th, kana: kana, ja: ja, parts: FREE_PARTS[th] || null }; }
       var FREE_PARTS = {
         "สวัสดีครับ ผมชื่อมาร์คครับ": [["サワッディー","こんにちは"],["クラップ","丁寧な語尾"],["ポム","私"],["チュー","名前"],["マーク","マーク（名前）"],["クラップ","丁寧な語尾"]],
@@ -1532,9 +1602,29 @@
       }
       function stopFreeRec() {
         if (freeRecTimer) { clearTimeout(freeRecTimer); freeRecTimer = null; }
-        if (freeRec) { try { freeRec.stop(); } catch (e) { try { freeRec.abort(); } catch (e2) {} } freeRec = null; }
+        if (freeRec) {
+          var oldRec = freeRec;
+          freeRec = null;
+          freeRecEnding = oldRec;
+          armFreeEndFallback();
+          try { oldRec.stop(); } catch (e) { try { oldRec.abort(); } catch (e2) {} }
+        }
         var mb = document.getElementById("freeMicBtn");
         if (mb) { mb.classList.remove("listening"); mb.textContent = "🎤 タップして話す"; }
+      }
+      function armFreeEndFallback() {
+        if (freeRecEndTimer) return;
+        freeRecEndTimer = setTimeout(function () {
+          freeRecEndTimer = null;
+          freeRecEnding = null;
+          flushFreeEndWaiter();
+        }, 1200);
+      }
+      function flushFreeEndWaiter() {
+        if (freeRecEndTimer) { clearTimeout(freeRecEndTimer); freeRecEndTimer = null; }
+        var w = freeRecEndWaiter;
+        freeRecEndWaiter = null;
+        if (w) setTimeout(w, 200);
       }
       function freeHeard(text) {
         stopFreeRec();
@@ -1560,6 +1650,13 @@
       }
       function startFreeRec(isRetry) {
         if (freeRec) { stopFreeRec(); return; }
+        if (freeRecEnding) {
+          freeRecEndWaiter = function () { startFreeRec(isRetry); };
+          armFreeEndFallback();
+          var sw = document.getElementById("freeStatus");
+          if (sw) sw.innerHTML = '<p class="small">前の聞き取りの終了を待っています…</p>';
+          return;
+        }
         var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         var st = document.getElementById("freeStatus");
         if (!SR) {
@@ -1620,8 +1717,10 @@
           else s5.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
         };
         rec.onend = function () {
-          if (freeRec !== rec) return;
-          if (!done && bestTxt) { finish(); return; }
+          var wasActive = (freeRec === rec);
+          if (freeRecEnding === rec) { freeRecEnding = null; flushFreeEndWaiter(); }
+          if (!wasActive) return;
+          if (!done && bestTxt) { finish(); if (freeRecEnding === rec) { freeRecEnding = null; flushFreeEndWaiter(); } return; }
           if (freeRecTimer) { clearTimeout(freeRecTimer); freeRecTimer = null; }
           if (stableTimer) { clearTimeout(stableTimer); stableTimer = null; }
           freeRec = null;
@@ -1635,10 +1734,18 @@
         armWatch();
         if (!isRetry) {
           setTimeout(function () {
-            if (!gotEvent && freeRec === rec) { stopFreeRec(); startFreeRec(true); }
+            if (!gotEvent && freeRec === rec) {
+              stopFreeRec();
+              freeRecEndWaiter = function () { startFreeRec(true); };
+              armFreeEndFallback();
+            }
           }, 3500);
         }
-        try { rec.start(); } catch (e) { stopFreeRec(); }
+        try { rec.start(); } catch (e) {
+          stopFreeRec();
+          var s9 = document.getElementById("freeStatus");
+          if (s9) s9.innerHTML = '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">もう一度マイクを押して試してください。</p>';
+        }
       }
 
       /* ============ 聞き流しリンク集 ============ */
