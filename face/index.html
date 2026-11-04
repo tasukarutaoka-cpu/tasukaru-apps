@@ -237,7 +237,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <!-- ============ セットアップ ============ -->
 <section id="setupView" class="hidden">
 <h1>顔ケアをはじめましょう</h1>
-<p class="small">51歳・自宅ケア用に調べた内容をもとにした、続けるためのアプリです。合言葉は「朝5分・夜3分」。やることは洗顔・保湿・日焼け止めの3つだけ。少ないから続く、を狙います。</p>
+<p class="small">51歳・自宅ケア用に調べた内容をもとにした、続けるためのアプリです。合言葉は「朝7分・夜4分」。やることは根拠のあるものだけに絞ってあります。少ないから続く、を狙います。</p>
 
 <div class="goal">
 <div class="g-title">目標：見た目マイナス20歳／目を大きく、二重に</div>
@@ -310,6 +310,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div id="amList"></div>
 <div class="prog"><div id="amProg" style="width:0%"></div></div>
 <div id="amDone"></div>
+<p class="small" style="padding:0 16px 14px;margin:0;">⚠ 皮膚を引っ張る・伸ばす・はがす系のケアは、逆効果になることがあるのでやらない。指は添えるだけ、こすらないのが原則です。</p>
 </div>
 
 <div class="card flush">
@@ -323,7 +324,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="sec-head"><h2>今週のケア</h2><span class="time" id="weekRange"></span></div>
 <div id="weekList"></div>
 <div class="prog"><div id="weekProg" style="width:0%"></div></div>
-<p class="small" style="padding:0 16px 14px;margin:0;">週の最低ラインは「早歩き2回・青魚2日」。全部できなくても、最低ラインを守れれば十分です。酵素洗顔は任意で、週1〜2回まで。丸をタップすると記録できます。</p>
+<p class="small" style="padding:0 16px 14px;margin:0;">週のケアはレチノールだけに絞りました。週2〜3回を目安に、無理のないペースで続けてください。丸をタップすると記録できます。</p>
 </div>
 
 <div class="card">
@@ -686,6 +687,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="card">
 <h2>記録について</h2>
 <p class="small">チェック・状態・写真の記録は、すべてこのブラウザの中に保存されています。ブラウザのデータを消すと記録も消えます。大事な写真はスマホの写真アプリにも残しておいてください。</p>
+<p class="tiny">アプリの版：2026.11.04-5（眼輪筋トレーニング・側頭筋ほぐし・頬の表情筋トレーニングを追加／今週のケアはレチノールの枠のみに整理）</p>
 <button type="button" class="btn danger block" id="resetBtn">すべての記録を消して最初からにする</button>
 </div>
 </div>
@@ -801,6 +803,8 @@ function amTasks(){
 return [
 { id:"foam", name:"泡洗顔", desc:"2分。泡でなでるだけ、こすらない。タオルは押さえるだけ", time:"2分"},
 { id:"moist", name:"保湿（ワセリンを薄く）", desc:"1分。顔全体に薄く伸ばす。乾きやすい部分は少し多めに", time:"1分"},
+{ id:"eye", name:"眼輪筋トレーニング", desc:"1分。下まぶた引き上げ5秒×5回＋目を閉じる・開く×5回。指は添えるだけ、引っ張らない", time:"1分"},
+{ id:"temple", name:"側頭筋ほぐし", desc:"30秒。こめかみの上を指の腹で、皮膚ごと小さく回す（こすらない）", time:"30秒"},
 { id:"sun", name:"日焼け止め", desc:"2分。顔・首・耳に。鼻と額は重ね塗り。曇りの日も", time:"2分"}
 ];
 }
@@ -808,7 +812,8 @@ function pmTasks(){
 return [
 { id:"foam", name:"泡洗顔", desc:"2分。日焼け止めと皮脂を落とす。こすらない・熱い湯は使わない", time:"2分"},
 { id:"moist", name:"お風呂上がり5分以内に保湿", desc:"1分。ワセリンを薄く。肌が乾く前に塗るのがコツ", time:"1分"},
-{ id:"phone", name:"寝る30分前にスマホを置く", desc:"7時間眠れる時刻に就寝するのが目安", time:""}
+{ id:"phone", name:"寝る30分前にスマホを置く", desc:"7時間眠れる時刻に就寝するのが目安", time:""},
+{ id:"cheek", name:"頬の表情筋トレーニング（任意）", desc:"1分。口を「お」にして頬を斜め上に引き上げ、10秒キープ×3回", time:"1分"}
 ];
 }
 
@@ -822,7 +827,7 @@ return dateKey(mon);
 function weekLog(){
 if(!state.weekly) state.weekly={};
 var wk=weekStartKey();
-if(!state.weekly[wk]) state.weekly[wk]={ walk:0, fish:0, enzyme:false};
+if(!state.weekly[wk]) state.weekly[wk]={ walk:0, fish:0, enzyme:false, retinol:0};
 return state.weekly[wk];
 }
 function renderWeekly(){
@@ -853,22 +858,12 @@ note.textContent=count+"／"+max;
 row.appendChild(note);
 return row;
 }
-var r1=makeRow("早歩き30分", "週3回までOK。まず2回できれば最低ライン達成です");
-r1.appendChild(slots(w.walk, 3, function(n){ w.walk=n; save(); renderWeekly(); }));
-if(w.walk>=2){
-var ok1=document.createElement("div"); ok1.className="slot-note"; ok1.style.marginTop="4px";
-ok1.textContent="✓ 最低ライン（週2回）達成";
-r1.appendChild(ok1);
-}
+if(typeof w.retinol!=="number") w.retinol=0;
+var r1=makeRow("レチノール（夜）", "週2〜3回が目安。米粒大を保湿で挟む（保湿→レチノール→保湿）。刺激（赤み・ヒリつき）が出たら頻度を下げてください。効果の判定は12〜24週かけて、月1回の定点写真で見ます");
+r1.appendChild(slots(w.retinol, 3, function(n){ w.retinol=n; save(); renderWeekly(); }));
 el.appendChild(r1);
-var r2=makeRow("青魚を食べた日", "サバ・サンマ・イワシ・サケなど。週2日が目標です");
-r2.appendChild(slots(w.fish, 2, function(n){ w.fish=n; save(); renderWeekly(); }));
-el.appendChild(r2);
-var r3=makeRow("酵素洗顔（任意）", "週1〜2回まで。毎日の使用はしません");
-r3.appendChild(slots(w.enzyme?1:0, 1, function(n){ w.enzyme=(n===1); save(); renderWeekly(); }));
-el.appendChild(r3);
-var done=w.walk+w.fish+(w.enzyme?1:0);
-$("weekProg").style.width=Math.round(done/6*100)+"%";
+var done=w.retinol;
+$("weekProg").style.width=Math.round(done/3*100)+"%";
 }
 
 /* ---------- 今日タブ描画 ---------- */
@@ -890,8 +885,8 @@ if(streak>3650) break;
 $("streakChip").textContent="継続 "+streak+"日";
 $("phaseChip").textContent="開始 "+weekNum()+"週目";
 $("planChip").textContent="最小ルーティン";
-$("amTime").textContent="目安 約5分";
-$("pmTime").textContent="目安 約3分";
+$("amTime").textContent="目安 約7分";
+$("pmTime").textContent="目安 約4分";
 
 renderTaskList("am", amTasks(), log.am);
 renderTaskList("pm", pmTasks(), log.pm);
@@ -989,9 +984,9 @@ var area=$("adviceArea"); area.innerHTML="";
 var c=log.cond||{red:-1,dry:-1,puff:-1,eye:-1};
 var items=[];
 if(c.red>=2){
-items.push({cls:"danger", title:"赤みが強い日：守りの日に", body:"洗顔はぬるま湯で短く、保湿（ワセリン）を少し厚めに。こすらないことを最優先にしてください。今週の酵素洗顔は見送りましょう。数日続く・悪化する場合は無理せず皮膚科へ。"});
+items.push({cls:"danger", title:"赤みが強い日：守りの日に", body:"洗顔はぬるま湯で短く、保湿（ワセリン）を少し厚めに。こすらないことを最優先にしてください。レチノールは赤みが引くまでお休みしましょう。数日続く・悪化する場合は無理せず皮膚科へ。"});
 } else if(c.red===1){
-items.push({cls:"warn", title:"少し赤み：今日はやさしく", body:"洗顔は短めに、保湿を厚めに。こすらず、押さえるだけを意識してください。赤みが引くまで酵素洗顔はお休みで大丈夫です。"});
+items.push({cls:"warn", title:"少し赤み：今日はやさしく", body:"洗顔は短めに、保湿を厚めに。こすらず、押さえるだけを意識してください。レチノールは赤みが引くまでお休みで大丈夫です。"});
 }
 if(c.dry>=1){
 items.push({cls:"warn", title:"乾燥の日：保湿を厚く", body:"ワセリンをいつもより少し多めに、乾きやすい部分へ重ね付け。乾燥で小ジワ・たるみ感は強調されます。洗顔は短く・熱い湯は避けてください。"});
@@ -1004,7 +999,7 @@ items.push({cls:"warn", title:"目の開きが悪い日", body:"まず蒸しタ�
 } else if(c.eye===0){
 items.push({cls:"normal", title:"目の開きが良い日です", body:"調子の良い日こそ、こすらない・引っ張らないを守るのが将来のたるみ予防になります。この状態を写真に残すのもおすすめです。"});
 }
-items.push({cls:"normal", title:"基本は朝3つ・夜3つだけ", body:"朝は「泡洗顔→保湿→日焼け止め」、夜は「泡洗顔→保湿→スマホを置いて寝る」。これが土台です。週のケア（早歩き・青魚）は、最低ラインを目安に無理なく積み上げればOKです。"});
+items.push({cls:"normal", title:"毎日の土台", body:"朝は「泡洗顔→保湿→眼輪筋・側頭筋→日焼け止め」、夜は「泡洗顔→保湿→スマホを置いて寝る」。これが土台です。週のケア（レチノール）は週2〜3回を目安に、無理なく続ければOKです。"});
 if(c.red===-1 && c.dry===-1 && c.puff===-1 && c.eye===-1){
 items.push({cls:"normal", title:"まずは状態を記録してみてください", body:"上の「今日の顔の状態」をタップすると、その日に合わせたアドバイスに切り替わります。"});
 }
