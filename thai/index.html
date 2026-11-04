@@ -278,6 +278,13 @@
       .step-body .tt { font-weight: 700; font-size: 15px; }
       .step-body .dd { font-size: 12px; color: #555; margin-top: 2px; }
       .step-next-tag { font-size: 10px; color: #fff; background: var(--accent); border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
+      .essent-head { border: 2px solid var(--amber); }
+      .words-panel { display: none; }
+      .words-panel.open { display: block; }
+      .shadow-box { display: none; margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 10px; }
+      .shadow-box.open { display: block; }
+      .culture-card { margin-top: 10px; }
+      .culture-card h3 { margin: 0 0 6px; font-size: 16px; }
     </style>
   </head>
   <body>
@@ -309,6 +316,7 @@
         <button role="tab" data-view="tones" aria-selected="false">声調ガイド</button>
         <button role="tab" data-view="script" aria-selected="false">もじ入門</button>
         <button role="tab" data-view="visual" aria-selected="false">視覚言語</button>
+        <button role="tab" data-view="culture" aria-selected="false">文化</button>
       </nav>
 
       <main>
@@ -323,12 +331,13 @@
         <section class="view" id="view-tones"></section>
         <section class="view" id="view-script"></section>
         <section class="view" id="view-visual"></section>
+        <section class="view" id="view-culture"></section>
       </main>
 
       <footer>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.04-2（音声認識の再修正版）</p>
+        <p>アプリの版：2026.11.04-3（まずこれだけ30・場数モード・モノマネ・予測クイズ・文化タブ）</p>
       </footer>
     </div>
 
@@ -416,6 +425,318 @@
       ];
       var BY_ID = {};
       PHRASES.forEach(function (p, i) { p.scene = Math.floor(i / 8); BY_ID[p.id] = p; });
+      /* ============ まずこれだけ30（Kazu式：自己紹介＋5W1Hの最優先フレーズ） ============ */
+      /* 既存の64フレーズに無い分は、同じ形式で追加した4件（音声は機械の声で再生） */
+      var ESSENT_NEW = [
+        { id:"e1", noAudio:true, sTh:"สบายดีไหม", sKana:"サバーイ・ディー・マイ", sTone:[3, 3, 3, 4], sParts:[["サバーイ", "元気・快適"], ["ディー", "良い"], ["マイ", "〜か？（疑問）"]], th:"สบายดีไหมครับ", kana:"サバーイ・ディー・マイ・クラップ", ja:"元気ですか？", tone:[3,3,3,4,4], note:"あいさつの定番のひとこと。聞かれたら「サバーイ・ディー（元気です）」と返せます。", parts:[["サバーイ","元気・快適"],["ディー","良い"],["マイ","〜か？（疑問）"],["クラップ","丁寧な語尾"]], form:"状態（元気）＋ 疑問（〜か？）＋ 丁寧語尾" },
+        { id:"e2", noAudio:true, sTh:"ผมชื่อทาคาฮิโระ", sKana:"ポム・チュー・タカヒロ", sTone:[3, 5, 3, 3, 3], sParts:[["ポム", "私（男性）"], ["チュー", "名前は"], ["タカヒロ", "タカヒロ（名前）"]], th:"ผมชื่อทาคาฮิโระครับ", kana:"ポム・チュー・タカヒロ・クラップ", ja:"私の名前はタカヒロです", tone:[3,5,3,3,3,4], note:"「チュー」の後が名前です。名乗るときの基本形。タイではニックネームで名乗る人も多いです。", parts:[["ポム","私（男性）"],["チュー","名前は"],["タカヒロ","タカヒロ（名前）"],["クラップ","丁寧な語尾"]], form:"主語（私）＋ 名前は ＋ 【名前】＋ 丁寧語尾" },
+        { id:"e3", noAudio:true, sTh:"คุณอยู่ที่ไหน", sKana:"クン・ユー・ティー・ナイ", sTone:[3, 2, 3, 3], sParts:[["クン", "あなた"], ["ユー", "いる・住む"], ["ティー", "〜に"], ["ナイ", "どこ"]], th:"คุณอยู่ที่ไหนครับ", kana:"クン・ユー・ティー・ナイ・クラップ", ja:"どこに住んでいますか？", tone:[3,2,3,3,4], note:"答えは「ユー・ティー・〇〇（場所・地名）」の形。会話を広げる質問です。", parts:[["クン","あなた"],["ユー","いる・住む"],["ティー","〜に"],["ナイ","どこ"],["クラップ","丁寧な語尾"]], form:"主語（あなた）＋ 住む ＋ 〜に ＋ 疑問（どこ？）＋ 丁寧語尾" },
+        { id:"e4", noAudio:true, sTh:"คุณทำงานอะไร", sKana:"クン・タムガーン・アライ", sTone:[3, 3, 3, 2, 4], sParts:[["クン", "あなた"], ["タムガーン", "働く・仕事"], ["アライ", "何"]], th:"คุณทำงานอะไรครับ", kana:"クン・タムガーン・アライ・クラップ", ja:"お仕事は何をしていますか？", tone:[3,3,3,2,4,4], note:"初対面でよく聞かれる質問。「タムガーン」が「働く・仕事をする」という意味です。", parts:[["クン","あなた"],["タムガーン","働く・仕事"],["アライ","何"],["クラップ","丁寧な語尾"]], form:"主語（あなた）＋ 動詞（働く）＋ 疑問（何？）＋ 丁寧語尾" }
+      ];
+      var ESSENT_BY_ID = {};
+      ESSENT_NEW.forEach(function (p) { ESSENT_BY_ID[p.id] = p; });
+      var ESSENT30 = ["s1p1","e1","s2p6","e2","s2p5","s2p1","s2p2","e3","e4","s2p3","s2p4","s2p7","s2p8","s7p4","s7p3","s1p3","s1p5","s1p6","s3p1","s3p6","s4p6","s4p5","s4p7","s5p1","s5p6","s6p3","s6p1","s7p1","s8p2","s1p7"];
+      function essentPhrase(id) { return BY_ID[id] || ESSENT_BY_ID[id] || null; }
+
+      /* 単語分解データ（短い形を、タイ文字の単語ごとに）。まずこれだけ30とかいわのフレーズ分を用意 */
+      var WORDS_BY_ID = {
+        "s1p1": [["สวัสดี", "サワッディー", "こんにちは"]],
+        "s1p3": [["ขอบคุณ", "コープクン", "ありがとう"]],
+        "s1p4": [["ขอบคุณ", "コープクン", "ありがとう"], ["มาก", "マーク", "とても"]],
+        "s1p5": [["ขอ", "コー", "許しを請う"], ["โทษ", "トーッ", "過ち"]],
+        "s1p6": [["ไม่", "マイ", "〜ない（否定）"], ["เป็น", "ペン", "〜である"], ["ไร", "ライ", "何"]],
+        "s1p7": [["แล้ว", "レーオ", "それでは"], ["เจอ", "ヂャー", "会う"], ["กัน", "ガン", "一緒に・互いに"]],
+        "s1p8": [["โชค", "チョーク", "運"], ["ดี", "ディー", "良い"]],
+        "s2p1": [["เป็น", "ペン", "〜である"], ["คน", "コン", "人"], ["ญี่ปุ่น", "イープン", "日本"]],
+        "s2p2": [["มา", "マー", "来る"], ["จาก", "ヂャーク", "〜から"], ["ญี่ปุ่น", "イープン", "日本"]],
+        "s2p3": [["พูด", "プート", "話す"], ["ภาษา", "パーサー", "言葉・言語"], ["ไทย", "タイ", "タイ"], ["ได้", "ダイ", "できる"], ["นิดหน่อย", "ニッノイ", "少し"]],
+        "s2p4": [["เรียน", "リアン", "学ぶ"], ["ภาษา", "パーサー", "言語"], ["ไทย", "タイ", "タイ"], ["อยู่", "ユー", "〜している"]],
+        "s2p5": [["คุณ", "クン", "あなた"], ["ชื่อ", "チュー", "名前"], ["อะไร", "アライ", "何"]],
+        "s2p6": [["ยินดี", "イン・ディー", "嬉しい"], ["ที่", "ティー", "〜こと"], ["ได้", "ダイ", "できる"], ["รู้จัก", "ルー・ヂャック", "知り合う"]],
+        "s2p7": [["พูด", "プート", "話す"], ["ภาษา", "パーサー", "言語"], ["ญี่ปุ่น", "イープン", "日本"], ["ได้", "ダイ", "できる"], ["ไหม", "マイ", "〜か？"]],
+        "s2p8": [["พูด", "プート", "話す"], ["ช้าๆ", "チャーチャー", "ゆっくり"], ["หน่อย", "ノイ", "少し・〜してください"]],
+        "s3p1": [["อันนี้", "アン・ニー", "これ"], ["เท่าไหร่", "タオライ", "いくら"]],
+        "s3p2": [["แพง", "ペーン", "高い"], ["ไป", "パイ", "〜すぎる"]],
+        "s3p3": [["ลด", "ロッ", "下げる"], ["หน่อย", "ノイ", "少し"], ["ได้", "ダイ", "できる"], ["ไหม", "マイ", "〜か？"]],
+        "s3p4": [["ขอ", "コー", "〜させてください"], ["ดู", "ドゥー", "見る"], ["หน่อย", "ノイ", "〜してください"]],
+        "s3p6": [["เอา", "アオ", "取る・欲しい"], ["อันนี้", "アン・ニー", "これ"]],
+        "s4p1": [["ขอ", "コー", "〜させてください"], ["ดู", "ドゥー", "見る"], ["เมนู", "メーヌー", "メニュー"], ["หน่อย", "ノイ", "〜してください"]],
+        "s4p2": [["อันนี้", "アン・ニー", "これ"], ["อะไร", "アライ", "何"]],
+        "s4p3": [["ไม่", "マイ", "〜しないで"], ["เผ็ด", "ペッ", "辛い"], ["นะ", "ナ", "〜ね"]],
+        "s4p5": [["อร่อย", "アロイ", "美味しい"], ["มาก", "マーク", "とても"]],
+        "s4p6": [["ขอ", "コー", "ください"], ["น้ำ", "ナーム", "水"], ["หน่อย", "ノイ", "〜してください"]],
+        "s4p7": [["เช็คบิล", "チェック・ビン", "お会計"]],
+        "s4p8": [["อิ่ม", "イム", "お腹いっぱい"], ["แล้ว", "レーオ", "もう〜した"]],
+        "s5p1": [["ไป", "パイ", "行く"], ["ที่นี่", "ティー・ニー", "ここ"]],
+        "s5p2": [["จอด", "ヂョート", "止まる"], ["ตรง", "トロン", "まっすぐ"], ["นี้", "ニー", "この・ここ"]],
+        "s5p4": [["เลี้ยว", "リアオ", "曲がる"], ["ขวา", "クワー", "右"]],
+        "s5p5": [["ตรง", "トロン", "まっすぐ"], ["ไป", "パイ", "行く"]],
+        "s5p6": [["สถานี", "サターニー", "駅"], ["รถไฟ", "ロットファイ", "電車"], ["ไป", "パイ", "行く"], ["ทาง", "ターン", "道・方"], ["ไหน", "ナイ", "どこ・どちら"]],
+        "s5p8": [["ใช้", "チャイ", "使う"], ["เวลา", "ウェーラー", "時間"], ["นาน", "ナーン", "長い"], ["เท่าไหร่", "タオライ", "どのくらい"]],
+        "s6p1": [["จอง", "ヂョーン", "予約する"], ["ไว้", "ワイ", "〜しておく"]],
+        "s6p2": [["ขอ", "コー", "ください"], ["กุญแจ", "グン・ヂェー", "鍵"], ["หน่อย", "ノイ", "〜してください"]],
+        "s6p3": [["ห้องน้ำ", "ホン・ナーム", "トイレ"], ["อยู่", "ユー", "ある・いる"], ["ไหน", "ナイ", "どこ"]],
+        "s6p5": [["ขอ", "コー", "ください"], ["ผ้าขนหนู", "パー・コン・ヌー", "タオル"], ["เพิ่ม", "プーム", "追加"]],
+        "s6p6": [["อาหาร", "アーハーン", "食事"], ["เช้า", "チャーオ", "朝"], ["กี่", "ギー", "いくつ"], ["โมง", "モーン", "時（〜時）"]],
+        "s6p7": [["ฝาก", "ファーク", "預ける"], ["กระเป๋า", "グラパオ", "かばん・荷物"], ["ได้", "ダイ", "できる"], ["ไหม", "マイ", "〜か？"]],
+        "s7p1": [["ช่วย", "チュアイ", "助ける"], ["ด้วย", "ドゥアイ", "〜も・一緒に"]],
+        "s7p2": [["หลง", "ロン", "迷う"], ["ทาง", "ターン", "道"]],
+        "s7p3": [["ไม่", "マイ", "否定（〜ない）"], ["เข้าใจ", "カオ・ヂャイ", "理解する"]],
+        "s7p4": [["พูด", "プート", "言う"], ["อีก", "イーク", "もう"], ["ครั้ง", "クラン", "回"], ["ได้", "ダイ", "できる"], ["ไหม", "マイ", "〜か？"]],
+        "s7p5": [["เขียน", "キアン", "書く"], ["ให้", "ハイ", "〜してあげる"], ["หน่อย", "ノイ", "〜してください"]],
+        "s8p2": [["ชอบ", "チョープ", "好き"], ["ประเทศ", "プラテート", "国"], ["ไทย", "タイ", "タイ"]],
+        "s8p5": [["ดีใจ", "ディー・ヂャイ", "嬉しい"], ["ที่", "ティー", "〜こと"], ["ได้", "ダイ", "できる"], ["เจอ", "ヂャー", "会う"]],
+        "e1": [["สบายดี", "サバーイ・ディー", "元気・快適"], ["ไหม", "マイ", "〜か？"]],
+        "e2": [["ผม", "ポム", "私（男性）"], ["ชื่อ", "チュー", "名前は"], ["ทาคาฮิโระ", "タカヒロ", "タカヒロ（名前）"]],
+        "e3": [["คุณ", "クン", "あなた"], ["อยู่", "ユー", "いる・住む"], ["ที่", "ティー", "〜に"], ["ไหน", "ナイ", "どこ"]],
+        "e4": [["คุณ", "クン", "あなた"], ["ทำงาน", "タムガーン", "働く"], ["อะไร", "アライ", "何"]]
+      };
+
+      /* ============ タイ文化カード（1枚1テーマの短いカード） ============ */
+      var CULTURE_CARDS = [
+        { t:"ワイ（合掌のあいさつ）", body:"タイのあいさつは、両手を胸の前で合わせる「ワイ」とセットです。目上の人やお店の人には、こちらから先に軽くワイをすると好印象です。手の高さは胸のあたりで十分で、子どもや親しい同年代の相手にはしないこともよくあります。" },
+        { t:"グレンチャイ（遠慮の感覚）", body:"「グレンチャイ」は、相手に負担をかけまいとする遠慮や気づかいの感覚です。誘いを一度断られても、実は迷っているだけのこともあります。頼みごとをするときは少し控えめに切り出すと、スムーズに受け取ってもらえます。" },
+        { t:"サヌック（楽しさ優先）", body:"「サヌック」は「楽しい」という意味で、仕事でも遊びでも「楽しくやろう」という空気が好まれます。真面目な場面でも、場を和ませる一言や軽い冗談が歓迎されることが多いです。" },
+        { t:"ニックネームで呼び合う文化", body:"タイの人の多くは、出生名とは別に短いニックネームを持ち、日常ではそちらで呼び合います。初対面でもニックネームで呼ぶのが自然です。名前を聞くときは「チュー・レン（ニックネームは何ですか）」と聞く方法もあります。" },
+        { t:"食事の作法（スプーンとフォーク）", body:"タイではスプーンを右手・フォークを左手に持ち、スプーンで食べるのが基本です。箸は麺類のときが中心。料理は大皿で出てきて、みんなでシェアしながら少しずつ取るスタイルが一般的です。" },
+        { t:"頭と足にまつわるタブー", body:"頭は体の中で最も大切とされ、他人の頭に触れるのは避けます（子どもの頭も同様です）。逆に足は最も低いものとされ、人や物を足で指したり、人の方へ足の裏を向けたりしないよう気をつけます。" },
+        { t:"寺院での作法", body:"寺院では肌の露出の多い服装を避け、靴を脱いで入ります。仏像に足を向けない、僧侶の近くでは静かにするなど、敬意を示すのが基本です。写真撮影が禁止の場所もあるので、表示を確認します。" },
+        { t:"時間感覚の違い", body:"約束の時間に少しゆとりのある場面もあり、「タイ・タイム」と冗談めかして言われることもあります。ただし仕事や予約の場面では時間厳守が基本です。自分は早めに着いておくと安心です。" },
+        { t:"LINEとスタンプの文化", body:"タイでもLINEが日常の連絡手段です。スタンプは気持ちを柔らかく伝える大切な道具で、文章だけの返信より温かく受け取られることが多いです。短い返信も冷たいとは限らず、忙しい合間のサインのことがよくあります。" },
+        { t:"値段交渉の感覚", body:"市場や露店、トゥクトゥクでは値段交渉が日常的です。笑顔で少しずつ下げるのが基本で、成立しなくても怒らず「マイ・ペン・ライ（大丈夫）」で離れるのが気持ちのよいやり方です。料金表示のある店やデパートでは交渉はしません。" },
+        { t:"ピーとノーン（年上・年下の呼び方）", body:"年上の人には「ピー（お兄さん・お姉さん）」、年下の人には「ノーン」を名前の前に付けて呼ぶことが多いです。家族でなくても使う呼び方で、相手との距離がぐっと縮まります。" },
+        { t:"ヂャイ・イェン（穏やかさ）", body:"「ヂャイ・イェン」は「心を冷やす＝落ち着く」という意味で、感情を表に出さない穏やかさが大切にされます。人前で怒ることは相手の面子を潰すことにもつながるため、困ったときほど穏やかに伝える方が物事が進みやすいです。" },
+        { t:"マイ・ペン・ライの精神", body:"「マイ・ペン・ライ」は「大丈夫・気にしないで」という意味です。謝られたときの返事にも、うまくいかなかったときの切り替えにも使われます。細かいことにこだわりすぎない、おおらかさの表れです。" },
+        { t:"王室と仏教への敬意", body:"タイでは仏教と王室がとても大切にされています。僧侶には席を譲る、紙幣（国王の肖像が印刷されています）をぞんざいに扱わない、といった小さな配慮が喜ばられます。" }
+      ];
+      /* 場面ごとの文化メモ（1行） */
+      var SCENE_CULTURE = [
+        "文化メモ：タイのあいさつは、手を合わせる「ワイ」とセットが基本です。目上の人には、こちらから先に軽くワイをします。",
+        "文化メモ：タイではニックネームで呼び合うのが普通です。名前を聞かれたら、ニックネームで答える人も多いです。",
+        "文化メモ：市場や露店では値段交渉が日常的です。笑顔で少しずつ下げるのが基本の進め方です。",
+        "文化メモ：タイではスプーンとフォークが基本で、料理は大皿をみんなでシェアして食べます。",
+        "文化メモ：タクシーは乗る前に行き先を告げ、メーターを使うかどうか確認すると安心です。",
+        "文化メモ：荷物を運んでもらったときなど、少額のチップ（20〜50バーツほど）を渡す人もいます。義務ではありません。",
+        "文化メモ：困ったときは近くの人に笑顔で声をかけると助けてもらいやすいです。他人の頭に触れるのは避けます。",
+        "文化メモ：感情は穏やかに伝える方が好まれます。「ヂャイ・イェン（落ち着いて）」が大切にされる感覚です。"
+      ];
+
+      /* ============ まずこれだけ30の表示部品 ============ */
+      function wordsPanelHTML(p, ctx) {
+        var w = WORDS_BY_ID[p.id];
+        if (!w) return "";
+        return '<div class="parts words-panel" id="wp-' + ctx + '-' + p.id + '">' + w.map(function (x) { return '<span class="pw thai">' + x[0] + '</span> ' + x[1] + '（' + x[2] + '）'; }).join('<br>') + '</div>';
+      }
+      function shadowBoxHTML(p, ctx) {
+        var target = p.sTh || p.th;
+        var playBtn = p.noAudio
+          ? '<button type="button" class="btn primary" data-saytext="' + target + '">▶ お手本を聞く（機械の声）</button>'
+          : '<button type="button" class="btn primary" data-play="' + p.id + '-s">▶ お手本を聞く</button>';
+        return '<div class="shadow-box" id="sh-' + ctx + '-' + p.id + '">' +
+          '<p class="small" style="margin:0 0 6px;"><b>モノマネ練習</b>：①お手本を聞く → ②マイクでまねして話す → ③聞き取りとお手本を見比べる → もう一度お手本を聞く、を繰り返します。まねることで、発音が耳と口に染み込んでいきます。</p>' +
+          '<div class="row-btns">' + playBtn +
+          '<button type="button" class="btn" data-shadow-mic="' + ctx + ':' + p.id + '">🎤 まねして話す</button></div>' +
+          '<div id="shres-' + ctx + '-' + p.id + '"></div></div>';
+      }
+      function essentRowHTML(id, i, ctx) {
+        var p = essentPhrase(id);
+        var play = p.noAudio
+          ? '<div class="play-row"><button type="button" class="btn primary" data-saytext="' + (p.sTh || p.th) + '">' + ICON_PLAY + '音声を聞く（機械の声）</button><button type="button" class="btn slow" data-saytext-slow="' + (p.sTh || p.th) + '">' + ICON_PLAY + 'ゆっくり</button></div>'
+          : playButtonsS(p);
+        return '<div class="phrase-row"><div class="kana">' + (i + 1) + '. ' + (p.sKana || p.kana) + statusChip(p) + '</div>' +
+          '<div class="thai-text thai">' + (p.sTh || p.th) + '</div>' +
+          '<p class="meaning">' + p.ja + '</p>' +
+          sPartsHTML(p) +
+          play +
+          '<div class="row-btns"><button type="button" class="btn slow" data-shadow="' + ctx + ':' + p.id + '">🔁 モノマネ練習</button>' +
+          (WORDS_BY_ID[p.id] ? '<button type="button" class="btn slow" data-words="wp-' + ctx + '-' + p.id + '">🧩 単語に分解</button>' : '') + '</div>' +
+          wordsPanelHTML(p, ctx) +
+          shadowBoxHTML(p, ctx) +
+          (p.note ? '<div class="note">' + p.note + '</div>' : '') +
+          '</div>';
+      }
+      var essentOpen = false;
+      function essentSectionHTML(ctx) {
+        var learned = ESSENT30.filter(function (id) { var r = store.prog[id]; return r && r.box >= 2; }).length;
+        var html = '<div class="card essent-head" style="margin-bottom:8px;"><div class="sec-head"><h2>⭐ まずこれだけ30</h2></div>' +
+          '<p class="small" style="margin:0 0 6px;">自己紹介（名前・出身・住まい・仕事）と、「誰・何・どこ・いくら」などの基本の質問を集めた最優先の30フレーズです。まずここが言えるようになると、現地での会話が一気に楽になります（言える：' + learned + ' / 30）。</p>' +
+          '<div class="row-btns"><button type="button" class="btn" data-essent-toggle="' + ctx + '">' + (essentOpen ? "閉じる" : "30フレーズを開く") + '</button></div>';
+        if (essentOpen) html += ESSENT30.map(function (id, i) { return essentRowHTML(id, i, ctx); }).join("");
+        html += '</div>';
+        return html;
+      }
+
+      /* ============ モノマネ（シャドーイング）の音声認識 ============ */
+      /* 開始は必ずタップ起点にし、開始前に silenceAudio() で音声を止める（既存の認識制御と同じ作法） */
+      var shadowRec = null, shadowEnding = null, shadowTimer = null, shadowBtn = null;
+      function stopShadowRec() {
+        if (shadowTimer) { clearTimeout(shadowTimer); shadowTimer = null; }
+        if (shadowRec) {
+          var oldRec = shadowRec;
+          shadowRec = null;
+          shadowEnding = oldRec;
+          setTimeout(function () { if (shadowEnding === oldRec) shadowEnding = null; }, 1200);
+          try { oldRec.stop(); } catch (e) { try { oldRec.abort(); } catch (e2) {} }
+        }
+        if (shadowBtn) { shadowBtn.classList.remove("listening"); shadowBtn.textContent = "🎤 まねして話す"; shadowBtn = null; }
+      }
+      function startShadowRec(key, btn) {
+        var kp = key.split(":");
+        var ctx = kp[0], pid = kp[1];
+        var res = document.getElementById("shres-" + ctx + "-" + pid);
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。お手本を聞いて声に出してまねるだけでも、十分な練習になります。</p>';
+          return;
+        }
+        if (shadowRec) {
+          var sameBtn = (shadowBtn === btn);
+          stopShadowRec();
+          if (!sameBtn && res) res.innerHTML = '<p class="small">前の聞き取りを止めました。もう一度マイクを押すと開始します。</p>';
+          return;
+        }
+        if (shadowEnding) {
+          if (res) res.innerHTML = '<p class="small">前の聞き取りを終了しています。1秒ほど待って、もう一度マイクを押してください。</p>';
+          return;
+        }
+        var wasPlaying = silenceAudio();
+        if (wasPlaying) {
+          btn.textContent = "🎙 準備中…";
+          if (res) res.innerHTML = '<p class="small">音声を止めました。まもなく聞き取りを開始します…</p>';
+          setTimeout(function () { beginShadowRec(ctx, pid, btn); }, 500);
+        } else {
+          beginShadowRec(ctx, pid, btn);
+        }
+      }
+      function beginShadowRec(ctx, pid, btn) {
+        if (shadowRec || shadowEnding || !btn.isConnected) {
+          btn.classList.remove("listening"); btn.textContent = "🎤 まねして話す";
+          return;
+        }
+        var p = essentPhrase(pid) || BY_ID[pid];
+        if (!p) return;
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var rec = new SR();
+        shadowRec = rec; shadowBtn = btn;
+        recSetup(rec);
+        btn.classList.add("listening"); btn.textContent = "🎙 聞き取り中…話してください";
+        var res0 = document.getElementById("shres-" + ctx + "-" + pid);
+        if (res0) res0.innerHTML = '<p class="small">聞き取りの準備中…</p>';
+        var judged = false, best = -1, bestTxt = "", stable = null, gotEvent = false;
+        function judge() {
+          if (judged || !bestTxt || shadowRec !== rec) return;
+          judged = true;
+          if (stable) { clearTimeout(stable); stable = null; }
+          if (shadowTimer) { clearTimeout(shadowTimer); shadowTimer = null; }
+          shadowEnding = rec;
+          setTimeout(function () { if (shadowEnding === rec) shadowEnding = null; }, 1200);
+          try { rec.stop(); } catch (e) {}
+          shadowRec = null;
+          btn.classList.remove("listening"); btn.textContent = "🎤 まねして話す"; shadowBtn = null;
+          var target = p.sTh || p.th;
+          var res = document.getElementById("shres-" + ctx + "-" + pid);
+          if (res) {
+            var again = p.noAudio
+              ? '<button type="button" class="btn slow" data-saytext="' + target + '">もう一度お手本を聞く</button>'
+              : '<button type="button" class="btn slow" data-play="' + p.id + '-s">もう一度お手本を聞く</button>';
+            res.innerHTML = (best >= 0.55
+              ? '<p class="judge-ok">' + (best >= 0.85 ? "🎉 完璧！お手本そっくりです" : "✓ 通じました！") + '</p>'
+              : '<p class="judge-ng">あと少し！</p>') +
+              '<div class="heard-box">聞き取り：' + bestTxt + '<br>お手本：' + target + '（' + (p.sKana || p.kana) + '）</div>' +
+              '<div class="row-btns">' + again + '</div><p class="small">見比べたら、もう一度お手本を聞いて、もう一度まねしてみましょう。</p>';
+          }
+        }
+        shadowTimer = setTimeout(function () {
+          if (shadowRec === rec) {
+            if (bestTxt && !judged) { judge(); return; }
+            stopShadowRec();
+            var res = document.getElementById("shres-" + ctx + "-" + pid);
+            if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度マイクを押して試してください。</p>';
+          }
+        }, 12000);
+        setTimeout(function () {
+          if (!gotEvent && shadowRec === rec) {
+            stopShadowRec();
+            var res = document.getElementById("shres-" + ctx + "-" + pid);
+            if (res) res.innerHTML = '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">音声認識が応答しませんでした。もう一度マイクを押して試してください。</p>';
+          }
+        }, 5000);
+        rec.onstart = function () {
+          gotEvent = true;
+          var res = document.getElementById("shres-" + ctx + "-" + pid);
+          if (res) res.innerHTML = '<p class="small">🎙 聞き取り中です。お手本をまねて話してください</p>';
+        };
+        rec.onspeechstart = function () {
+          gotEvent = true;
+          var res = document.getElementById("shres-" + ctx + "-" + pid);
+          if (res) res.innerHTML = '<div class="heard-box">声を聞き取っています…</div>';
+        };
+        rec.onresult = function (ev) {
+          gotEvent = true;
+          for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
+            var rr = ev.results[ri];
+            for (var ai = 0; ai < rr.length; ai++) {
+              var tr = rr[ai] && rr[ai].transcript;
+              if (!tr) continue;
+              var sc = Math.max(scoreHeard(tr, p.th), scoreHeard(tr, p.sTh || p.th));
+              if (sc > best) { best = sc; bestTxt = tr; }
+            }
+            if (rr.isFinal) { judge(); return; }
+          }
+          if (bestTxt) { if (stable) clearTimeout(stable); stable = setTimeout(judge, 2500); }
+        };
+        rec.onerror = function (ev) {
+          if (shadowRec !== rec) return;
+          stopShadowRec();
+          var res = document.getElementById("shres-" + ctx + "-" + pid);
+          if (!res) return;
+          if (ev.error === "not-allowed") res.innerHTML = '<p class="judge-ng">マイクが許可されていません</p><p class="small">ブラウザの設定でマイクを許可してから、もう一度押してください。</p>';
+          else if (ev.error === "no-speech") res.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">もう一度、マイクの近くではっきり話してみてください。</p>';
+          else res.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
+        };
+        rec.onend = function () {
+          if (shadowEnding === rec) shadowEnding = null;
+          if (shadowRec === rec) {
+            if (bestTxt && !judged) { judge(); return; }
+            shadowRec = null;
+            if (shadowBtn === btn) { btn.classList.remove("listening"); btn.textContent = "🎤 まねして話す"; shadowBtn = null; }
+            var res = document.getElementById("shres-" + ctx + "-" + pid);
+            if (res && !bestTxt) res.innerHTML = '<p class="small">聞き取りが終わりました。声が出ていなかったかもしれません。もう一度どうぞ。</p>';
+          }
+        };
+        try { rec.start(); } catch (e) {
+          shadowRec = null; shadowBtn = null;
+          btn.classList.remove("listening"); btn.textContent = "🎤 まねして話す";
+          var res = document.getElementById("shres-" + ctx + "-" + pid);
+          if (res) res.innerHTML = '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">もう一度マイクを押して試してください。</p>';
+        }
+      }
+
+      /* ============ 文化タブと「今日の文化ひとくち」 ============ */
+      function cultureDailyHTML() {
+        var now = new Date();
+        var start = new Date(now.getFullYear(), 0, 0);
+        var doy = Math.floor((now - start) / 86400000);
+        var c = CULTURE_CARDS[doy % CULTURE_CARDS.length];
+        return '<div class="card" style="margin-bottom:8px;"><div class="sec-head"><h2>今日の文化ひとくち</h2></div>' +
+          '<h3 style="margin:0 0 6px;font-size:16px;">' + c.t + '</h3>' +
+          '<p class="small" style="margin:0 0 6px;">' + c.body + '</p>' +
+          '<div class="row-btns"><button type="button" class="btn slow" id="cultureMoreBtn">文化タブで全部見る</button></div></div>';
+      }
+      function wireCultureBtn() {
+        var b = document.getElementById("cultureMoreBtn");
+        if (b) b.addEventListener("click", function () { switchView("culture"); });
+      }
+      function renderCulture() {
+        var el = document.getElementById("view-culture");
+        var html = '<div class="sec-head"><h2>文化</h2></div>' +
+          '<p class="small">タイで実際に役立つ文化の知識を、短いカードにまとめました。言葉と一緒に知っておくと、会話がぐっとスムーズになります。</p>';
+        CULTURE_CARDS.forEach(function (c) {
+          html += '<div class="card culture-card"><h3>' + c.t + '</h3><p class="small" style="margin:0;">' + c.body + '</p></div>';
+        });
+        el.innerHTML = html;
+      }
+
 
       var TONES = [
         { id:"tone1", name:"中声（ちゅうせい）", desc:"まっすぐ平らに。日本語の普通の声の高さでそのまま。", word:"มา", kana:"マー", ja:"来る", tone:[3,3,3] },
@@ -550,6 +871,33 @@
         if (b) { playAudio("assets/audio/" + b.getAttribute("data-play") + ".mp3", b); }
       });
 
+      /* 追加部品のクリック処理（機械の声・単語分解・モノマネ・まずこれだけ30の開閉） */
+      document.addEventListener("click", function (ev) {
+        var st3 = ev.target.closest("[data-saytext]");
+        if (st3) { speakTh(st3.getAttribute("data-saytext"), 0.85); return; }
+        var sl3 = ev.target.closest("[data-saytext-slow]");
+        if (sl3) { speakTh(sl3.getAttribute("data-saytext-slow"), 0.55); return; }
+        var wt3 = ev.target.closest("[data-words]");
+        if (wt3) { var wp3 = document.getElementById(wt3.getAttribute("data-words")); if (wp3) wp3.classList.toggle("open"); return; }
+        var sm3 = ev.target.closest("[data-shadow-mic]");
+        if (sm3) { startShadowRec(sm3.getAttribute("data-shadow-mic"), sm3); return; }
+        var sb3 = ev.target.closest("[data-shadow]");
+        if (sb3) {
+          var kp = sb3.getAttribute("data-shadow").split(":");
+          var box3 = document.getElementById("sh-" + kp[0] + "-" + kp[1]);
+          var wasOpen3 = box3 && box3.classList.contains("open");
+          document.querySelectorAll(".shadow-box.open").forEach(function (b) { b.classList.remove("open"); });
+          if (box3 && !wasOpen3) box3.classList.add("open");
+          return;
+        }
+        var et3 = ev.target.closest("[data-essent-toggle]");
+        if (et3) {
+          essentOpen = !essentOpen;
+          if (document.getElementById("view-today").classList.contains("active")) renderToday(); else renderCourse();
+          return;
+        }
+      });
+
       /* ============ 今日の練習 ============ */
       var session = null; /* {queue:[ids], idx, retried:{}} */
       function buildSession() {
@@ -579,7 +927,7 @@
               '<div class="thai-text thai">' + (p.sTh || p.th) + '</div><p class="meaning">' + p.ja + '</p>' +
               sPartsHTML(p) + playButtonsS(p) + politeLineHTML(p) + '</div>';
           }).join("");
-          el.innerHTML = '<div class="card done-box"><div class="face">よくできました</div><p>' + msg + '</p>' +
+          el.innerHTML = essentSectionHTML("t") + cultureDailyHTML() + '<div class="card done-box"><div class="face">よくできました</div><p>' + msg + '</p>' +
             '<p>言えるようになったフレーズ: ' + learnedCount() + ' / 64</p>' +
             '<button type="button" class="btn primary" id="moreBtn" style="width:100%;">場面から自由に練習する</button>' +
             (session.total > 0 ? '<button type="button" class="btn slow" id="reviewBtn" style="width:100%;margin-top:8px;">今日のフレーズを見返す</button>' : '') + '</div>' + doneList;
@@ -587,6 +935,7 @@
           if (mb) mb.addEventListener("click", function () { switchView("scenes"); });
           var rb = document.getElementById("reviewBtn");
           if (rb) rb.addEventListener("click", function () { session.idx = 0; renderToday(); });
+          wireCultureBtn();
           return;
         }
         var id = session.queue[session.idx];
@@ -607,7 +956,7 @@
           (session.idx > 0 ? '<button type="button" class="btn slow" id="navPrev">← 前のフレーズ</button>' : '') +
           (viewingPast ? '<button type="button" class="btn slow" id="navNext">次のフレーズ →</button>' : '') +
           '</div>';
-        el.innerHTML =
+        el.innerHTML = essentSectionHTML("t") + cultureDailyHTML() +
           '<div class="session-cap">今日の練習 ' + (session.idx + 1) + ' / ' + session.total +
           '（復習 ' + session.reviews + ' 件・新しいフレーズ ' + session.news + ' 件）</div>' +
           '<div class="dots">' + dots + '</div>' +
@@ -622,6 +971,7 @@
         if (np) np.addEventListener("click", function () { stopAudio(); session.idx--; renderToday(); });
         var nn = document.getElementById("navNext");
         if (nn) nn.addEventListener("click", function () { stopAudio(); session.idx++; renderToday(); });
+        wireCultureBtn();
       }
       function judge(id, good) {
         stopAudio();
@@ -664,6 +1014,7 @@
           var list = PHRASES.filter(function (p) { return p.scene === si; });
           var done = list.filter(function (p) { var r = store.prog[p.id]; return r && r.box >= 2; }).length;
           html += '<h2 class="scene-title" id="scene-' + si + '">' + name + '<span class="cnt">言える ' + done + ' / ' + list.length + '</span></h2>';
+          if (SCENE_CULTURE[si]) html += '<p class="small" style="margin:0 4px 6px;">' + SCENE_CULTURE[si] + '</p>';
           list.forEach(function (p) {
             html += '<div class="phrase-row">' +
               '<div class="kana">' + (p.sKana || p.kana) + statusChip(p) + '</div>' +
@@ -671,6 +1022,8 @@
               '<p class="meaning">' + p.ja + '</p>' +
               sPartsHTML(p) +
               playButtonsS(p) +
+              '<div class="row-btns"><button type="button" class="btn slow" data-shadow="s:' + p.id + '">🔁 モノマネ練習</button></div>' +
+              shadowBoxHTML(p, "s") +
               politeLineHTML(p) + '</div>';
           });
         });
@@ -1032,7 +1385,7 @@
         if (!talk) {
           var best = (store && store.talk) || {};
           var html = '<div class="sec-head"><h2>かいわ練習</h2></div>' +
-            '<p class="small">相手のセリフが流れたら、あなたの番です。マイクボタンを押してタイ語で話してください。アプリが聞き取って「通じたか」を判定し、通じたら次に進みます。</p>';
+            '<p class="small">相手のセリフが流れたら、あなたの番です。マイクボタンを押してタイ語で話してください。アプリが聞き取って「通じたか」を判定し、通じたら次に進みます。あと少しのときは、先に進んで後からリトライもできます。</p>';
           DIALOGUES.forEach(function (d) {
             var b = best[d.id];
             html += '<button type="button" class="dlg-btn" data-dlg="' + d.id + '"><span class="dlg-t">' + d.title + '</span>' +
@@ -1043,7 +1396,7 @@
           el.querySelectorAll("[data-dlg]").forEach(function (btn) {
             btn.addEventListener("click", function () {
               var d = DIALOGUES.filter(function (x) { return x.id === btn.getAttribute("data-dlg"); })[0];
-              talk = { dlg: d, idx: 0, passed: 0, done: [], tries: 0 };
+              talk = { dlg: d, idx: 0, passed: 0, done: [], tries: 0, retry: [] };
               stepTalk(true);
             });
           });
@@ -1059,14 +1412,33 @@
           if (t.w === "p") {
             html2 += '<div class="bubble p"><div>🗣 ' + p.th + '</div><div class="b-kana">' + p.kana + '</div><div class="b-ja">' + p.ja + '</div><button type="button" class="btn slow" data-play="' + p.id + '">もう一度聞く</button></div>';
           } else {
-            html2 += '<div class="bubble u"><div>' + p.th + '</div><div class="b-ja">' + (t.skip ? '（スキップ）' : '✓ 通じました') + '</div></div>';
+            html2 += '<div class="bubble u"><div>' + p.th + '</div><div class="b-ja">' + (t.retry ? '（あとでリトライ）' : t.skip ? '（スキップ）' : '✓ 通じました') + '</div></div>';
           }
         });
         if (talk.idx >= d.turns.length) {
-          html2 += '<div class="turn-card"><div class="t-ja">🎉 会話クリア！</div><p class="small">通じたセリフ：' + talk.passed + ' / ' + total + '</p><div class="row-btns"><button type="button" class="btn primary" id="talkRetry">もう一度</button><button type="button" class="btn slow" id="talkBack">一覧に戻る</button></div></div>';
+          var retryHtml = "";
+          if (talk.retry && talk.retry.length) {
+            retryHtml = '<div class="turn-card"><div class="t-ja">あとでリトライ（' + talk.retry.length + '件）</div>' +
+              '<p class="small">先に進めたフレーズです。まとめてもう一度挑戦できます。</p>' +
+              talk.retry.map(function (rid) {
+                var rp = BY_ID[rid];
+                return '<div class="heard-box">' + rp.ja + '：' + (rp.sKana || rp.kana) +
+                  (WORDS_BY_ID[rid] ? ' <button type="button" class="btn slow" data-words="wp-r-' + rid + '">🧩 分解</button>' : '') +
+                  wordsPanelHTML(rp, "r") + '</div>';
+              }).join("") +
+              '<div class="row-btns"><button type="button" class="btn primary" id="talkRetryRound">リトライする</button></div></div>';
+          }
+          html2 += '<div class="turn-card"><div class="t-ja">🎉 会話クリア！</div><p class="small">通じたセリフ：' + talk.passed + ' / ' + total + '</p><div class="row-btns"><button type="button" class="btn primary" id="talkRetry">もう一度</button><button type="button" class="btn slow" id="talkBack">一覧に戻る</button></div></div>' + retryHtml;
           el.innerHTML = html2;
-          document.getElementById("talkRetry").addEventListener("click", function () { talk = { dlg: d, idx: 0, passed: 0, done: [], tries: 0 }; stepTalk(true); });
+          document.getElementById("talkRetry").addEventListener("click", function () { talk = { dlg: d, idx: 0, passed: 0, done: [], tries: 0, retry: [] }; stepTalk(true); });
           document.getElementById("talkBack").addEventListener("click", function () { talk = null; renderTalk(); });
+          var trr = document.getElementById("talkRetryRound");
+          if (trr) trr.addEventListener("click", function () {
+            var ids = (talk.retry || []).slice();
+            var rd = { id: d.id, title: d.title + "（リトライ）", turns: ids.map(function (rid) { return { w: "u", id: rid }; }) };
+            talk = { dlg: rd, idx: 0, passed: 0, done: [], tries: 0, retry: [], retryRound: true };
+            stepTalk(true);
+          });
           return;
         }
         var cur = d.turns[talk.idx];
@@ -1074,9 +1446,10 @@
         html2 += '<div class="turn-card" id="turnCard"><div class="small">あなたの番です。タイ語で言ってみましょう</div>' +
           '<div class="t-ja">' + cp.ja + '</div><div class="t-kana">' + (cp.sKana || cp.kana) + '</div>' +
           playButtonsS(cp) +
+          (WORDS_BY_ID[cp.id] ? '<div class="row-btns"><button type="button" class="btn slow" data-words="wp-k-' + cp.id + '">🧩 単語に分解</button></div>' + wordsPanelHTML(cp, "k") : '') +
           '<button type="button" class="mic-btn" id="micBtn">🎤 タップして話す</button>' +
           '<div id="talkResult"></div>' +
-          '<p class="small">アプリが聞き取って「通じた」と判定するまで、次には進めません。自己判定はありません。</p>' +
+          '<p class="small">アプリが聞き取って「通じた」と判定したら次に進みます。あと少しのときは、先に進んで後からリトライもできます。</p>' +
           '</div>';
         el.innerHTML = html2;
         document.getElementById("talkQuit").addEventListener("click", function () { stopRec(); talk = null; renderTalk(); });
@@ -1095,7 +1468,7 @@
         }
         talk.tries = 0;
         renderTalk();
-        if (talk.idx >= d.turns.length) finishTalkRecord();
+        if (talk.idx >= d.turns.length && !talk.retryRound) finishTalkRecord();
       }
       function finishTalkRecord() {
         var d = talk.dlg, total = talkUserTotal(d);
@@ -1116,6 +1489,18 @@
         stopRec();
         var cur = talk.dlg.turns[talk.idx];
         talk.done.push({ w: "u", id: cur.id, skip: true });
+        talk.idx++;
+        stepTalk(false);
+      }
+      /* 場数モード：あと少しだったフレーズを先に進め、後からリトライできるようにする */
+      function deferTalk() {
+        stopRec();
+        if (!talk) return;
+        var cur = talk.dlg.turns[talk.idx];
+        if (!cur) return;
+        talk.done.push({ w: "u", id: cur.id, skip: true, retry: true });
+        talk.retry = talk.retry || [];
+        talk.retry.push(cur.id);
         talk.idx++;
         stepTalk(false);
       }
@@ -1158,7 +1543,7 @@
         var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         var res = document.getElementById("talkResult");
         if (!SR) {
-          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。iPhoneはSafari、AndroidはChromeで開いてください。音声で「通じた」になるまで次に進めない仕組みです。</p>';
+          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。iPhoneはSafari、AndroidはChromeで開いてください。音声で「通じた」になるか、あと少しのときは先に進んで後からリトライする仕組みです。</p>';
           return;
         }
         if (!talk || talk.idx >= talk.dlg.turns.length) return;
@@ -1200,11 +1585,11 @@
             if (talkRec === rec) {
               stopRec();
               var r3 = document.getElementById("talkResult");
-              if (r3) r3.innerHTML = '<p class="judge-ng">聞き取りが終わりませんでした</p><p class="small">声が届いていないか、音声認識が止まっています。もう一度マイクを押して、スマホの近くではっきり話してください。「通じた」になるまで次には進めません。</p>';
+              if (r3) r3.innerHTML = '<p class="judge-ng">聞き取りが終わりませんでした</p><p class="small">声が届いていないか、音声認識が止まっています。もう一度マイクを押して、スマホの近くではっきり話してください。</p>';
             }
           }, 12000);
         }
-        var judged = false, bestScore = 0, bestHeard = "", stableTimer = null, gotEvent = false;
+        var judged = false, bestScore = -1, bestHeard = "", stableTimer = null, gotEvent = false;
         function judgeNow() {
           if (judged || !bestHeard || talkRec !== rec) return;
           judged = true;
@@ -1291,7 +1676,13 @@
           if (res) res.innerHTML = '<p class="judge-ok">' + (perfect ? "🎉 完璧！通じました" : "✓ 通じました！") + '</p><div class="heard-box">聞き取り：' + heard + '</div>';
           setTimeout(function () { passTalk(true); }, 1100);
         } else {
-          if (res) res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (heard || "（聞き取れませんでした）") + '<br>お手本：' + (target.sTh || target.th) + '（' + (target.sKana || target.kana) + '）</div><p class="small">お手本を聞いて、もう一度マイクで話してください。通じるまで次に進めません。</p>';
+          if (res) {
+            res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (heard || "（聞き取れませんでした）") + '<br>お手本：' + (target.sTh || target.th) + '（' + (target.sKana || target.kana) + '）</div><p class="small">お手本を聞いてもう一度話すか、先に進んで後からリトライできます。</p><div class="row-btns"><button type="button" class="btn slow" id="talkAgainBtn">🎤 もう一度話す</button><button type="button" class="btn" id="talkDeferBtn">次へ進む（あとでリトライ）</button></div>';
+            var ab2 = document.getElementById("talkAgainBtn");
+            if (ab2) ab2.addEventListener("click", function () { startRec(false); });
+            var db2 = document.getElementById("talkDeferBtn");
+            if (db2) db2.addEventListener("click", function () { deferTalk(); });
+          }
         }
       }
 
@@ -1338,6 +1729,19 @@
           ex:["s6p6"],
           drill:{ ja:"朝食は何時ですか？", th:"อาหารเช้ากี่โมงครับ", kana:"アーハーン・チャーオ・ギー・モーン・クラップ" } }
       ];
+      /* 予測クイズ（Kazu式：型を見て、要素を変えた形を先に予測する） */
+      var PREDICT = [
+        { q:"「お水をください」は、どの形でしょう？", choices:[["ขอน้ำหน่อย", "コー・ナーム・ノイ"], ["น้ำขอหน่อย", "ナーム・コー・ノイ"], ["ขอหน่อยน้ำ", "コー・ノイ・ナーム"]], ans:0, why:"「コー＋欲しいもの＋ノイ」の順番です。欲しいものが真ん中に入ります。" },
+        { q:"「ここで写真を撮れますか？」は、どの形でしょう？", choices:[["ได้ไหมถ่ายรูปที่นี่", "ダイ・マイ・ターイ・ループ・ティー・ニー"], ["ถ่ายรูปที่นี่ได้ไหม", "ターイ・ループ・ティー・ニー・ダイ・マイ"], ["ถ่ายรูปได้ไหมที่นี่", "ターイ・ループ・ダイ・マイ・ティー・ニー"]], ans:1, why:"「〜できますか？」のダイ・マイは、いつも文の最後に置きます。" },
+        { q:"「タオルはありますか？」は、どの形でしょう？", choices:[["มีผ้าขนหนูไหม", "ミー・パー・コン・ヌー・マイ"], ["ไหมมีผ้าขนหนู", "マイ・ミー・パー・コン・ヌー"], ["มีไหมผ้าขนหนู", "ミー・マイ・パー・コン・ヌー"]], ans:0, why:"「ミー＋物＋マイ」の順番です。マイ（〜か？）は最後に置きます。" },
+        { q:"「暑くないです」は、どの形でしょう？", choices:[["ร้อนไม่", "ローン・マイ"], ["ไม่ไม่ร้อน", "マイ・マイ・ローン"], ["ไม่ร้อน", "マイ・ローン"]], ans:2, why:"否定のマイは、否定したい言葉の「前」に置きます。" },
+        { q:"「あれはいくらですか？」は、どの形でしょう？", choices:[["เท่าไหร่อันนั้น", "タオライ・アン・ナン"], ["อันนั้นเท่าไหร่", "アン・ナン・タオライ"], ["อันนั้นไหร่เท่า", "アン・ナン・ライ・タオ"]], ans:1, why:"「いくら（タオライ）」は、物の後ろに付きます。" },
+        { q:"「病院はどこですか？」は、どの形でしょう？", choices:[["โรงพยาบาลอยู่ไหน", "ローン・パヤーバーン・ユー・ナイ"], ["อยู่ไหนโรงพยาบาล", "ユー・ナイ・ローン・パヤーバーン"], ["โรงพยาบาลไหนอยู่", "ローン・パヤーバーン・ナイ・ユー"]], ans:0, why:"「場所＋ユー・ナイ（どこにある）」の順番です。" },
+        { q:"「あれは何ですか？」は、どの形でしょう？", choices:[["อะไรคืออันนั้น", "アライ・クー・アン・ナン"], ["อันนั้นอะไรคือ", "アン・ナン・アライ・クー"], ["อันนั้นคืออะไร", "アン・ナン・クー・アライ"]], ans:2, why:"「物＋クー・アライ（何である）」の順番です。" },
+        { q:"「あなたは日本人です」は、どの形でしょう？", choices:[["เป็นคุณคนญี่ปุ่น", "ペン・クン・コン・イープン"], ["คุณเป็นคนญี่ปุ่น", "クン・ペン・コン・イープン"], ["คนญี่ปุ่นคุณเป็น", "コン・イープン・クン・ペン"]], ans:1, why:"主語（クン）が最初に来ます。「クン＋ペン＋コン＋国名」の形です。" },
+        { q:"「コーヒーが飲みたいです」は、どの形でしょう？", choices:[["ผมอยากดื่มกาแฟ", "ポム・ヤーク・ドゥーム・ガーフェー"], ["ผมดื่มอยากกาแฟ", "ポム・ドゥーム・ヤーク・ガーフェー"], ["อยากผมดื่มกาแฟ", "ヤーク・ポム・ドゥーム・ガーフェー"]], ans:0, why:"「ヤーク（〜したい）」は、動詞の前に置きます。" },
+        { q:"「夕食は何時ですか？」は、どの形でしょう？", choices:[["กี่โมงอาหารเย็น", "ギー・モーン・アーハーン・イェン"], ["อาหารเย็นโมงกี่", "アーハーン・イェン・モーン・ギー"], ["อาหารเย็นกี่โมง", "アーハーン・イェン・ギー・モーン"]], ans:2, why:"「もの＋ギー・モーン（何時）」で、時刻を聞く部分は後ろに付きます。" }
+      ];
       function speakTh(text, rate) {
         try {
           var u = new SpeechSynthesisUtterance(text);
@@ -1357,6 +1761,14 @@
             var p = BY_ID[id];
             html += '<div class="heard-box">' + p.ja + '：' + (p.sKana || p.kana) + ' <button type="button" class="btn slow" data-play="' + p.id + '-s">聞く</button></div>';
           });
+          var pq = PREDICT[pi];
+          if (pq) {
+            html += '<div style="margin-top:10px;"><div class="small"><b>予測クイズ</b>：ドリルの前に、形を予測してみましょう</div>' +
+              '<div class="t-ja" style="font-size:16px;">' + pq.q + '</div>' +
+              '<div class="choices" id="pqChoices' + pi + '">' + pq.choices.map(function (c, ci) {
+                return '<button type="button" data-pq="' + pi + '" data-pqc="' + ci + '"><span class="thai">' + c[0] + '</span><br><span class="small">' + c[1] + '</span></button>';
+              }).join("") + '</div><div id="pqRes' + pi + '"></div></div>';
+          }
           html += '<div style="margin-top:10px;"><div class="small"><b>入れ替えドリル</b>：次の文をタイ語で言ってみましょう</div>' +
             '<div class="t-ja" style="font-size:17px;">' + pt.drill.ja + '</div>' +
             '<div id="drillAns' + pi + '" class="heard-box" style="display:none;">' + pt.drill.th + '（' + pt.drill.kana + '）</div>' +
@@ -1376,6 +1788,23 @@
         });
         el.querySelectorAll("[data-drillmic]").forEach(function (b) {
           b.addEventListener("click", function () { startDrillRec(+b.getAttribute("data-drillmic"), b); });
+        });
+        el.querySelectorAll("[data-pq]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var pi2 = +b.getAttribute("data-pq"), ci2 = +b.getAttribute("data-pqc");
+            var pq2 = PREDICT[pi2];
+            var res2 = document.getElementById("pqRes" + pi2);
+            var box2 = document.getElementById("pqChoices" + pi2);
+            if (box2) box2.querySelectorAll("button").forEach(function (x, xi) {
+              x.classList.remove("right", "wrong");
+              if (xi === pq2.ans) x.classList.add("right");
+              else if (xi === ci2) x.classList.add("wrong");
+            });
+            if (res2) res2.innerHTML = (ci2 === pq2.ans
+              ? '<p class="judge-ok">✓ その通り！</p>'
+              : '<p class="judge-ng">答えは「' + pq2.choices[pq2.ans][1] + '」でした</p>') +
+              '<div class="heard-box">' + pq2.why + '<br>形が分かったら、下の入れ替えドリルで声に出してみましょう。</div>';
+          });
         });
       }
       function startDrillRec(pi, btn) {
@@ -1711,17 +2140,7 @@
         freeRecEndWaiter = null;
         if (w) setTimeout(w, 200);
       }
-      function freeHeard(text) {
-        stopFreeRec();
-        if (!freeChat) return;
-        if (!/[\u0E00-\u0E7F]/.test(text || "")) {
-          var st = document.getElementById("freeStatus");
-          if (st) st.innerHTML = '<p class="judge-ng">タイ語として聞き取れませんでした</p><p class="small">もう一度、ゆっくりはっきり話してみてください。下の「言い方のヒント」の音声を真似するのもおすすめです。</p>';
-          return;
-        }
-        freeChat.turns.push({ w: "u", th: text });
-        freeChat.count++;
-        renderFree();
+      function freePartnerReply(text) {
         var st2 = document.getElementById("freeStatus");
         if (st2) st2.innerHTML = '<p class="small">マークが考えています…</p>';
         setTimeout(function () {
@@ -1732,6 +2151,31 @@
           renderFree();
           speakTh(rep.lines.map(function (ln) { return ln.th; }).join(" "), rep.slow ? 0.6 : null);
         }, 900);
+      }
+      /* 場数モード：聞き取りがタイ語にならなくても、聞き取れた内容のまま会話を進める */
+      function forceFreeSend(text) {
+        if (!freeChat || !freeChat.started) return;
+        freeChat.turns.push({ w: "u", th: text });
+        freeChat.count++;
+        renderFree();
+        freePartnerReply(text);
+      }
+      function freeHeard(text) {
+        stopFreeRec();
+        if (!freeChat) return;
+        if (!/[\u0E00-\u0E7F]/.test(text || "")) {
+          var st = document.getElementById("freeStatus");
+          if (st) {
+            st.innerHTML = '<p class="judge-ng">タイ語として聞き取れませんでした</p><p class="small">もう一度、ゆっくりはっきり話してみてください。下の「言い方のヒント」の音声を真似するのもおすすめです。場数を踏みたいときは、聞き取れた内容のまま送ることもできます。</p><div class="row-btns"><button type="button" class="btn" id="freeForceBtn">このまま送る（場数として進める）</button></div>';
+            var fb2 = document.getElementById("freeForceBtn");
+            if (fb2) fb2.addEventListener("click", function () { forceFreeSend(text); });
+          }
+          return;
+        }
+        freeChat.turns.push({ w: "u", th: text });
+        freeChat.count++;
+        renderFree();
+        freePartnerReply(text);
       }
       function startFreeRec(isRetry) {
         if (freeRec) { stopFreeRec(); return; }
@@ -2009,8 +2453,8 @@
         var nextIdx = -1; cur.steps.forEach(function (_, i) { if (nextIdx < 0 && !doneMap[i]) nextIdx = i; });
         var t = todayStr(), dueN = 0;
         PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.due <= t) dueN++; });
-        var html = '<div class="sec-head"><h2>コース</h2></div>' +
-          '<div class="card"><p style="margin:0;">コースを選んだら、あとは<strong>上から順番に進むだけ</strong>です。終わったステップには「できた」を押してください。続きはここに残ります。</p></div>';
+        var html = '<div class="sec-head"><h2>コース</h2></div>' + essentSectionHTML("c") +
+          '<div class="card" style="margin-top:8px;"><p style="margin:0;">コースを選んだら、あとは<strong>上から順番に進むだけ</strong>です。終わったステップには「できた」を押してください。続きはここに残ります。</p></div>';
         if (dueN > 0) {
           html += '<div class="card" style="margin-top:8px;"><p style="margin:0 0 6px;">今日の復習が <strong>' + dueN + ' 件</strong> 待っています。</p>' +
             '<div class="row-btns"><button type="button" class="btn" id="courseToToday">今日の練習へ</button></div></div>';
@@ -2073,6 +2517,7 @@
         stopAudio();
         stopRec();
         stopFreeRec();
+        stopShadowRec();
         document.querySelectorAll("nav.tabs button").forEach(function (b) {
           b.setAttribute("aria-selected", b.getAttribute("data-view") === name ? "true" : "false");
         });
@@ -2089,6 +2534,7 @@
         if (name === "script") renderScript();
         if (name === "course") renderCourse();
         if (name === "visual") renderVisual();
+        if (name === "culture") renderCulture();
         window.scrollTo({ top: 0 });
       }
       document.querySelectorAll("nav.tabs button").forEach(function (b) {
