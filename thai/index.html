@@ -354,7 +354,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.05-1（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
+        <p>アプリの版：2026.11.05-2（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
       </footer>
     </div>
 
@@ -2682,24 +2682,39 @@
         var nextIdx = -1; cur.steps.forEach(function (_, i) { if (nextIdx < 0 && !doneMap[i]) nextIdx = i; });
         var t = todayStr(), dueN = 0;
         PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.due <= t) dueN++; });
-        var html = '<div class="sec-head"><h2>コース</h2></div>' + essentSectionHTML("c") +
-          '<div class="card" style="margin-top:8px;"><p style="margin:0;">コースを選んだら、あとは<strong>上から順番に進むだけ</strong>です。終わったステップには「できた」を押してください。続きはここに残ります。</p></div>';
-        if (dueN > 0) {
-          html += '<div class="card" style="margin-top:8px;"><p style="margin:0 0 6px;">今日の復習が <strong>' + dueN + ' 件</strong> 待っています。</p>' +
-            '<div class="row-btns"><button type="button" class="btn" id="courseToToday">今日の練習へ</button></div></div>';
+        var html = '<div class="sec-head"><h2>コース</h2></div>';
+        /* 今日はここから（開いたら押すだけのガイド） */
+        html += '<div class="card" style="margin-top:8px;border:2px solid #2f9e6e;padding:14px;">' +
+          '<p style="margin:0 0 2px;font-weight:bold;font-size:17px;">📍 今日はここから</p>' +
+          '<p class="small" style="margin:0 0 8px;">' + cur.name + '：' + doneN + ' / ' + cur.steps.length + ' ステップ完了</p>';
+        if (nextIdx < 0) {
+          html += '<p style="margin:0 0 8px;">🎉 このコースは一周しました。' + (dueN > 0 ? '今日の復習をして、忘れないようにしましょう。' : '今日の復習もありません。おつかれさまでした。') + '</p>';
+          if (dueN > 0) html += '<div class="row-btns"><button type="button" class="btn" id="courseToToday" style="font-size:16px;padding:12px 18px;">▶ 今日の復習（' + dueN + '件）をはじめる</button></div>';
+        } else if (dueN > 0) {
+          var nst0 = cur.steps[nextIdx];
+          html += '<p style="margin:0 0 8px;">まず<strong>今日の復習（' + dueN + '件）</strong>からです。</p>' +
+            '<div class="row-btns"><button type="button" class="btn" id="courseToToday" style="font-size:16px;padding:12px 18px;">▶ 復習をはじめる</button></div>' +
+            '<p class="small" style="margin:8px 0 0;">そのあと：ステップ' + (nextIdx + 1) + '「' + nst0.t + '」 <button type="button" class="btn slow" data-go="' + nst0.v + '" data-sc="' + (nst0.sc != null ? nst0.sc : -1) + '">先に始める</button></p>';
+        } else {
+          var nst = cur.steps[nextIdx];
+          html += '<p style="margin:0 0 4px;">つぎはステップ' + (nextIdx + 1) + '「<strong>' + nst.t + '</strong>」です。</p>' +
+            '<p class="small" style="margin:0 0 8px;">' + nst.d + '</p>' +
+            '<div class="row-btns"><button type="button" class="btn" data-go="' + nst.v + '" data-sc="' + (nst.sc != null ? nst.sc : -1) + '" style="font-size:16px;padding:12px 18px;">▶ はじめる</button></div>';
         }
-        html += '<h3 style="margin:18px 4px 8px">コースを選ぶ</h3><div class="course-picks">';
+        html += '</div>';
+        html += '<div class="card" style="margin-top:8px;"><p style="margin:0;">開いたら、上のボタンを押すだけです。ステップが終わったら、下の道筋で「できた ✓」を押してください。続きは自動でここに残ります。</p></div>';
+        html += '<h3 style="margin:18px 4px 8px">' + cur.name + 'の道筋（' + doneN + ' / ' + cur.steps.length + '）</h3>';
+        html += '<div class="bar"><div class="track"><div class="fill" style="width:' + (doneN / cur.steps.length * 100) + '%"></div></div></div>';
+        var picksHtml = '<div class="course-picks">';
         COURSES.forEach(function (c) {
           var dm = cstate.done[c.id] || {}; var dn = 0;
           c.steps.forEach(function (_, i) { if (dm[i]) dn++; });
-          html += '<button type="button" class="course-pick' + (c.id === cur.id ? ' sel' : '') + '" data-course="' + c.id + '">' +
+          picksHtml += '<button type="button" class="course-pick' + (c.id === cur.id ? ' sel' : '') + '" data-course="' + c.id + '">' +
             '<span class="nm">' + c.name + '（' + c.sub + '）</span>' +
             '<span class="ds">' + c.desc + '</span>' +
             '<span class="ds">進み具合：' + dn + ' / ' + c.steps.length + ' ステップ</span></button>';
         });
-        html += '</div>';
-        html += '<h3 style="margin:18px 4px 8px">' + cur.name + 'の道筋（' + doneN + ' / ' + cur.steps.length + '）</h3>';
-        html += '<div class="bar"><div class="track"><div class="fill" style="width:' + (doneN / cur.steps.length * 100) + '%"></div></div></div>';
+        picksHtml += '</div>';
         cur.steps.forEach(function (st, i) {
           var isDone = !!doneMap[i], isNext = (i === nextIdx);
           html += '<div class="step-card' + (isDone ? ' done' : '') + (isNext ? ' next' : '') + '">' +
@@ -2710,8 +2725,10 @@
             '<button type="button" class="btn slow" data-done="' + i + '">' + (isDone ? '戻す' : 'できた ✓') + '</button></div></div></div>';
         });
         if (nextIdx < 0) {
-          html += '<div class="card" style="margin-top:10px;"><p style="margin:0;">🎉 このコースは一周しました。あとは「今日の練習」の復習を回すのが、忘れないコツです。別のコースに挑戦してもよいですし、同じコースをもう一周しても大丈夫です。</p></div>';
+          html += '<div class="card" style="margin-top:10px;"><p style="margin:0;">あとは「今日の練習」の復習を回すのが、忘れないコツです。別のコースに挑戦してもよいですし、同じコースをもう一周しても大丈夫です。</p></div>';
         }
+        html += essentSectionHTML("c");
+        html += '<h3 style="margin:18px 4px 8px">コースを変える</h3>' + picksHtml;
         html += '<p class="small" style="margin-top:10px;">タブから各コーナーを自由に開くこともできます。コースの記録は、この端末のブラウザの中にだけ保存されます。</p>';
         el.innerHTML = html;
         var tt = document.getElementById("courseToToday");
