@@ -354,7 +354,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.05-2（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
+        <p>アプリの版：2026.11.05-3（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
       </footer>
     </div>
 
@@ -821,13 +821,13 @@
       }
       /* ============ 表示設定（カナなしモード）。既存の記録とは別のキーで追加保存 ============ */
       var SETTINGS_KEY = "thaiSettings.v1";
-      var settings = { kanaOff: false };
+      var settings = { kanaOff: true };
       try {
         var sraw = localStorage.getItem(SETTINGS_KEY);
-        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; }
+        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV2 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; }
       } catch (e) {}
       function saveSettings() {
-        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1 })); } catch (e) {}
       }
       function applyKanaSetting() {
         if (document.body) document.body.classList.toggle("kana-off", !!settings.kanaOff);
@@ -2812,6 +2812,7 @@
         rerenderActive();
         toast(settings.kanaOff ? "カナなしモードにしました。耳を主役に練習しましょう" : "カタカナを表示します");
       });
+      saveSettings();
       applyKanaSetting();
       updateProgress();
       renderCourse();
