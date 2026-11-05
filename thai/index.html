@@ -354,7 +354,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.05-4（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
+        <p>アプリの版：2026.11.05-5（コースの入口に聞き流しを追加・カタカナは標準で非表示）</p>
       </footer>
     </div>
 
@@ -2424,7 +2424,7 @@
       }
 
       /* --- 自前の聞き流しモード：タイ語の音 → 間（真似する時間） → 日本語訳 --- */
-      var flow = { playing: false, list: [], idx: 0, timer: null, token: 0, setName: "" };
+      var flow = { playing: false, list: [], idx: 0, timer: null, token: 0, setName: "", onDone: null };
       function flowList(setKey, sceneIdx) {
         if (setKey === "essent") return ESSENT30.map(essentPhrase).filter(function (p) { return !!p; });
         if (setKey === "scene") return PHRASES.filter(function (p) { return p.scene === sceneIdx; });
@@ -2436,6 +2436,9 @@
         if (flow.timer) { clearTimeout(flow.timer); flow.timer = null; }
         try { stopAudio(); } catch (e) {}
         try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+        flow.onDone = null;
+        var fnx = document.getElementById("flowNext");
+        if (fnx) fnx.innerHTML = "";
         var pb = document.getElementById("flowPlayBtn");
         if (pb) pb.textContent = "▶ 聞き流しをはじめる";
         if (!silent) {
@@ -2478,6 +2481,7 @@
           if (thEl) thEl.textContent = "🎉";
           if (jaEl) jaEl.textContent = "";
           if (prEl) prEl.textContent = flow.list.length + " / " + flow.list.length + "（" + flow.setName + "）";
+          if (flow.onDone) { var cb = flow.onDone; flow.onDone = null; cb(); }
           return;
         }
         var p = flow.list[flow.idx];
@@ -2523,6 +2527,28 @@
         playAudio("assets/audio/" + p.id + "-s.mp3", null);
       }
 
+      /* コースのガイドから：その場面を2周聞き流し → 終わったらフレーズ練習へのボタンを出す */
+      function startGuideListen(sceneIdx, view, sc) {
+        switchView("listen");
+        var setSel = document.getElementById("flowSet");
+        var scSel = document.getElementById("flowScene");
+        if (setSel) setSel.value = "scene";
+        if (scSel) scSel.value = String(sceneIdx);
+        var pg = { v: view, sc: sc };
+        flow.onDone = function () {
+          var nx = document.getElementById("flowNext");
+          if (!nx) return;
+          nx.innerHTML = '<div class="row-btns" style="margin-top:10px;"><button type="button" class="btn primary" id="flowToPhrases" style="font-size:16px;padding:12px 18px;">▶ フレーズ練習へ進む</button></div>';
+          var b = document.getElementById("flowToPhrases");
+          if (b) b.addEventListener("click", function () {
+            switchView(pg.v);
+            if (pg.v === "scenes" && pg.sc >= 0) setTimeout(function () { var t = document.getElementById("scene-" + pg.sc); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+          });
+        };
+        flowStart();
+        if (flow.list.length) { flow.list = flow.list.concat(flow.list); flow.setName += "（2周）"; }
+      }
+
       function renderListen() {
         flowStop(true);
         var el = document.getElementById("view-listen");
@@ -2543,6 +2569,7 @@
           '<div class="thai-text thai" id="flowThai" style="font-size:26px;min-height:40px">—</div>' +
           '<p class="meaning" id="flowJa" style="min-height:26px"></p>' +
           '<p class="small" id="flowStatus">セットを選んで「はじめる」を押してください。場面は「場面別」のときだけ使われます。</p>' +
+          '<div id="flowNext"></div>' +
           '</div>';
         html += '<div class="card"><h2>聞き流しリンク集（YouTube）</h2>' +
           '<p style="margin-top:6px">分からなくて大丈夫です。アプリで覚えた単語が「聞こえた」と思えたら、その日は勝ちです。</p>' +
@@ -2694,12 +2721,17 @@
           var nst0 = cur.steps[nextIdx];
           html += '<p style="margin:0 0 8px;">まず<strong>今日の復習（' + dueN + '件）</strong>からです。</p>' +
             '<div class="row-btns"><button type="button" class="btn" id="courseToToday" style="font-size:16px;padding:12px 18px;">▶ 復習をはじめる</button></div>' +
-            '<p class="small" style="margin:8px 0 0;">そのあと：ステップ' + (nextIdx + 1) + '「' + nst0.t + '」 <button type="button" class="btn slow" data-go="' + nst0.v + '" data-sc="' + (nst0.sc != null ? nst0.sc : -1) + '">先に始める</button></p>';
+            '<p class="small" style="margin:8px 0 0;">そのあと：ステップ' + (nextIdx + 1) + '「' + nst0.t + '」 ' + ((nst0.v === "scenes") ? '<button type="button" class="btn slow" data-guide-listen="' + nst0.sc + '" data-gv="scenes" data-gs="' + nst0.sc + '">聞き流しから始める</button>' : '<button type="button" class="btn slow" data-go="' + nst0.v + '" data-sc="' + (nst0.sc != null ? nst0.sc : -1) + '">先に始める</button>') + '</p>';
         } else {
           var nst = cur.steps[nextIdx];
           html += '<p style="margin:0 0 4px;">つぎはステップ' + (nextIdx + 1) + '「<strong>' + nst.t + '</strong>」です。</p>' +
-            '<p class="small" style="margin:0 0 8px;">' + nst.d + '</p>' +
-            '<div class="row-btns"><button type="button" class="btn" data-go="' + nst.v + '" data-sc="' + (nst.sc != null ? nst.sc : -1) + '" style="font-size:16px;padding:12px 18px;">▶ はじめる</button></div>';
+            '<p class="small" style="margin:0 0 8px;">' + nst.d + '</p>';
+          if (nst.v === "scenes") {
+            html += '<div class="row-btns"><button type="button" class="btn" data-guide-listen="' + nst.sc + '" data-gv="scenes" data-gs="' + nst.sc + '" style="font-size:16px;padding:12px 18px;">▶ まず聞き流し（約3分）</button></div>' +
+              '<p class="small" style="margin:8px 0 0;">音に慣れてから、フレーズ練習に進みます。 <button type="button" class="btn slow" data-go="scenes" data-sc="' + nst.sc + '">先にフレーズ練習</button></p>';
+          } else {
+            html += '<div class="row-btns"><button type="button" class="btn" data-go="' + nst.v + '" data-sc="' + (nst.sc != null ? nst.sc : -1) + '" style="font-size:16px;padding:12px 18px;">▶ はじめる</button></div>';
+          }
         }
         html += '</div>';
         html += '<div class="card" style="margin-top:8px;"><p style="margin:0;">開いたら、上のボタンを押すだけです。ステップが終わったら、下の道筋で「できた ✓」を押してください。続きは自動でここに残ります。</p></div>';
@@ -2746,6 +2778,11 @@
                 if (tEl) tEl.scrollIntoView({ behavior: "smooth", block: "start" });
               }, 80);
             }
+          });
+        });
+        el.querySelectorAll("[data-guide-listen]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            startGuideListen(+b.getAttribute("data-guide-listen"), b.getAttribute("data-gv"), +b.getAttribute("data-gs"));
           });
         });
         el.querySelectorAll("[data-done]").forEach(function (b) {
