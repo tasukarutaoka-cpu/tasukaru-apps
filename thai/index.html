@@ -354,7 +354,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.05-3（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
+        <p>アプリの版：2026.11.05-4（聞き流しモード追加・聞き流しリンク集を「音が先」の順に改訂）</p>
       </footer>
     </div>
 
@@ -902,18 +902,18 @@
       }
       function sPartsHTML(p) {
         if (!p.sParts) return "";
-        return '<div class="parts">' + p.sParts.map(function (w) { return '<span class="pw">' + w[0] + '</span>（' + w[1] + '）'; }).join('・') + '</div>';
+        return '<div class="parts">' + p.sParts.map(function (w) { return '<span class="pw b-kana">' + w[0] + '</span>（' + w[1] + '）'; }).join('・') + '</div>';
       }
       function politeHTML(p) {
         return '<details class="polite"><summary>丁寧な言い方（お店の人・目上の人向け）</summary>' +
-          '<div class="kana">' + p.kana + '</div>' +
+          '<div class="kana b-kana">' + p.kana + '</div>' +
           '<div class="thai-text thai">' + p.th + '</div>' +
           partsHTML(p) + formHTML(p) +
           '<div class="play-row"><button type="button" class="btn slow" data-play="' + p.id + '">' + ICON_PLAY + '丁寧な音声</button>' +
           '<button type="button" class="btn slow" data-play="' + p.id + '-slow">' + ICON_PLAY + 'ゆっくり</button></div></details>';
       }
       function politeLineHTML(p) {
-        return '<div class="polite-line">丁寧：' + p.kana + '<button type="button" class="btn slow" data-play="' + p.id + '">聞く</button></div>';
+        return '<div class="polite-line">丁寧：<span class="b-kana">' + p.kana + '</span><button type="button" class="btn slow" data-play="' + p.id + '">聞く</button></div>';
       }
       function statusChip(p) {
         var r = store.prog[p.id];
@@ -925,7 +925,7 @@
       }
       function partsHTML(p) {
         if (!p.parts) return "";
-        return '<div class="parts">' + p.parts.map(function (w) { return '<span class="pw">' + w[0] + '</span>（' + w[1] + '）'; }).join('・') + '</div>';
+        return '<div class="parts">' + p.parts.map(function (w) { return '<span class="pw b-kana">' + w[0] + '</span>（' + w[1] + '）'; }).join('・') + '</div>';
       }
       function formHTML(p) {
         if (!p.form) return "";
