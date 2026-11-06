@@ -352,9 +352,15 @@
           <p style="margin:0 0 8px;">カタカナは「発音の先生」ではなく、思い出すための目印です。音を先に聞いて耳で覚えるのが基本。慣れてきたら「カナなしモード」で隠せます（隠しても、各フレーズの「カナを見る」でいつでも確認できます）。</p>
           <button class="reset" id="kanaToggleBtn" type="button" style="margin-top:0;">カナなしモード：オフ（カタカナを表示中）</button>
         </div>
+        <div class="settings-box">
+          <p style="margin:0 0 4px;"><strong>マイクの診断（聞き取りが反応しない時）</strong></p>
+          <p style="margin:0 0 8px;">ボタンを押して10秒間、好きな言葉を話してください。聞き取りの状態が下に表示されます。その画面の写真をモコに送ると、原因が特定できます。</p>
+          <button class="reset" id="recDiagBtn" type="button" style="margin-top:0;">マイク診断をはじめる</button>
+          <div id="recDiagLog" class="small" style="margin-top:8px; line-height:1.7;"></div>
+        </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.05-5（コースの入口に聞き流しを追加・カタカナは標準で非表示）</p>
+        <p>アプリの版：2026.11.06-1（カタカナは目印として標準表示・聞き取りの作法を統一・マイク診断を追加）</p>
       </footer>
     </div>
 
@@ -2894,6 +2900,38 @@
             delete b.dataset.armed; b.textContent = "記録をすべて消す";
           }, 4000);
         }
+      });
+
+      var recDiagBtn = document.getElementById("recDiagBtn");
+      if (recDiagBtn) recDiagBtn.addEventListener("click", function () {
+        var log = document.getElementById("recDiagLog");
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var t0 = Date.now();
+        function L(m) {
+          var s = ((Date.now() - t0) / 1000).toFixed(1);
+          log.innerHTML += "<div>" + s + "秒： " + m + "</div>";
+        }
+        log.innerHTML = "";
+        L("診断を開始します");
+        L("端末情報：" + (navigator.userAgent || ""));
+        if (!SR) { L("音声認識の機能が、このブラウザでは使えません"); return; }
+        silenceAudio();
+        var rec = new SR();
+        recSetup(rec);
+        rec.onaudiostart = function () { L("onaudiostart：マイクの録音が始まりました"); };
+        rec.onsoundstart = function () { L("onsoundstart：音を検知"); };
+        rec.onspeechstart = function () { L("onspeechstart：声を検知"); };
+        rec.onstart = function () { L("onstart：聞き取り開始"); };
+        rec.onresult = function (ev) {
+          for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
+            var rr = ev.results[ri];
+            if (rr && rr[0]) L("onresult：「" + (rr[0].transcript || "") + "」（確定：" + (rr.isFinal ? "はい" : "いいえ") + "）");
+          }
+        };
+        rec.onerror = function (ev) { L("onerror：エラー「" + ev.error + "」"); };
+        rec.onend = function () { L("onend：聞き取り終了"); };
+        try { rec.start(); L("start()：呼び出しました"); } catch (e) { L("start()で例外：" + (e && e.message)); }
+        setTimeout(function () { try { rec.stop(); } catch (e) {} L("10秒経過：診断を終えます"); }, 10000);
       });
 
       var kanaToggleBtn = document.getElementById("kanaToggleBtn");
