@@ -593,7 +593,7 @@
           : '<button type="button" class="btn primary" data-play="' + p.id + '-s">▶ お手本を聞く</button>';
         return '<div class="shadow-box" id="sh-' + ctx + '-' + p.id + '">' +
           '<p class="small" style="margin:0 0 6px;"><b>モノマネ練習</b>：①お手本を聞く → ②マイクでまねして話す → ③聞き取りとお手本を見比べる → もう一度お手本を聞く、を繰り返します。まねることで、発音が耳と口に染み込んでいきます。</p>' +
-          '<div style="margin:0 0 8px;">カナ（目印）：' + kanaHTML(p.sKana || p.kana, true) + '</div>' +
+          '<div style="margin:0 0 8px;">カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
           '<div class="row-btns">' + playBtn +
           '<button type="button" class="btn" data-shadow-mic="' + ctx + ':' + p.id + '">🎤 まねして話す</button></div>' +
           '<div id="shres-' + ctx + '-' + p.id + '"></div></div>';
@@ -712,7 +712,7 @@
             res.innerHTML = (best >= 0.55
               ? '<p class="judge-ok">' + (best >= 0.85 ? "🎉 完璧！お手本そっくりです" : "✓ 通じました！") + '</p>'
               : '<p class="judge-ng">あと少し！</p>') +
-              '<div class="heard-box">聞き取り：' + bestTxt + '<br>お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, true) + '</div>' +
+              '<div class="heard-box">聞き取り：' + bestTxt + '<br>お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
               '<div class="row-btns">' + again + '</div><p class="small">見比べたら、もう一度お手本を聞いて、もう一度まねしてみましょう。</p>';
           }
         }
@@ -841,13 +841,13 @@
       }
       /* ============ 表示設定（カナなしモード）。既存の記録とは別のキーで追加保存 ============ */
       var SETTINGS_KEY = "thaiSettings.v1";
-      var settings = { kanaOff: true };
+      var settings = { kanaOff: false };
       try {
         var sraw = localStorage.getItem(SETTINGS_KEY);
-        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV2 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; }
+        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV3 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; }
       } catch (e) {}
       function saveSettings() {
-        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1 })); } catch (e) {}
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1, kanaV3: 1 })); } catch (e) {}
       }
       function applyKanaSetting() {
         if (document.body) document.body.classList.toggle("kana-off", !!settings.kanaOff);
@@ -965,8 +965,8 @@
         return '<div class="form-line">🧩 型：' + p.form + '</div>';
       }
       function phraseCardHTML(p, badgeText) {
-        /* 今日の練習：練習した記録のあるフレーズはカナを伏せて出す（段階的なカナ卒業）。カナなしモードでも伏せる */
-        var hideKana = settings.kanaOff || !!store.prog[p.id];
+        /* 今日の練習：カナは目印として常に表示する（聞き取れない時に止まらないため）。カナなしモードの時だけ伏せる */
+        var hideKana = settings.kanaOff;
         return '<div class="scene-name">' + SCENES[p.scene] + (badgeText ? '<span class="badge' + (badgeText === "新規" ? " new" : "") + '">' + badgeText + '</span>' : "") + '</div>' +
           '<div class="thai-text thai" style="font-size:24px;">' + (p.sTh || p.th) + '</div>' +
           '<p class="meaning">' + p.ja + '</p>' +
@@ -1063,7 +1063,7 @@
             var p = BY_ID[q];
             return '<div class="phrase-row"><div class="row-head">' + statusChip(p) + '</div>' +
               '<div class="thai-text thai">' + (p.sTh || p.th) + '</div><p class="meaning">' + p.ja + '</p>' +
-              '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff || !!store.prog[p.id]) + '</div>' +
+              '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
               sPartsHTML(p) + playButtonsS(p) + politeLineHTML(p) + memoHTML(p, "d") + '</div>';
           }).join("");
           el.innerHTML = essentSectionHTML("t") + cultureDailyHTML() + '<div class="card done-box"><div class="face">よくできました</div><p>' + msg + '</p>' +
