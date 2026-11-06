@@ -630,15 +630,27 @@
 
       /* ============ モノマネ（シャドーイング）の音声認識 ============ */
       /* 開始は必ずタップ起点にし、開始前に silenceAudio() で音声を止める（既存の認識制御と同じ作法） */
-      var shadowRec = null, shadowEnding = null, shadowTimer = null, shadowBtn = null;
-      function stopShadowRec() {
+      /* iOS対策（2026-11-06）：2回目以降のセッションが「開始したのに声を拾わない」まま固まる事象への対策として、
+         終了は abort() で確実に閉じ、開始はタップの中で即時に行い、無反応セッションは自動で1回だけ作り直す */
+      var shadowRec = null, shadowEnding = null, shadowTimer = null, shadowDeadTimer = null, shadowBtn = null;
+      function clearShadowTimers() {
         if (shadowTimer) { clearTimeout(shadowTimer); shadowTimer = null; }
+        if (shadowDeadTimer) { clearTimeout(shadowDeadTimer); shadowDeadTimer = null; }
+      }
+      function killShadowRec(rec) {
+        try { rec.onstart = null; rec.onresult = null; rec.onerror = null; rec.onend = null; rec.onspeechstart = null; } catch (e) {}
+        try { rec.abort(); } catch (e) { try { rec.stop(); } catch (e2) {} }
+        if (shadowRec === rec) shadowRec = null;
+        if (shadowEnding === rec) shadowEnding = null;
+      }
+      function stopShadowRec() {
+        clearShadowTimers();
         if (shadowRec) {
           var oldRec = shadowRec;
           shadowRec = null;
           shadowEnding = oldRec;
           setTimeout(function () { if (shadowEnding === oldRec) shadowEnding = null; }, 1200);
-          try { oldRec.stop(); } catch (e) { try { oldRec.abort(); } catch (e2) {} }
+          try { oldRec.abort(); } catch (e) { try { oldRec.stop(); } catch (e2) {} }
         }
         if (shadowBtn) { shadowBtn.classList.remove("listening"); shadowBtn.textContent = "🎤 まねして話す"; shadowBtn = null; }
       }
@@ -661,16 +673,10 @@
           if (res) res.innerHTML = '<p class="small">前の聞き取りを終了しています。1秒ほど待って、もう一度マイクを押してください。</p>';
           return;
         }
-        var wasPlaying = silenceAudio();
-        if (wasPlaying) {
-          btn.textContent = "🎙 準備中…";
-          if (res) res.innerHTML = '<p class="small">音声を止めました。まもなく聞き取りを開始します…</p>';
-          setTimeout(function () { beginShadowRec(ctx, pid, btn); }, 500);
-        } else {
-          beginShadowRec(ctx, pid, btn);
-        }
+        silenceAudio();
+        beginShadowRec(ctx, pid, btn, false);
       }
-      function beginShadowRec(ctx, pid, btn) {
+      function beginShadowRec(ctx, pid, btn, isRetry) {
         if (shadowRec || shadowEnding || !btn.isConnected) {
           btn.classList.remove("listening"); btn.textContent = "🎤 まねして話す";
           return;
@@ -683,13 +689,15 @@
         recSetup(rec);
         btn.classList.add("listening"); btn.textContent = "🎙 聞き取り中…話してください";
         var res0 = document.getElementById("shres-" + ctx + "-" + pid);
-        if (res0) res0.innerHTML = '<p class="small">聞き取りの準備中…</p>';
-        var judged = false, best = -1, bestTxt = "", stable = null, gotEvent = false;
+        if (res0) res0.innerHTML = isRetry
+          ? '<p class="small">聞き取りをやり直しています…</p>'
+          : '<p class="small">聞き取りの準備中…</p>';
+        var judged = false, best = -1, bestTxt = "", stable = null, gotEvent = false, gotSpeech = false;
         function judge() {
           if (judged || !bestTxt || shadowRec !== rec) return;
           judged = true;
           if (stable) { clearTimeout(stable); stable = null; }
-          if (shadowTimer) { clearTimeout(shadowTimer); shadowTimer = null; }
+          clearShadowTimers();
           shadowEnding = rec;
           setTimeout(function () { if (shadowEnding === rec) shadowEnding = null; }, 1200);
           try { rec.stop(); } catch (e) {}
@@ -716,25 +724,36 @@
             if (res) res.innerHTML = '<p class="small">聞き取りが終わりませんでした。もう一度マイクを押して試してください。</p>';
           }
         }, 12000);
-        setTimeout(function () {
-          if (!gotEvent && shadowRec === rec) {
-            stopShadowRec();
+        shadowDeadTimer = setTimeout(function () {
+          if (shadowRec !== rec || gotSpeech || judged) return;
+          /* 開始したのに声を拾わないセッションは、閉じて1回だけ作り直す */
+          var neverStarted = !gotEvent;
+          killShadowRec(rec);
+          clearShadowTimers();
+          if (shadowBtn === btn) { btn.classList.remove("listening"); shadowBtn = null; }
+          if (!isRetry && btn.isConnected) {
+            btn.textContent = "🎙 準備中…";
+            setTimeout(function () { beginShadowRec(ctx, pid, btn, true); }, 400);
+          } else {
+            btn.textContent = "🎤 まねして話す";
             var res = document.getElementById("shres-" + ctx + "-" + pid);
-            if (res) res.innerHTML = '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">音声認識が応答しませんでした。もう一度マイクを押して試してください。</p>';
+            if (res) res.innerHTML = neverStarted
+              ? '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">音声認識が応答しませんでした。もう一度マイクを押して試してください。</p>'
+              : '<p class="small">聞き取りが終わりませんでした。もう一度マイクを押して試してください。</p>';
           }
-        }, 5000);
+        }, 8000);
         rec.onstart = function () {
           gotEvent = true;
           var res = document.getElementById("shres-" + ctx + "-" + pid);
           if (res) res.innerHTML = '<p class="small">🎙 聞き取り中です。お手本をまねて話してください</p>';
         };
         rec.onspeechstart = function () {
-          gotEvent = true;
+          gotEvent = true; gotSpeech = true;
           var res = document.getElementById("shres-" + ctx + "-" + pid);
           if (res) res.innerHTML = '<div class="heard-box">声を聞き取っています…</div>';
         };
         rec.onresult = function (ev) {
-          gotEvent = true;
+          gotEvent = true; gotSpeech = true;
           for (var ri = ev.resultIndex; ri < ev.results.length; ri++) {
             var rr = ev.results[ri];
             for (var ai = 0; ai < rr.length; ai++) {
@@ -760,6 +779,7 @@
           if (shadowEnding === rec) shadowEnding = null;
           if (shadowRec === rec) {
             if (bestTxt && !judged) { judge(); return; }
+            clearShadowTimers();
             shadowRec = null;
             if (shadowBtn === btn) { btn.classList.remove("listening"); btn.textContent = "🎤 まねして話す"; shadowBtn = null; }
             var res = document.getElementById("shres-" + ctx + "-" + pid);
