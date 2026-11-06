@@ -357,10 +357,12 @@
           <p style="margin:0 0 8px;">ボタンを押して10秒間、好きな言葉を話してください。聞き取りの状態が下に表示されます。その画面の写真をモコに送ると、原因が特定できます。</p>
           <button class="reset" id="recDiagBtn" type="button" style="margin-top:0;">マイク診断をはじめる</button>
           <div id="recDiagLog" class="small" style="margin-top:8px; line-height:1.7;"></div>
+          <p style="margin:8px 0 4px;">マイク判定が使えないブラウザでは、モノマネ練習は自動で「判定なしモード」（聞く→声に出す→見比べる）になります。Safariなどで開き直した時は、こちらで判定を戻せます。</p>
+          <button class="reset" id="micEnableBtn" type="button" style="margin-top:0;">マイク判定を有効に戻す</button>
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.06-1（カタカナは目印として標準表示・聞き取りの作法を統一・マイク診断を追加）</p>
+        <p>アプリの版：2026.11.06-2（マイク判定が使えない環境では判定なしモードに自動で切り替え、練習が止まらないようにした）</p>
       </footer>
     </div>
 
@@ -662,13 +664,31 @@
         if (shadowRec) endShadowSession(shadowRec);
         if (shadowBtn) { shadowBtn.classList.remove("listening"); shadowBtn.textContent = "🎤 まねして話す"; shadowBtn = null; }
       }
+      /* マイク判定が使えない環境では、判定なしの自己練習パネルを出す（練習自体は止めない） */
+      function showSelfPractice(ctx, pid) {
+        var p = essentPhrase(pid) || BY_ID[pid];
+        var res = document.getElementById("shres-" + ctx + "-" + pid);
+        if (!p || !res) return;
+        var target = p.sTh || p.th;
+        var again = p.noAudio
+          ? '<button type="button" class="btn slow" data-saytext="' + target + '">お手本を聞く</button>'
+          : '<button type="button" class="btn slow" data-play="' + p.id + '-s">お手本を聞く</button>';
+        res.innerHTML =
+          '<p class="small">このブラウザではマイク判定が使えないため、<b>判定なしモード</b>で練習します。やることは今までと同じです。</p>' +
+          '<div class="heard-box">お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
+          '<p class="small">①お手本を聞く → ②声に出してまねる → ③上の文字と見比べて、もう一度お手本を聞く。これで十分に身につきます。</p>' +
+          '<div class="row-btns">' + again +
+          '<button type="button" class="btn slow" data-mic-retry="' + ctx + ':' + pid + '">マイク判定を試す</button></div>';
+      }
       function startShadowRec(key, btn) {
         var kp = key.split(":");
         var ctx = kp[0], pid = kp[1];
         var res = document.getElementById("shres-" + ctx + "-" + pid);
+        if (settings.micBlocked) { showSelfPractice(ctx, pid); return; }
         var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) {
-          if (res) res.innerHTML = '<p class="small">このブラウザでは音声認識が使えません。お手本を聞いて声に出してまねるだけでも、十分な練習になります。</p>';
+          settings.micBlocked = true; saveSettings();
+          showSelfPractice(ctx, pid);
           return;
         }
         if (shadowRec) {
@@ -748,8 +768,10 @@
             endShadowSession(rec);
             clearShadowTimers();
             resetBtn();
+            settings.micBlocked = true; saveSettings();
+            showSelfPractice(ctx, pid);
             var res = document.getElementById("shres-" + ctx + "-" + pid);
-            if (res) res.innerHTML = '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">音声認識が応答しませんでした。もう一度マイクを押して試してください。</p>';
+            if (res) res.innerHTML = '<p class="judge-ng">聞き取りを開始できませんでした</p><p class="small">音声認識が応答しないため、判定なしモードに切り替えました。</p>' + res.innerHTML;
           }
         }, 5000);
         /* 開始したのに声を拾わないセッションは、固まったままにせず打ち切る（次の一押しが新しい状態から始まる） */
@@ -758,8 +780,10 @@
             endShadowSession(rec);
             clearShadowTimers();
             resetBtn();
+            settings.micBlocked = true; saveSettings();
+            showSelfPractice(ctx, pid);
             var res = document.getElementById("shres-" + ctx + "-" + pid);
-            if (res) res.innerHTML = '<p class="judge-ng">声が届きませんでした</p><p class="small">聞き取りが止まってしまったようです。お手本を聞いた直後は少し間を空けてから、もう一度マイクを押してください。</p>';
+            if (res) res.innerHTML = '<p class="judge-ng">声が届きませんでした</p><p class="small">このブラウザでは声がページに届いていないようです。判定なしモードに切り替えました（Safariで開くと判定が使える場合があります）。</p>' + res.innerHTML;
           }
         }, 9000);
         rec.onstart = function () {
@@ -796,7 +820,11 @@
           resetBtn();
           var res = document.getElementById("shres-" + ctx + "-" + pid);
           if (!res) return;
-          if (ev.error === "not-allowed") res.innerHTML = '<p class="judge-ng">マイクが許可されていません</p><p class="small">ブラウザの設定でマイクを許可してから、もう一度押してください。</p>';
+          if (ev.error === "audio-capture" || ev.error === "not-allowed" || ev.error === "service-not-allowed") {
+            settings.micBlocked = true; saveSettings();
+            showSelfPractice(ctx, pid);
+            if (res) res.innerHTML = '<p class="judge-ng">マイク判定は、このブラウザでは使えませんでした</p><p class="small">アプリの不具合ではなく、開いているブラウザがマイクの音を渡せていない状態です。判定なしモードに切り替えました（Safariで開くと判定が使える場合があります）。</p>' + res.innerHTML;
+          }
           else if (ev.error === "no-speech") res.innerHTML = '<p class="judge-ng">声が聞き取れませんでした</p><p class="small">もう一度、マイクの近くではっきり話してみてください。</p>';
           else res.innerHTML = '<p class="judge-ng">聞き取りに失敗しました（' + ev.error + '）</p><p class="small">もう一度マイクを押して試してください。</p>';
         };
@@ -869,13 +897,13 @@
       }
       /* ============ 表示設定（カナなしモード）。既存の記録とは別のキーで追加保存 ============ */
       var SETTINGS_KEY = "thaiSettings.v1";
-      var settings = { kanaOff: false };
+      var settings = { kanaOff: false, micBlocked: false };
       try {
         var sraw = localStorage.getItem(SETTINGS_KEY);
-        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV3 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; }
+        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV3 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; if (sp2 && sp2.micBlocked) settings.micBlocked = true; }
       } catch (e) {}
       function saveSettings() {
-        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1, kanaV3: 1 })); } catch (e) {}
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1, kanaV3: 1, micBlocked: settings.micBlocked ? 1 : 0 })); } catch (e) {}
       }
       function applyKanaSetting() {
         if (document.body) document.body.classList.toggle("kana-off", !!settings.kanaOff);
@@ -1047,6 +1075,14 @@
         }
         var sm3 = ev.target.closest("[data-shadow-mic]");
         if (sm3) { startShadowRec(sm3.getAttribute("data-shadow-mic"), sm3); return; }
+        var mr3 = ev.target.closest("[data-mic-retry]");
+        if (mr3) {
+          var mkp = mr3.getAttribute("data-mic-retry").split(":");
+          settings.micBlocked = false; saveSettings();
+          var mres = document.getElementById("shres-" + mkp[0] + "-" + mkp[1]);
+          if (mres) mres.innerHTML = '<p class="small">マイク判定を有効に戻しました。上の「🎤 まねして話す」を押して試してください。</p>';
+          return;
+        }
         var sb3 = ev.target.closest("[data-shadow]");
         if (sb3) {
           var kp = sb3.getAttribute("data-shadow").split(":");
@@ -2932,6 +2968,13 @@
         rec.onend = function () { L("onend：聞き取り終了"); };
         try { rec.start(); L("start()：呼び出しました"); } catch (e) { L("start()で例外：" + (e && e.message)); }
         setTimeout(function () { try { rec.stop(); } catch (e) {} L("10秒経過：診断を終えます"); }, 10000);
+      });
+
+      var micEnableBtn = document.getElementById("micEnableBtn");
+      if (micEnableBtn) micEnableBtn.addEventListener("click", function () {
+        settings.micBlocked = false;
+        saveSettings();
+        toast("マイク判定を有効に戻しました。モノマネ練習でマイクを押して試してください");
       });
 
       var kanaToggleBtn = document.getElementById("kanaToggleBtn");
