@@ -362,7 +362,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.06-3（音声の総点検を実施。音声URLに版を付けて、古い音量のキャッシュが残らないようにした）</p>
+        <p>アプリの版：2026.11.06-4（判定結果に、マイク使用後に音が小さくなるiPhoneの仕様と対処法の案内を追加）</p>
       </footer>
     </div>
 
@@ -758,7 +758,8 @@
               ? '<p class="judge-ok">' + (best >= 0.85 ? "🎉 完璧！お手本そっくりです" : "✓ 通じました！") + '</p>'
               : '<p class="judge-ng">あと少し！</p>') +
               '<div class="heard-box">聞き取り：' + bestTxt + '<br>お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
-              '<div class="row-btns">' + again + '</div><p class="small">見比べたら、もう一度お手本を聞いて、もう一度まねしてみましょう。</p>';
+              '<div class="row-btns">' + again + '</div><p class="small">見比べたら、もう一度お手本を聞いて、もう一度まねしてみましょう。</p>' +
+              '<p class="small">※マイクを使ったあとにお手本の音が小さくなったら、iPhoneの消音（マナーモード）を切って、ページを開き直してください。iPhoneの仕様で、マイク使用後は音声が通話用の小さい音に切り替わるためです。</p>';
           }
         }
         armWatch();
