@@ -858,17 +858,23 @@
       function playAudio(src, btn) {
         if (currentBtn === btn && !player.paused) { stopAudio(); return; }
         stopAudio();
-        player.src = src;
-        try { player.load(); } catch (e) {}
+        var same = false;
+        try { same = !!player.currentSrc && player.currentSrc.indexOf(src) >= 0 && player.readyState > 0; } catch (e) {}
+        if (!same) {
+          player.src = src;
+          try { player.load(); } catch (e) {}
+        }
         try { player.currentTime = 0; } catch (e) {}
         currentBtn = btn || null;
         if (btn) btn.classList.add("playing");
         var pr = player.play();
         if (pr && pr.catch) pr.catch(function () {
-          try { player.load(); player.currentTime = 0; } catch (e) {}
+          try { player.currentTime = 0; } catch (e) {}
           var pr2 = player.play();
-          if (pr2 && pr2.catch) pr2.catch(function () { if (btn) btn.classList.remove("playing"); });
-          else if (btn) btn.classList.add("playing");
+          if (pr2 && pr2.catch) pr2.catch(function () {
+            if (!same) { try { player.load(); } catch (e) {} var pr3 = player.play(); if (pr3 && pr3.catch) pr3.catch(function () { if (btn) btn.classList.remove("playing"); }); }
+            else if (btn) btn.classList.remove("playing");
+          });
         });
       }
       player.addEventListener("ended", function () { if (currentBtn) currentBtn.classList.remove("playing"); currentBtn = null; });
