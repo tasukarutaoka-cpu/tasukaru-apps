@@ -362,7 +362,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.06-2（マイク判定が使えない環境では判定なしモードに自動で切り替え、練習が止まらないようにした）</p>
+        <p>アプリの版：2026.11.06-3（音声の総点検を実施。音声URLに版を付けて、古い音量のキャッシュが残らないようにした）</p>
       </footer>
     </div>
 
@@ -925,6 +925,8 @@
       }
 
       /* ============ 音声再生（1つだけ） ============ */
+      /* 音声URLには版を付けて、古い音量のファイルがブラウザのキャッシュに残らないようにする（2026-11-06） */
+      function audioURL(name) { return "assets/audio/" + name + ".mp3?v=20261106c"; }
       var player = document.getElementById("player");
       var currentBtn = null;
       function stopAudio() {
@@ -1037,7 +1039,7 @@
 
       document.addEventListener("click", function (ev) {
         var b = ev.target.closest("[data-play]");
-        if (b) { playAudio("assets/audio/" + b.getAttribute("data-play") + ".mp3", b); }
+        if (b) { playAudio(audioURL(b.getAttribute("data-play")), b); }
       });
 
       /* 追加部品のクリック処理（機械の声・単語分解・モノマネ・まずこれだけ30の開閉） */
@@ -2621,7 +2623,7 @@
         pl.addEventListener("ended", onEnd);
         flow.timer = setTimeout(function () { pl.removeEventListener("ended", onEnd); finish(); }, 12000);
         try { stopAudio(); } catch (e) {}
-        playAudio("assets/audio/" + p.id + "-s.mp3", null);
+        playAudio(audioURL(p.id + "-s"), null);
       }
 
       /* コースのガイドから：その場面を2周聞き流し → 終わったらフレーズ練習へのボタンを出す */
