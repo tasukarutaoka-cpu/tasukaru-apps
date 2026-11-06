@@ -348,6 +348,11 @@
 
       <footer>
         <div class="settings-box">
+          <p style="margin:0 0 4px;"><strong>音声の設定：声の種類</strong></p>
+          <p style="margin:0 0 8px;">フレーズの音声は、聞こえやすい「機械の声」が標準です。声調ガイド・文字・聞き取りデモは今までどおり録音音声です。フレーズも録音音声で聞きたい場合は、こちらで切り替えられます。</p>
+          <button class="reset" id="voiceToggleBtn" type="button" style="margin-top:0;">音声：機械の声</button>
+        </div>
+        <div class="settings-box">
           <p style="margin:0 0 4px;"><strong>表示の設定：カタカナ</strong></p>
           <p style="margin:0 0 8px;">カタカナは「発音の先生」ではなく、思い出すための目印です。音を先に聞いて耳で覚えるのが基本。慣れてきたら「カナなしモード」で隠せます（隠しても、各フレーズの「カナを見る」でいつでも確認できます）。</p>
           <button class="reset" id="kanaToggleBtn" type="button" style="margin-top:0;">カナなしモード：オフ（カタカナを表示中）</button>
@@ -362,7 +367,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.06-4（判定結果に、マイク使用後に音が小さくなるiPhoneの仕様と対処法の案内を追加）</p>
+        <p>アプリの版：2026.11.06-5（フレーズの音声を機械の声に統一。設定で録音音声にも切り替えられます）</p>
       </footer>
     </div>
 
@@ -598,7 +603,7 @@
         var target = p.sTh || p.th;
         var playBtn = p.noAudio
           ? '<button type="button" class="btn primary" data-saytext="' + target + '">▶ お手本を聞く（機械の声）</button>'
-          : '<button type="button" class="btn primary" data-play="' + p.id + '-s">▶ お手本を聞く</button>';
+          : '<button type="button" class="btn primary" data-play="' + p.id + '-s">▶ お手本を聞く' + (settings.voiceFile ? '' : '（機械の声）') + '</button>';
         return '<div class="shadow-box" id="sh-' + ctx + '-' + p.id + '">' +
           '<p class="small" style="margin:0 0 6px;"><b>モノマネ練習</b>：①お手本を聞く → ②マイクでまねして話す → ③聞き取りとお手本を見比べる → もう一度お手本を聞く、を繰り返します。まねることで、発音が耳と口に染み込んでいきます。</p>' +
           '<div style="margin:0 0 8px;">カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
@@ -898,13 +903,13 @@
       }
       /* ============ 表示設定（カナなしモード）。既存の記録とは別のキーで追加保存 ============ */
       var SETTINGS_KEY = "thaiSettings.v1";
-      var settings = { kanaOff: false, micBlocked: false };
+      var settings = { kanaOff: false, micBlocked: false, voiceFile: false };
       try {
         var sraw = localStorage.getItem(SETTINGS_KEY);
-        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV3 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; if (sp2 && sp2.micBlocked) settings.micBlocked = true; }
+        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV3 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; if (sp2 && sp2.micBlocked) settings.micBlocked = true; if (sp2 && sp2.voiceFile) settings.voiceFile = true; }
       } catch (e) {}
       function saveSettings() {
-        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1, kanaV3: 1, micBlocked: settings.micBlocked ? 1 : 0 })); } catch (e) {}
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1, kanaV3: 1, micBlocked: settings.micBlocked ? 1 : 0, voiceFile: settings.voiceFile ? 1 : 0 })); } catch (e) {}
       }
       function applyKanaSetting() {
         if (document.body) document.body.classList.toggle("kana-off", !!settings.kanaOff);
@@ -981,14 +986,16 @@
 
       var ICON_PLAY = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
       function playButtons(p, big) {
+        var lbl = settings.voiceFile ? '音声を聞く' : '音声を聞く（機械の声）';
         return '<div class="play-row">' +
-          '<button type="button" class="btn primary" data-play="' + p.id + '">' + ICON_PLAY + '音声を聞く</button>' +
+          '<button type="button" class="btn primary" data-play="' + p.id + '">' + ICON_PLAY + lbl + '</button>' +
           '<button type="button" class="btn slow" data-play="' + p.id + '-slow">' + ICON_PLAY + 'ゆっくり</button>' +
           '</div>';
       }
       function playButtonsS(p, big) {
+        var lbl = settings.voiceFile ? '音声を聞く' : '音声を聞く（機械の声）';
         return '<div class="play-row">' +
-          '<button type="button" class="btn primary" data-play="' + p.id + '-s">' + ICON_PLAY + '音声を聞く</button>' +
+          '<button type="button" class="btn primary" data-play="' + p.id + '-s">' + ICON_PLAY + lbl + '</button>' +
           '<button type="button" class="btn slow" data-play="' + p.id + '-s-slow">' + ICON_PLAY + 'ゆっくり</button>' +
           '</div>';
       }
@@ -1040,7 +1047,15 @@
 
       document.addEventListener("click", function (ev) {
         var b = ev.target.closest("[data-play]");
-        if (b) { playAudio(audioURL(b.getAttribute("data-play")), b); }
+        if (!b) return;
+        var dp = b.getAttribute("data-play");
+        /* フレーズの音声は、標準では機械の声（TTS）で再生する。ファイル再生は声調・文字・聞き取りデモ専用（2026-11-06 本人指示で統一） */
+        var mp = dp.match(/^(s\d+p\d+)(-s)?(-slow)?$/);
+        if (mp && !settings.voiceFile) {
+          var pp = BY_ID[mp[1]];
+          if (pp) { speakTh(mp[2] ? (pp.sTh || pp.th) : pp.th, mp[3] ? 0.55 : 0.85); return; }
+        }
+        playAudio(audioURL(dp), b);
       });
 
       /* 追加部品のクリック処理（機械の声・単語分解・モノマネ・まずこれだけ30の開閉） */
@@ -2607,7 +2622,7 @@
       function flowPlayThai(p, done) {
         var finished = false;
         function finish() { if (!finished) { finished = true; done(); } }
-        if (p.noAudio) {
+        if (p.noAudio || !settings.voiceFile) {
           try {
             var u = new SpeechSynthesisUtterance(p.sTh || p.th);
             u.lang = "th-TH"; u.rate = 0.85;
@@ -2972,6 +2987,19 @@
         try { rec.start(); L("start()：呼び出しました"); } catch (e) { L("start()で例外：" + (e && e.message)); }
         setTimeout(function () { try { rec.stop(); } catch (e) {} L("10秒経過：診断を終えます"); }, 10000);
       });
+
+      var voiceToggleBtn = document.getElementById("voiceToggleBtn");
+      function applyVoiceSetting() {
+        if (voiceToggleBtn) voiceToggleBtn.textContent = settings.voiceFile ? "音声：録音音声（ファイル）" : "音声：機械の声";
+      }
+      if (voiceToggleBtn) voiceToggleBtn.addEventListener("click", function () {
+        settings.voiceFile = !settings.voiceFile;
+        saveSettings();
+        applyVoiceSetting();
+        rerenderActive();
+        toast(settings.voiceFile ? "フレーズの音声を録音音声に切り替えました" : "フレーズの音声を機械の声に切り替えました");
+      });
+      applyVoiceSetting();
 
       var micEnableBtn = document.getElementById("micEnableBtn");
       if (micEnableBtn) micEnableBtn.addEventListener("click", function () {
