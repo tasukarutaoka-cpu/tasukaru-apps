@@ -394,7 +394,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.07-6（フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外）</p>
+        <p>アプリの版：2026.11.07-7（フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
       </footer>
     </div>
 
@@ -3177,6 +3177,100 @@
           weak: { id: "pair:" + pair.a.w, kind: "pair", pi: pi }
         };
       }
+      /* ---- 通じるペア聞き分け（息・長さ・語尾） ---- */
+      var LISTEN_PAIRS = [
+        /* 息ペア（有気音・無気音） */
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "ไก่", kn: "ガイ", ja: "鶏", tag: "息が出ない音（無気音）で始まります" },
+          { w: "ไข่", kn: "カイ", ja: "卵", tag: "息が出る音（有気音）で始まります" } ] },
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "ตา", kn: "ター", ja: "目", tag: "息が出ない音（無気音）で始まります" },
+          { w: "ทา", kn: "ター", ja: "（クリームなどを）塗る", tag: "息が出る音（有気音）で始まります" } ] },
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "ปา", kn: "パー", ja: "投げる", tag: "息が出ない音（無気音）で始まります" },
+          { w: "พา", kn: "パー", ja: "連れていく", tag: "息が出る音（有気音）で始まります" } ] },
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "ปี", kn: "ピー", ja: "年", tag: "息が出ない音（無気音）で始まります" },
+          { w: "ผี", kn: "ピー", ja: "おばけ・幽霊", tag: "息が出る音（有気音）で始まります" } ] },
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "ตี", kn: "ティー", ja: "叩く・打つ", tag: "息が出ない音（無気音）で始まります" },
+          { w: "ที่", kn: "ティー", ja: "場所・〜のところ", tag: "息が出る音（有気音）で始まります" } ] },
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "ตาย", kn: "ターイ", ja: "死ぬ", tag: "息が出ない音（無気音）で始まります" },
+          { w: "ทาย", kn: "ターイ", ja: "当てる・予想する", tag: "息が出る音（有気音）で始まります" } ] },
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "กา", kn: "ガー", ja: "カラス", tag: "息が出ない音（無気音）で始まります" },
+          { w: "คา", kn: "カー", ja: "（途中で）引っかかる・くっつく", tag: "息が出る音（有気音）で始まります" } ] },
+        { cat: "b", hint: "手のひらを口の前に当てると、息が当たるかどうかで確かめられます。息の強さだけで意味が変わります。", opts: [
+          { w: "ขาว", kn: "カーオ", ja: "白い", tag: "息が出る音（有気音）で始まります" },
+          { w: "กาว", kn: "ガーオ", ja: "のり・接着剤", tag: "息が出ない音（無気音）で始まります" } ] },
+        /* 長さペア（長母音・短母音） */
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "นาน", kn: "ナーン", ja: "長い間", tag: "母音「ア」が長いほうです" },
+          { w: "นั่น", kn: "ナン", ja: "あれ・あの", tag: "母音「ア」が短いほうです" } ] },
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "ขาด", kn: "カート", ja: "足りない・切れる", tag: "母音「ア」が長いほうです" },
+          { w: "ขัด", kn: "カット", ja: "磨く・こする", tag: "母音「ア」が短いほうです" } ] },
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "วัด", kn: "ワット", ja: "お寺（／測る）", tag: "母音「ア」が短いほうです" },
+          { w: "วาด", kn: "ワート", ja: "（絵を）描く", tag: "母音「ア」が長いほうです" } ] },
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "ปาก", kn: "パーク", ja: "口", tag: "母音「ア」が長いほうです" },
+          { w: "ปัก", kn: "パック", ja: "刺す・刺繍する", tag: "母音「ア」が短いほうです" } ] },
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "ตาก", kn: "ターク", ja: "（洗濯物などを）干す", tag: "母音「ア」が長いほうです" },
+          { w: "ตัก", kn: "タック", ja: "（スプーンなどで）すくう", tag: "母音「ア」が短いほうです" } ] },
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "ลาก", kn: "ラーク", ja: "引く・引きずる", tag: "母音「ア」が長いほうです" },
+          { w: "ลัก", kn: "ラック", ja: "盗む", tag: "母音「ア」が短いほうです" } ] },
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "สุด", kn: "スット", ja: "いちばん〜・最後", tag: "母音「ウ」が短いほうです" },
+          { w: "สูด", kn: "スート", ja: "（においを）吸う・嗅ぐ", tag: "母音「ウ」が長いほうです" } ] },
+        { cat: "l", hint: "日本語話者は、長い音が短くなってしまいがちです。長い音は意識して、しっかり伸ばして聞き分けましょう。", opts: [
+          { w: "หัด", kn: "ハット", ja: "練習する", tag: "母音「ア」が短いほうです" },
+          { w: "หาด", kn: "ハート", ja: "浜辺・ビーチ", tag: "母音「ア」が長いほうです" } ] },
+        /* 語尾ペア（最後の音 ก/ด/บ） */
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "รัก", kn: "ラック", ja: "愛する・大好き", tag: "語尾は「ク」の音で止めます" },
+          { w: "รัด", kn: "ラット", ja: "縛る・締める", tag: "語尾は「ト」の音で止めます" },
+          { w: "รับ", kn: "ラップ", ja: "受け取る", tag: "語尾は「プ」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "ลาก", kn: "ラーク", ja: "引く・引きずる", tag: "語尾は「ク」の音で止めます" },
+          { w: "ลาบ", kn: "ラープ", ja: "ラープ（ひき肉のサラダ）", tag: "語尾は「プ」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "ปาก", kn: "パーク", ja: "口", tag: "語尾は「ク」の音で止めます" },
+          { w: "ปาด", kn: "パート", ja: "（薄く）切る・ぬぐう", tag: "語尾は「ト」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "กอด", kn: "ゴート", ja: "抱く・抱きしめる", tag: "語尾は「ト」の音で止めます" },
+          { w: "กอบ", kn: "ゴープ", ja: "両手ですくい取る", tag: "語尾は「プ」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "รอด", kn: "ロート", ja: "助かる・生き残る", tag: "語尾は「ト」の音で止めます" },
+          { w: "รอบ", kn: "ロープ", ja: "まわり・〜回", tag: "語尾は「プ」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "จบ", kn: "ジョップ", ja: "終わる", tag: "語尾は「プ」の音で止めます" },
+          { w: "จด", kn: "ジョット", ja: "書き留める・メモする", tag: "語尾は「ト」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "ตบ", kn: "トップ", ja: "（平手で）叩く", tag: "語尾は「プ」の音で止めます" },
+          { w: "ตก", kn: "トック", ja: "落ちる", tag: "語尾は「ク」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "นับ", kn: "ナップ", ja: "数える", tag: "語尾は「プ」の音で止めます" },
+          { w: "นัด", kn: "ナット", ja: "約束・予約（する）", tag: "語尾は「ト」の音で止めます" } ] },
+        { cat: "e", hint: "最後の音は、母音を付け足さず、飲み込むようにパッと止めるのがコツです（日本語の「ッ」の感覚）。", opts: [
+          { w: "จับ", kn: "ジャップ", ja: "つかむ・捕まえる", tag: "語尾は「プ」の音で止めます" },
+          { w: "จัด", kn: "ジャット", ja: "用意する・整える", tag: "語尾は「ト」の音で止めます" } ] }
+      ];
+      function qListenPair(idx) {
+        var e = LISTEN_PAIRS[idx];
+        var target = e.opts[Math.floor(Math.random() * e.opts.length)];
+        var catName = e.cat === "b" ? "息の聞き分け（有気音・無気音）" : e.cat === "l" ? "長さの聞き分け（母音の長・短）" : "語尾の聞き分け（最後の音）";
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">音を聞いて、聞こえた単語を当ててください（通じるペア聞き分け：' + catName + "）</p>",
+          playText: target.w, autoPlay: true,
+          choices: shuffle(e.opts.map(function (o) { return { label: o.w + "（" + o.ja + "）", ok: o.w === target.w }; })),
+          fb: "正解は " + target.w + "（" + target.kn + "／" + target.ja + "）です。" + target.tag + "。" + e.hint,
+          weak: { id: "lp:" + idx, kind: "lpair", pi: idx }
+        };
+      }
       function qConsName(c) {
         var pool = CONS_ALL.filter(function (x) { return x.g === c.g && x.ch !== c.ch; });
         var others = shuffle(pool.slice()).slice(0, 2);
@@ -3412,6 +3506,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
             if (c) return Math.random() < 0.5 ? qConsName(c) : qConsGroup(c);
           }
           if (it.kind === "vowel") return qVowel([it.s, it.skn, it.l, it.lkn], it.playLong);
+          if (it.kind === "lpair") return qListenPair(it.pi);
           return qToneSee({ w: it.w || "", kn: it.kn || "", ja: it.ja || "", t: it.t || "mid" });
         });
       }
@@ -3588,10 +3683,11 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
       var endless = { n: 0, ok: 0, streak: 0, best: 0, cur: null, answered: true };
       function endlessQuestion() {
         var r = Math.random();
-        if (r < 0.28) { var w = TONE_WORDS[Math.floor(Math.random() * TONE_WORDS.length)]; return Math.random() < 0.5 ? qToneSee(w) : qToneHear(w); }
-        if (r < 0.44) { var ids = Object.keys(PHRASE_TONE); return qToneSee(PHRASE_TONE[ids[Math.floor(Math.random() * ids.length)]]); }
-        if (r < 0.58) { return qPair(Math.floor(Math.random() * TONE_PAIRS.length)); }
-        if (r < 0.82) {
+        if (r < 0.26) { var w = TONE_WORDS[Math.floor(Math.random() * TONE_WORDS.length)]; return Math.random() < 0.5 ? qToneSee(w) : qToneHear(w); }
+        if (r < 0.40) { var ids = Object.keys(PHRASE_TONE); return qToneSee(PHRASE_TONE[ids[Math.floor(Math.random() * ids.length)]]); }
+        if (r < 0.52) { return qPair(Math.floor(Math.random() * TONE_PAIRS.length)); }
+        if (r < 0.66) { return qListenPair(Math.floor(Math.random() * LISTEN_PAIRS.length)); }
+        if (r < 0.86) {
           var pool = PHRASES.concat(ESSENT_NEW);
           var p = pool[Math.floor(Math.random() * pool.length)];
           var others = shuffle(pool.filter(function (x) { return x.id !== p.id; })).slice(0, 3);
@@ -3613,7 +3709,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         var el = document.getElementById("view-endless");
         el.innerHTML = '<div class="card">' +
           "<h3>♾️ とことんモード</h3>" +
-          '<p class="small">毎日の最小セットとは別枠の、自由な練習です。終わりはありません。時間のある日に、好きなだけどうぞ。出題は声調・聞き分け・意味あて・文字からランダムで、間違えた問題は苦手リストに入ります。</p>' +
+          '<p class="small">毎日の最小セットとは別枠の、自由な練習です。終わりはありません。時間のある日に、好きなだけどうぞ。出題は声調・聞き分け・意味あて・文字と、「通じるペア聞き分け（息・長さ・語尾）」からランダムで、間違えた問題は苦手リストに入ります。</p>' +
           '<p id="endlessScore">' + endlessScoreText() + "</p>" +
           '<div id="endlessBox">' + (endless.cur && !endless.answered ? "" : '<button type="button" class="btn primary" id="endlessStart">▶ クイズをはじめる</button>') + "</div>" +
           '<div class="row-btns" style="margin-top:14px;">' +
@@ -3621,7 +3717,18 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
           '<button type="button" class="btn" data-goto="free">🗣 フリー会話で話す</button>' +
           '<button type="button" class="btn" data-goto="scenes">📚 場面から探す（全フレーズ）</button>' +
           '<button type="button" class="btn" data-goto="quiz">👂 聞き取りクイズ</button>' +
-          "</div></div>";
+          "</div></div>" +
+          '<div class="card">' +
+          "<h3>🎯 通じるための押さえどころ</h3>" +
+          '<p class="small">タイ語は、小さな音の違いで意味が変わります。通じるかどうかは、この6つの押さえで大きく変わります。</p>' +
+          '<ul style="margin:8px 0 0; padding-left:20px; line-height:1.9;">' +
+          "<li><strong>息：</strong>有気音と無気音は別の音です。手のひらを口の前に当てると、息が当たるかどうかで確かめられます（例：ไก่＝鶏／ไข่＝卵）。</li>" +
+          "<li><strong>声調：</strong>声調が違うと別の言葉になります。フレーズごとに、決まったメロディ（型）でまるごと覚えるのが近道です。</li>" +
+          "<li><strong>母音の長さ：</strong>長い音はしっかり伸ばします。日本語話者は短くなりがちなので、意識して長めに言いましょう。</li>" +
+          "<li><strong>語尾：</strong>最後の音は飲み込んでパッと止めます（日本語の「ッ」の感覚）。「〜ク」「〜ト」と母音を付け足さないのがコツです。</li>" +
+          "<li><strong>言いにくい音：</strong>ร は日常会話では「ラ」に近く言っても通じることが多いです。語頭の ง は、鼻に抜ける「ンガ」の音で出します。</li>" +
+          "<li><strong>文末：</strong>文の終わりに「นะ（〜ね）」や、丁寧な「ครับ」を付けると、自然で伝わりやすくなります。</li>" +
+          "</ul></div>";
         el.querySelectorAll("[data-goto]").forEach(function (b) {
           b.addEventListener("click", function () { switchView(b.getAttribute("data-goto")); });
         });
