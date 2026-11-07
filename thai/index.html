@@ -390,7 +390,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.07-2（ホームを「今日やること」に再構成。もじ入門をステージ制＋確認クイズ化し、苦手リストの復習クイズと「タイ人と話す・交流する」案内を追加）</p>
+        <p>アプリの版：2026.11.07-3（データ総点検を実施：フレーズの声調チェックの正解1件を修正し、参考資料の声調名を声調ガイド・各クイズの表記に統一）</p>
       </footer>
     </div>
 
@@ -1404,9 +1404,9 @@
       CONS_MID.forEach(function (c, i) { CONS_ALL.push({ ch: c.ch, nm: c.nm, kn: c.kn, ja: c.ja, g: "中子音", id: "cons" + ("0" + (i + 1)).slice(-2) }); });
       CONS_HIGH.forEach(function (c, i) { CONS_ALL.push({ ch: c.ch, nm: c.nm, kn: c.kn, ja: c.ja, g: "高子音", id: "cons" + (10 + i) }); });
       CONS_LOW.forEach(function (c, i) { CONS_ALL.push({ ch: c.ch, nm: c.nm, kn: c.kn, ja: c.ja, g: "低子音", rare: c.rare, id: "cons" + (20 + i) }); });
-      var DEMO_MID = [["กา", "中声"], ["ก่า", "下声"], ["ก้า", "下降"], ["ก๊า", "高声"], ["ก๋า", "上昇"]];
-      var DEMO_HIGH = [["ขา", "上昇"], ["ข่า", "下声"], ["ข้า", "下降"]];
-      var DEMO_LOW = [["คา", "中声"], ["ค่า", "下降"], ["ค้า", "高声"]];
+      var DEMO_MID = [["กา", "中声"], ["ก่า", "低声"], ["ก้า", "下声"], ["ก๊า", "高声"], ["ก๋า", "上声"]];
+      var DEMO_HIGH = [["ขา", "上声"], ["ข่า", "低声"], ["ข้า", "下声"]];
+      var DEMO_LOW = [["คา", "中声"], ["ค่า", "下声"], ["ค้า", "高声"]];
       var VOWEL_PAIRS = [
         ["กะ", "ガ（短い）", "กา", "ガー（長い）"], ["กิ", "ギ（短い）", "กี", "ギー（長い）"],
         ["กึ", "グ（短い）", "กือ", "グー（長い）"], ["กุ", "グ（短い）", "กู", "グー（長い）"],
@@ -1456,20 +1456,20 @@
 
         html += '<div class="card"><h3 style="margin:0 0 6px;">1. 声調のルール（この表が全て）</h3>' +
           '<table class="tone-rule"><tr><th>グループ</th><th>記号なし</th><th>่（下げる印）</th><th>้</th><th>๊</th><th>๋</th></tr>' +
-          '<tr><th>中子音（9字）</th><td>中声</td><td>下声</td><td>下降</td><td>高声</td><td>上昇</td></tr>' +
-          '<tr><th>高子音（10字）</th><td>上昇</td><td>下声</td><td>下降</td><td>使わない</td><td>使わない</td></tr>' +
-          '<tr><th>低子音（23字）</th><td>中声</td><td>下降</td><td>高声</td><td>使わない</td><td>使わない</td></tr></table>' +
+          '<tr><th>中子音（9字）</th><td>中声</td><td>低声</td><td>下声</td><td>高声</td><td>上声</td></tr>' +
+          '<tr><th>高子音（10字）</th><td>上声</td><td>低声</td><td>下声</td><td>使わない</td><td>使わない</td></tr>' +
+          '<tr><th>低子音（23字）</th><td>中声</td><td>下声</td><td>高声</td><td>使わない</td><td>使わない</td></tr></table>' +
           '<p class="small" style="margin:8px 0 0;">まずは中子音の5つを聞き比べてください。同じ「ガー」でも高さの型が全部違います。</p>' +
           '<p class="small" style="margin:10px 0 0;"><strong>中子音 ガー</strong></p>' + demoRow(DEMO_MID, 1) +
-          '<p class="small" style="margin:10px 0 0;"><strong>高子音 カー</strong>（記号なしで上昇）</p>' + demoRow(DEMO_HIGH, 6) +
-          '<p class="small" style="margin:10px 0 0;"><strong>低子音 カー</strong>（ ่ で下降、 ้ で高声）</p>' + demoRow(DEMO_LOW, 9) + '</div>';
+          '<p class="small" style="margin:10px 0 0;"><strong>高子音 カー</strong>（記号なしで上声）</p>' + demoRow(DEMO_HIGH, 6) +
+          '<p class="small" style="margin:10px 0 0;"><strong>低子音 カー</strong>（ ่ で下声、 ้ で高声）</p>' + demoRow(DEMO_LOW, 9) + '</div>';
 
         html += '<div class="card"><h3 style="margin:0;">2. 中子音（9字）</h3>' +
           '<p class="small" style="margin:4px 0 0;">全ての声調が作れる基本のグループ。文字の名前（「ゴー・ガイ＝鶏」のように動物や物の名前で覚える伝統の覚え方）で読みます。</p>' +
           consGrid(CONS_MID, 1) + '</div>';
 
         html += '<div class="card"><h3 style="margin:0;">3. 高子音（10字）</h3>' +
-          '<p class="small" style="margin:4px 0 0;">記号なしで「上昇」になるグループ。</p>' + consGrid(CONS_HIGH, 10) + '</div>';
+          '<p class="small" style="margin:4px 0 0;">記号なしで「上声」になるグループ。</p>' + consGrid(CONS_HIGH, 10) + '</div>';
 
         html += '<div class="card"><h3 style="margin:0;">4. 低子音（23字）</h3>' +
           '<p class="small" style="margin:4px 0 0;">一番多いグループ。「レア」は、めったに出ない文字なので後回しで大丈夫です。昔の文字 ฃ・ฅ は今は使われないので入れていません。</p>' + consGrid(CONS_LOW, 20) + '</div>';
@@ -1523,7 +1523,7 @@
           });
         });
       }
-      var TONE_NAMES = ["中声", "下声", "下降", "高声", "上昇"];
+      var TONE_NAMES = ["中声", "低声", "下声", "高声", "上声"];
       var DEMO_ALL = [];
       DEMO_MID.forEach(function (d, i) { DEMO_ALL.push({ s: d[0], t: d[1], id: "dm" + ("0" + (i + 1)).slice(-2), g: "中子音" }); });
       DEMO_HIGH.forEach(function (d, i) { DEMO_ALL.push({ s: d[0], t: d[1], id: "dm" + ("0" + (i + 6)).slice(-2), g: "高子音" }); });
@@ -2719,7 +2719,6 @@
           '<p style="margin:6px 0 0">全部タイ語ですが、身ぶり手ぶりと絵で意味が分かるように話してくれます。「何を言っているかは分からないけれど、場面は分かる」状態がちょうどいい練習です。下のボタンから再生リスト（Beginner 0・全40本）を開いて、Lesson 1 から順番にどうぞ。</p>' +
           '<p style="margin-top:10px"><a class="btn listen" style="display:inline-block;text-decoration:none" href="http://www.youtube.com/playlist?list=PLgdZTyVWfUhlxVi68zFEL8Lu5Q0Bocgbp" target="_blank" rel="noopener">▶ 再生リストを開く（Beginner 0）</a></p></div>';
         html += listenCard("タイ語会話練習50 vol.2（タイトレ）", "約25分／Q&A形式", "質問がタイ語で先に流れて、間があって、答えの例が流れます。音が先に来る形なので耳の練習になります。間の時間に、頭の中で（慣れたら声に出して）答えてみましょう。", "https://www.youtube.com/watch?v=N0iKHkza64A");
-        html += listenCard("タイ語のリスニング練習（ミミちゃんねる）", "約12分／日常会話の聞き取り", "日常会話をネイティブの速さで2回、ゆっくり1回読んでくれます。意味より先に音に触れる聞き方で、本物の速さと聞き取れる速さの両方に慣れられます。", "https://www.youtube.com/watch?v=qo59nIrQa8U");
         html += listenCard("20 Daily Thai Conversations（ThaiPod101）", "約22分／短い会話×20／英語の案内つき", "初心者向けの短い日常会話が20本続く動画です。フレーズの暗記ではなく「会話の流れ」の音に慣れるのに向いています。知っている単語が音の中で聞こえてきたら、それが耳の成長です。", "https://www.youtube.com/watch?v=IkNLVXnVCjY");
         html += listenCard("ネイティブが選ぶ使える日常会話（Chisa ThaiGo）", "約14分／場面ごとの聞き流し", "カフェ、はじめまして、雑談、タクシー、レストランなど、場面ごとの日常会話です。場面を思い浮かべながら音を聞くと、フレーズが場面と一緒に耳に残ります。", "https://www.youtube.com/watch?v=7-8yZFMHxCs");
         html += listenCard("Easy Thai Listening Practice（Thai Listening Hub）", "ゆっくり・はっきり／初級向けストーリー", "日常の場面を題材にした短いストーリーを、ゆっくり自然なリズムで読み聞かせてくれます。音だけでも場面が追いやすい、耳を先に使う聞き流しです。", "https://www.youtube.com/watch?v=BblzhcaRQWs");
@@ -3030,7 +3029,7 @@
         "s2p3": { w: "พูด", kn: "プート", ja: "話す", t: "falling" },
         "s2p4": { w: "เรียน", kn: "リアン", ja: "学ぶ", t: "mid" },
         "s2p7": { w: "ไหม", kn: "マイ", ja: "〜か？（疑問）", t: "rising" },
-        "s2p8": { w: "ช้า", kn: "チャー", ja: "ゆっくり", t: "falling" },
+        "s2p8": { w: "ช้า", kn: "チャー", ja: "ゆっくり", t: "high" },
         "s7p4": { w: "อีก", kn: "イーク", ja: "もう〜（อีกครั้ง＝もう一度）", t: "low" },
         "s7p3": { w: "เข้า", kn: "カオ", ja: "入る（เข้าใจ＝わかる）", t: "falling" },
         "s1p3": { w: "ขอบ", kn: "コープ", ja: "ขอบคุณ（ありがとう）の前半", t: "low" },
