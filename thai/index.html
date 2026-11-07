@@ -390,7 +390,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.07-3（データ総点検を実施：フレーズの声調チェックの正解1件を修正し、参考資料の声調名を声調ガイド・各クイズの表記に統一）</p>
+        <p>アプリの版：2026.11.07-4（データ総点検を実施：フレーズの声調チェックの正解1件を修正し、参考資料の声調名を声調ガイド・各クイズの表記に統一）</p>
       </footer>
     </div>
 
@@ -3121,7 +3121,7 @@
       function qConsGroup(c) {
         var choices = ["中子音", "高子音", "低子音"].map(function (g) { return { label: g, ok: g === c.g }; });
         return {
-          prompt: '<p class="small" style="text-align:center;margin:0;">この文字はどのグループ？</p><div class="tq-big thai">' + c.ch + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + c.kn + '</p>',
+          prompt: '<p class="small" style="text-align:center;margin:0;">この文字はどのグループ？</p><div class="tq-big thai">' + c.ch + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + c.kn + '</p><p class="small" style="text-align:center;margin:4px 0 0;color:#8a6100;">ヒント：中子音は9文字だけ。息が強い音は高子音、それ以外は低子音です</p>',
           playText: c.ch + " " + c.nm, choices: choices,
           fb: c.ch + "（" + c.kn + "）は " + c.g + " です",
           weak: { id: "cons:" + c.ch, kind: "cons", ch: c.ch }
@@ -3290,7 +3290,13 @@
           h += '<p class="small" style="margin:0;">苦手リストは空です。ステージやフレーズのクイズで間違えると、ここに復習が出ます。</p>';
         }
         h += '<div id="reviewBox" style="margin-top:8px;"></div></div>';
-        h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステージごとに「小さく学ぶ → すぐ確認クイズ（全問正解で合格）」で進みます。合格は <strong>' + passedN + ' / 6</strong> ステージです。</p></div>';
+        h += '<div class="card" style="background:#fffaf0;"><p style="margin:0 0 6px;font-weight:bold;font-size:16px;">そもそも：中子音・高子音・低子音って？</p>' +
+          '<p class="small" style="margin:0 0 6px;">タイの子音は、はじめから<strong>3つのチーム</strong>に分かれています。このチーム分けを使うのは、<strong>単語の声調（音の高さ）を決めるときだけ</strong>です。名前はチームの名前で、音の高さそのものではありません。</p>' +
+          '<p class="small" style="margin:0 0 4px;"><strong>中子音チーム（9文字だけ）</strong>：<span class="thai" style="font-size:17px;">ก จ ฎ ฏ ด ต บ ป อ</span><br>数が少ないので、まずこの9文字を覚えます。</p>' +
+          '<p class="small" style="margin:0 0 4px;"><strong>高子音チーム</strong>：音を出すとき、息が「シュッ」と強く出る音です。例：<span class="thai" style="font-size:17px;">ข</span>（コー）、<span class="thai" style="font-size:17px;">ฉ</span>（チョー）、<span class="thai" style="font-size:17px;">ส</span>（ソー）、<span class="thai" style="font-size:17px;">ห</span>（ホー）。</p>' +
+          '<p class="small" style="margin:0 0 6px;"><strong>低子音チーム</strong>：上の2つ以外の、残り全部です。例：<span class="thai" style="font-size:17px;">ค</span>（コー）、<span class="thai" style="font-size:17px;">ท</span>（トー）、<span class="thai" style="font-size:17px;">ม</span>（モー）。</p>' +
+          '<p class="small" style="margin:0;"><strong>見分け方</strong>：①9文字の中にある？→中子音　②息が強い音？→高子音　③どちらでもない→低子音。この順番で考えます。</p></div>';
+h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステージごとに「小さく学ぶ → すぐ確認クイズ（全問正解で合格）」で進みます。合格は <strong>' + passedN + ' / 6</strong> ステージです。</p></div>';
         STAGES.forEach(function (s) {
           var passed = !!stageStore.passed[s.n];
           var isNext = s.n === nx;
