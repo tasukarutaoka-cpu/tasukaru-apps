@@ -297,13 +297,34 @@
       .memo-edit { margin-top: 8px; }
       .memo-input { width: 100%; box-sizing: border-box; font-size: 16px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
       .settings-box { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 12px 0 4px; font-size: 13.5px; }
+    
+      /* ============ ステージ制・ダッシュボード・交流（2026-11-07 追加） ============ */
+      .stage-card { border: 1px solid var(--line, #e3e6ea); border-radius: 14px; padding: 12px; margin-top: 10px; background: #fff; }
+      .stage-card.next { border: 2px solid #2f9e6e; }
+      .stage-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .stage-head .st-no { font-weight: 800; font-size: 13px; color: #fff; background: #2f9e6e; border-radius: 999px; padding: 2px 10px; }
+      .stage-head .st-title { font-weight: 800; font-size: 16px; }
+      .stage-badge { font-size: 11px; border-radius: 999px; padding: 2px 8px; border: 1px solid var(--line, #e3e6ea); color: #666; }
+      .stage-badge.pass { background: #e5f6ec; color: #1d7a4c; border-color: #9fd8b4; font-weight: 700; }
+      .stage-badge.next { background: #fff4d6; color: #8a6100; border-color: #e8c48a; font-weight: 700; }
+      .tq-big { font-size: 46px; text-align: center; line-height: 1.25; }
+      .tq-fb { font-weight: 700; text-align: center; margin-top: 10px; line-height: 1.6; }
+      .btn.tq-ok { background: #e5f6ec !important; border-color: #2f9e6e !important; }
+      .btn.tq-ng { background: #fdecec !important; border-color: #d66 !important; }
+      .dash-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--line, #e3e6ea); }
+      .dash-row:last-child { border-bottom: none; }
+      .dash-row .dt { font-size: 14px; line-height: 1.5; }
+      .dash-row .btn { flex-shrink: 0; }
+      .meet-item h3 { margin: 0 0 4px; font-size: 16px; }
+      .meet-item .meta { font-size: 13px; color: #444; line-height: 1.7; margin: 0; }
+      .tc-box { margin-top: 6px; }
     </style>
   </head>
   <body>
     <div class="wrap">
       <header class="top">
         <h1>タイ語かいわ練習</h1>
-        <p class="sub">聞いて、声に出すだけ。読み書きなしで、タイ人との日常会話を目指します。</p>
+        <p class="sub">聞いて、声に出す。タイ文字は「声調の答え合わせ」に使って、タイ人との日常会話を目指します。</p>
         <div class="progress-card">
           <div>
             <div class="big"><span id="learnedCount">0</span><span style="font-size:16px;"> / 64</span></div>
@@ -329,6 +350,7 @@
         <button role="tab" data-view="script" aria-selected="false">もじ入門</button>
         <button role="tab" data-view="visual" aria-selected="false">視覚言語</button>
         <button role="tab" data-view="culture" aria-selected="false">文化</button>
+        <button role="tab" data-view="meet" aria-selected="false">交流</button>
       </nav>
 
       <main>
@@ -344,6 +366,7 @@
         <section class="view" id="view-script"></section>
         <section class="view" id="view-visual"></section>
         <section class="view" id="view-culture"></section>
+        <section class="view" id="view-meet"></section>
       </main>
 
       <footer>
@@ -367,7 +390,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.06-5（フレーズの音声を機械の声に統一。設定で録音音声にも切り替えられます）</p>
+        <p>アプリの版：2026.11.07-1（ホームを「今日やること」に再構成。もじ入門をステージ制＋確認クイズ化し、苦手リストの復習クイズと「タイ人と話す・交流する」案内を追加）</p>
       </footer>
     </div>
 
@@ -591,6 +614,7 @@
         else if (name === "script") renderScript();
         else if (name === "visual") renderVisual();
         else if (name === "culture") renderCulture();
+        else if (name === "meet") renderMeet();
       }
 
       /* ============ まずこれだけ30の表示部品 ============ */
@@ -622,9 +646,9 @@
           '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
           sPartsHTML(p) +
           play +
-          '<div class="row-btns"><button type="button" class="btn slow" data-shadow="' + ctx + ':' + p.id + '">🔁 モノマネ練習</button>' +
+          '<div class="row-btns"><button type="button" class="btn slow" data-shadow="' + ctx + ':' + p.id + '">🔁 モノマネ練習</button>' + (PHRASE_TONE[p.id] ? '<button type="button" class="btn slow" data-tonecheck="' + p.id + '">🎯 声調チェック</button>' : '') +
           (WORDS_BY_ID[p.id] ? '<button type="button" class="btn slow" data-words="wp-' + ctx + '-' + p.id + '">🧩 単語に分解</button>' : '') + '</div>' +
-          wordsPanelHTML(p, ctx) +
+          wordsPanelHTML(p, ctx) + '<div class="tc-box"></div>' +
           shadowBoxHTML(p, ctx) +
           memoHTML(p, ctx) +
           (p.note ? '<div class="note">' + p.note + '</div>' : '') +
@@ -1427,7 +1451,7 @@
 
       function renderScript() {
         var el = document.getElementById("view-script");
-        var html = '<div class="sec-head"><h2>もじ入門（タイ文字と声調）</h2></div>' +
+        var html = stageHomeHTML() + '<div class="sec-head" style="margin-top:22px;"><h2>もじ入門・参考資料（ルール表と全文字）</h2></div>' +
           '<div class="card"><p style="margin:0;">タイ文字は<strong>声調を決める仕組み</strong>そのものです。子音は3つのグループに分かれていて、グループと声調記号の組み合わせで声調が決まります。文字が読めると、初めて見る単語でも声調が導けるようになります。会話の練習の補助輪として、少しずつ進めてください。</p></div>';
 
         html += '<div class="card"><h3 style="margin:0 0 6px;">1. 声調のルール（この表が全て）</h3>' +
@@ -1475,7 +1499,7 @@
           '<p class="small" style="margin:4px 0 0;">ルール表で考えてから答えて、最後に音で確かめてください。累計： ' + scriptStore.qb.ok + ' / ' + scriptStore.qb.total + ' 正解</p>' +
           '<div id="sqB"></div></div>';
         el.innerHTML = html;
-        nextQuizA(); nextQuizB();
+        nextQuizA(); nextQuizB(); wireStageHome();
       }
 
       function nextQuizA() {
@@ -2824,7 +2848,7 @@
         var nextIdx = -1; cur.steps.forEach(function (_, i) { if (nextIdx < 0 && !doneMap[i]) nextIdx = i; });
         var t = todayStr(), dueN = 0;
         PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.due <= t) dueN++; });
-        var html = '<div class="sec-head"><h2>コース</h2></div>';
+        var html = dashHTML() + '<div class="sec-head"><h2>コース</h2></div>';
         /* 今日はここから（開いたら押すだけのガイド） */
         html += '<div class="card" style="margin-top:8px;border:2px solid #2f9e6e;padding:14px;">' +
           '<p style="margin:0 0 2px;font-weight:bold;font-size:17px;">📍 今日はここから</p>' +
@@ -2878,6 +2902,7 @@
         html += '<h3 style="margin:18px 4px 8px">コースを変える</h3>' + picksHtml;
         html += '<p class="small" style="margin-top:10px;">タブから各コーナーを自由に開くこともできます。コースの記録は、この端末のブラウザの中にだけ保存されます。</p>';
         el.innerHTML = html;
+        wireDash(el);
         var tt = document.getElementById("courseToToday");
         if (tt) tt.addEventListener("click", function () { switchView("today"); });
         el.querySelectorAll("[data-course]").forEach(function (b) {
@@ -2910,6 +2935,532 @@
         });
       }
 
+
+      /* ============ ステージ制（学ぶ→確認クイズ→合格）と苦手リスト（2026-11-07 追加） ============ */
+      /* 声調データは頻出語のみを、タイ語の声調規則で検証して収録（推測で付けたものは入れていない） */
+      var TONE_META = {
+        mid: { sym: "→", name: "中声", desc: "まっすぐ" },
+        low: { sym: "低", name: "低声", desc: "ひくい" },
+        falling: { sym: "↘", name: "下声", desc: "さがる" },
+        high: { sym: "高", name: "高声", desc: "たかい" },
+        rising: { sym: "↗", name: "上声", desc: "あがる" }
+      };
+      var TONE_KEYS = ["mid", "low", "falling", "high", "rising"];
+      var TONE_WORDS = [
+        { w: "มา", kn: "マー", ja: "来る", t: "mid" }, { w: "ไป", kn: "パイ", ja: "行く", t: "mid" },
+        { w: "กิน", kn: "ギン", ja: "食べる", t: "mid" }, { w: "ดู", kn: "ドゥー", ja: "見る", t: "mid" },
+        { w: "ดี", kn: "ディー", ja: "良い", t: "mid" }, { w: "คน", kn: "コン", ja: "人", t: "mid" },
+        { w: "คุณ", kn: "クン", ja: "あなた", t: "mid" }, { w: "ใจ", kn: "ヂャイ", ja: "心", t: "mid" },
+        { w: "เรียน", kn: "リアン", ja: "学ぶ", t: "mid" }, { w: "แพง", kn: "ペーン", ja: "高い（値段）", t: "mid" },
+        { w: "เรา", kn: "ラオ", ja: "私たち", t: "mid" }, { w: "มี", kn: "ミー", ja: "ある・いる", t: "mid" },
+        { w: "ทำ", kn: "タム", ja: "する・作る", t: "mid" }, { w: "ไทย", kn: "タイ", ja: "タイ", t: "mid" },
+        { w: "ขอบ", kn: "コープ", ja: "ขอบคุณ（ありがとう）の前半", t: "low" }, { w: "ตก", kn: "トッ", ja: "落ちる", t: "low" },
+        { w: "ออก", kn: "オーク", ja: "出る", t: "low" }, { w: "กลับ", kn: "グラップ", ja: "戻る・帰る", t: "low" },
+        { w: "สิบ", kn: "シップ", ja: "10", t: "low" }, { w: "ใหม่", kn: "マイ", ja: "新しい", t: "low" },
+        { w: "ถูก", kn: "トゥーク", ja: "安い", t: "low" }, { w: "บอก", kn: "ボーク", ja: "言う・教える", t: "low" },
+        { w: "จอด", kn: "ヂョート", ja: "止める", t: "low" }, { w: "เจ็บ", kn: "ヂェップ", ja: "痛い", t: "low" },
+        { w: "สี่", kn: "スィー", ja: "4", t: "low" }, { w: "หนึ่ง", kn: "ヌン", ja: "1", t: "low" },
+        { w: "หก", kn: "ホッ", ja: "6", t: "low" }, { w: "เจ็ด", kn: "ヂェット", ja: "7", t: "low" },
+        { w: "แปด", kn: "ペート", ja: "8", t: "low" }, { w: "กี่", kn: "ギー", ja: "いくつ", t: "low" },
+        { w: "ข้าว", kn: "カーオ", ja: "ご飯", t: "falling" }, { w: "ไม่", kn: "マイ", ja: "〜ない（否定）", t: "falling" },
+        { w: "ได้", kn: "ダイ", ja: "できる", t: "falling" }, { w: "ให้", kn: "ハイ", ja: "〜してあげる", t: "falling" },
+        { w: "พูด", kn: "プート", ja: "話す", t: "falling" }, { w: "ชอบ", kn: "チョープ", ja: "好き", t: "falling" },
+        { w: "มาก", kn: "マーク", ja: "とても", t: "falling" }, { w: "ใกล้", kn: "グライ", ja: "近い", t: "falling" },
+        { w: "ใช่", kn: "チャイ", ja: "そうです", t: "falling" }, { w: "ค่า", kn: "カー", ja: "料金", t: "falling" },
+        { w: "พ่อ", kn: "ポー", ja: "お父さん", t: "falling" }, { w: "แม่", kn: "メー", ja: "お母さん", t: "falling" },
+        { w: "พี่", kn: "ピー", ja: "お兄さん・お姉さん", t: "falling" }, { w: "ห้า", kn: "ハー", ja: "5", t: "falling" },
+        { w: "เก้า", kn: "ガーオ", ja: "9", t: "falling" }, { w: "เรียก", kn: "リアック", ja: "呼ぶ", t: "falling" },
+        { w: "นั่ง", kn: "ナン", ja: "座る", t: "falling" }, { w: "ช่วย", kn: "チュアイ", ja: "助ける", t: "falling" },
+        { w: "ไม้", kn: "マーイ", ja: "木", t: "high" }, { w: "น้ำ", kn: "ナーム", ja: "水", t: "high" },
+        { w: "รัก", kn: "ラッ", ja: "大好き・愛する", t: "high" }, { w: "เล็ก", kn: "レッ", ja: "小さい", t: "high" },
+        { w: "น้อง", kn: "ノーン", ja: "弟・妹", t: "high" }, { w: "คิด", kn: "キッ", ja: "考える", t: "high" },
+        { w: "รู้", kn: "ルー", ja: "知る", t: "high" }, { w: "ซื้อ", kn: "スー", ja: "買う", t: "high" },
+        { w: "ใช้", kn: "チャイ", ja: "使う", t: "high" }, { w: "ม้า", kn: "マー", ja: "馬", t: "high" },
+        { w: "แล้ว", kn: "レーオ", ja: "〜した（完了）", t: "high" },
+        { w: "ขาว", kn: "カーオ", ja: "白い", t: "rising" }, { w: "ไหม", kn: "マイ", ja: "〜か？（疑問）", t: "rising" },
+        { w: "ขอ", kn: "コー", ja: "お願いする", t: "rising" }, { w: "สี", kn: "スィー", ja: "色", t: "rising" },
+        { w: "หู", kn: "フー", ja: "耳", t: "rising" }, { w: "เขา", kn: "カオ", ja: "彼・彼女", t: "rising" },
+        { w: "สอง", kn: "ソーン", ja: "2", t: "rising" }, { w: "สาม", kn: "サーム", ja: "3", t: "rising" },
+        { w: "เสือ", kn: "スア", ja: "虎", t: "rising" }, { w: "หมา", kn: "マー", ja: "犬", t: "rising" }
+      ];
+      var TONE_PAIRS = [
+        { a: { w: "ข้าว", kn: "カーオ", ja: "ご飯", t: "falling" }, b: { w: "ขาว", kn: "カーオ", ja: "白い", t: "rising" } },
+        { a: { w: "ไม้", kn: "マーイ", ja: "木", t: "high" }, b: { w: "ไม่", kn: "マイ", ja: "〜ない（否定）", t: "falling" } },
+        { a: { w: "ใหม่", kn: "マイ", ja: "新しい", t: "low" }, b: { w: "ไหม", kn: "マイ", ja: "〜か？（疑問）", t: "rising" } },
+        { a: { w: "ใกล้", kn: "グライ", ja: "近い", t: "falling" }, b: { w: "ไกล", kn: "グライ", ja: "遠い", t: "mid" } },
+        { a: { w: "ป่า", kn: "パー", ja: "森", t: "low" }, b: { w: "ป้า", kn: "パー", ja: "おばさん", t: "falling" } },
+        { a: { w: "สี่", kn: "スィー", ja: "4", t: "low" }, b: { w: "สี", kn: "スィー", ja: "色", t: "rising" } },
+        { a: { w: "ยา", kn: "ヤー", ja: "薬", t: "mid" }, b: { w: "ย่า", kn: "ヤー", ja: "おばあさん", t: "falling" } },
+        { a: { w: "มือ", kn: "ムー", ja: "手", t: "mid" }, b: { w: "มื้อ", kn: "ムー", ja: "食事（〜食）", t: "high" } },
+        { a: { w: "เสือ", kn: "スア", ja: "虎", t: "rising" }, b: { w: "เสื่อ", kn: "スア", ja: "敷物・マット", t: "low" } },
+        { a: { w: "น้ำ", kn: "ナーム", ja: "水", t: "high" }, b: { w: "นำ", kn: "ナーム", ja: "連れて行く", t: "mid" } }
+      ];
+      /* ステージ6用：基本の判断フローで導ける単語と、その理由 */
+      var STAGE6_WORDS = [
+        { w: "กิน", kn: "ギン", ja: "食べる", t: "mid", why: "ก はまんなかチーム。記号なし＋なめらかに終わる → 中声" },
+        { w: "คุณ", kn: "クン", ja: "あなた", t: "mid", why: "ค は低いチーム。記号なし＋なめらかに終わる → 中声" },
+        { w: "ขอ", kn: "コー", ja: "お願いする", t: "rising", why: "ข は高いチーム。記号なし → 上声（あがる）" },
+        { w: "ตก", kn: "トッ", ja: "落ちる", t: "low", why: "ต はまんなかチーム。クッと止まる短い音節 → 低声" },
+        { w: "สิบ", kn: "シップ", ja: "10", t: "low", why: "ส は高いチーム。プッと止まる短い音節 → 低声" },
+        { w: "ขอบ", kn: "コープ", ja: "ขอบคุณ（ありがとう）の前半", t: "low", why: "ข は高いチーム。プッと止まる短い音節 → 低声" },
+        { w: "รัก", kn: "ラッ", ja: "大好き・愛する", t: "high", why: "ร は低いチーム。クッと止まる短い音節 → 高声" },
+        { w: "ไม่", kn: "マイ", ja: "〜ない（否定）", t: "falling", why: "ม は低いチーム。 ่（マイ・エーク）がつくと → 下声" },
+        { w: "ไม้", kn: "マーイ", ja: "木", t: "high", why: "ม は低いチーム。 ้（マイ・トー）がつくと → 高声" },
+        { w: "ได้", kn: "ダイ", ja: "できる", t: "falling", why: "ด はまんなかチーム。 ้ がつくと → 下声" },
+        { w: "ข้าว", kn: "カーオ", ja: "ご飯", t: "falling", why: "ข は高いチーム。 ้ がつくと → 下声" },
+        { w: "มาก", kn: "マーク", ja: "とても", t: "falling", why: "ม は低いチーム。長く伸びてクッと止まる音節 → 下声" },
+        { w: "กา", kn: "ガー", ja: "カラス", t: "mid", why: "ก はまんなかチーム。記号なし → 中声" },
+        { w: "ก่า", kn: "ガー", ja: "（音の練習）", t: "low", why: "ก はまんなかチーム。 ่ がつくと → 低声" },
+        { w: "ก้า", kn: "ガー", ja: "（音の練習）", t: "falling", why: "ก はまんなかチーム。 ้ がつくと → 下声" },
+        { w: "ขา", kn: "カー", ja: "脚", t: "rising", why: "ข は高いチーム。記号なし → 上声（あがる）" },
+        { w: "ข่า", kn: "カー", ja: "（音の練習）", t: "low", why: "ข は高いチーム。 ่ がつくと → 低声" },
+        { w: "คา", kn: "カー", ja: "（音の練習）", t: "mid", why: "ค は低いチーム。記号なし → 中声" }
+      ];
+      /* フレーズ（まずこれだけ30）のキーワード声調 */
+      var PHRASE_TONE = {
+        "s1p1": { w: "ครับ", kn: "クラップ", ja: "男性の丁寧語尾", t: "high" },
+        "e1": { w: "ไหม", kn: "マイ", ja: "〜か？（疑問）", t: "rising" },
+        "s2p6": { w: "รู้", kn: "ルー", ja: "知る（รู้จัก＝知り合う）", t: "high" },
+        "e2": { w: "ชื่อ", kn: "チュー", ja: "名前", t: "falling" },
+        "s2p5": { w: "คุณ", kn: "クン", ja: "あなた", t: "mid" },
+        "s2p1": { w: "คน", kn: "コン", ja: "人", t: "mid" },
+        "s2p2": { w: "มา", kn: "マー", ja: "来る", t: "mid" },
+        "e3": { w: "อยู่", kn: "ユー", ja: "いる・住む", t: "low" },
+        "e4": { w: "ทำ", kn: "タム", ja: "する（ทำงาน＝働く）", t: "mid" },
+        "s2p3": { w: "พูด", kn: "プート", ja: "話す", t: "falling" },
+        "s2p4": { w: "เรียน", kn: "リアン", ja: "学ぶ", t: "mid" },
+        "s2p7": { w: "ไหม", kn: "マイ", ja: "〜か？（疑問）", t: "rising" },
+        "s2p8": { w: "ช้า", kn: "チャー", ja: "ゆっくり", t: "falling" },
+        "s7p4": { w: "อีก", kn: "イーク", ja: "もう〜（อีกครั้ง＝もう一度）", t: "low" },
+        "s7p3": { w: "เข้า", kn: "カオ", ja: "入る（เข้าใจ＝わかる）", t: "falling" },
+        "s1p3": { w: "ขอบ", kn: "コープ", ja: "ขอบคุณ（ありがとう）の前半", t: "low" },
+        "s1p5": { w: "ขอ", kn: "コー", ja: "お願いする（ขอโทษ＝すみません）", t: "rising" },
+        "s1p6": { w: "ไม่", kn: "マイ", ja: "〜ない（否定）", t: "falling" },
+        "s3p1": { w: "เท่า", kn: "タオ", ja: "เท่าไหร่（いくら）の前半", t: "falling" },
+        "s3p6": { w: "เอา", kn: "アオ", ja: "取る・欲しい", t: "mid" },
+        "s4p6": { w: "น้ำ", kn: "ナーム", ja: "水", t: "high" },
+        "s4p5": { w: "มาก", kn: "マーク", ja: "とても", t: "falling" },
+        "s4p7": { w: "เช็ค", kn: "チェック", ja: "เช็คบิล（お会計）の前半", t: "high" },
+        "s5p1": { w: "ไป", kn: "パイ", ja: "行く", t: "mid" },
+        "s5p6": { w: "ไหน", kn: "ナイ", ja: "どこ", t: "rising" },
+        "s6p3": { w: "ห้อง", kn: "ホン", ja: "部屋（ห้องน้ำ＝トイレ）", t: "falling" },
+        "s6p1": { w: "จอง", kn: "ヂョーン", ja: "予約する", t: "mid" },
+        "s7p1": { w: "ช่วย", kn: "チュアイ", ja: "助ける", t: "falling" },
+        "s8p2": { w: "ชอบ", kn: "チョープ", ja: "好き", t: "falling" },
+        "s1p7": { w: "แล้ว", kn: "レーオ", ja: "〜した（完了）・それでは", t: "high" }
+      };
+      var FREQ_LOW10 = ["ค", "ง", "ช", "ท", "น", "พ", "ม", "ย", "ร", "ล"];
+
+      var STAGE_KEY = "thaiStages.v1";
+      var stageStore = { passed: {}, weak: [] };
+      try {
+        var sgr = localStorage.getItem(STAGE_KEY);
+        if (sgr) { var sgp = JSON.parse(sgr); if (sgp) { stageStore.passed = sgp.passed || {}; stageStore.weak = sgp.weak || []; } }
+      } catch (e) {}
+      function saveStages() { try { localStorage.setItem(STAGE_KEY, JSON.stringify(stageStore)); } catch (e) {} }
+      function weakAdd(item) {
+        if (!item) return;
+        var found = false;
+        stageStore.weak.forEach(function (x) { if (x.id === item.id) found = true; });
+        if (!found) { stageStore.weak.push(item); saveStages(); }
+      }
+      function weakRemove(id) {
+        stageStore.weak = stageStore.weak.filter(function (x) { return x.id !== id; });
+        saveStages();
+      }
+      function weakToneItem(word) { return { id: "tw:" + word.w, kind: "tone", w: word.w, kn: word.kn, ja: word.ja, t: word.t }; }
+
+      /* ---- クイズ部品 ---- */
+      function toneChoiceList(ansKey) {
+        var list = TONE_KEYS.map(function (k) {
+          return { label: TONE_META[k].sym + " " + TONE_META[k].name + "（" + TONE_META[k].desc + "）", ok: k === ansKey };
+        });
+        return shuffle(list);
+      }
+      function qToneSee(word) {
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">この単語の声調はどれ？</p><div class="tq-big thai">' + word.w + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + word.ja + '</p>',
+          playText: word.w, choices: toneChoiceList(word.t),
+          fb: word.w + "（" + word.kn + "）は " + TONE_META[word.t].name + " です",
+          weak: weakToneItem(word)
+        };
+      }
+      function qToneHear(word) {
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">音を聞いて、声調はどれ？（もう一度聞くときは下のボタン）</p>',
+          playText: word.w, autoPlay: true, choices: toneChoiceList(word.t),
+          fb: word.w + "（" + word.kn + "／" + word.ja + "）は " + TONE_META[word.t].name + " です",
+          weak: weakToneItem(word)
+        };
+      }
+      function qPair(pi) {
+        var pair = TONE_PAIRS[pi];
+        var side = Math.random() < 0.5 ? "a" : "b";
+        var target = pair[side], other = pair[side === "a" ? "b" : "a"];
+        var choices = shuffle([
+          { label: target.w + "（" + target.ja + "）", ok: true },
+          { label: other.w + "（" + other.ja + "）", ok: false }
+        ]);
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">聞こえたのはどっち？（音が同じで、声調だけが違うペアです）</p>',
+          playText: target.w, autoPlay: true, choices: choices,
+          fb: "正解は " + target.w + "（" + target.kn + "／" + target.ja + "）＝ " + TONE_META[target.t].name + "。もう一方の " + other.w + "（" + other.ja + "）は " + TONE_META[other.t].name + " です",
+          weak: { id: "pair:" + pair.a.w, kind: "pair", pi: pi }
+        };
+      }
+      function qConsName(c) {
+        var pool = CONS_ALL.filter(function (x) { return x.g === c.g && x.ch !== c.ch; });
+        var others = shuffle(pool.slice()).slice(0, 2);
+        var choices = shuffle([{ label: c.kn, ok: true }].concat(others.map(function (x) { return { label: x.kn, ok: false }; })));
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">この文字の読み方（名前）は？</p><div class="tq-big thai">' + c.ch + '</div>',
+          playText: c.ch + " " + c.nm, choices: choices,
+          fb: c.ch + " は「" + c.kn + "」（" + c.ch + " " + c.nm + "＝" + c.ja + "）で、" + c.g + " です",
+          weak: { id: "cons:" + c.ch, kind: "cons", ch: c.ch }
+        };
+      }
+      function qConsGroup(c) {
+        var choices = ["中子音", "高子音", "低子音"].map(function (g) { return { label: g, ok: g === c.g }; });
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">この文字はどのグループ？</p><div class="tq-big thai">' + c.ch + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + c.kn + '</p>',
+          playText: c.ch + " " + c.nm, choices: choices,
+          fb: c.ch + "（" + c.kn + "）は " + c.g + " です",
+          weak: { id: "cons:" + c.ch, kind: "cons", ch: c.ch }
+        };
+      }
+      function qVowel(vp, playLong) {
+        var target = playLong ? vp[2] : vp[0];
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">聞こえたのはどっちの母音？</p>',
+          playText: target, autoPlay: true,
+          choices: [
+            { label: vp[0] + "（" + vp[1] + "）", ok: !playLong },
+            { label: vp[2] + "（" + vp[3] + "）", ok: playLong }
+          ],
+          fb: "聞こえたのは " + target + "（" + (playLong ? vp[3] : vp[1]) + "）です",
+          weak: { id: "vw:" + vp[0], kind: "vowel", s: vp[0], l: vp[2], skn: vp[1], lkn: vp[3], playLong: playLong }
+        };
+      }
+      function qStage6(item) {
+        return {
+          prompt: '<p class="small" style="text-align:center;margin:0;">3ステップで考えてみましょう。この単語の声調はどれ？</p><div class="tq-big thai">' + item.w + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + item.ja + '</p>',
+          playText: item.w, choices: toneChoiceList(item.t),
+          fb: item.w + "（" + item.kn + "）は " + TONE_META[item.t].name + "。" + item.why,
+          weak: weakToneItem(item)
+        };
+      }
+
+      /* ---- クイズ実行エンジン ---- */
+      function runQuiz(box, questions, onDone) {
+        if (!box) return;
+        var st = { i: 0, ok: 0 };
+        function renderQ() {
+          if (st.i >= questions.length) { onDone(st.ok, questions.length); return; }
+          var q = questions[st.i];
+          var h = '<p class="small" style="margin:0 0 6px;">' + (st.i + 1) + " / " + questions.length + " 問目</p>" + q.prompt;
+          if (q.playText) h += '<div class="row-btns"><button type="button" class="btn primary" data-tq-play="1">' + ICON_PLAY + '音を聞く</button></div>';
+          h += '<div class="quiz-opts" style="margin-top:10px;">' + q.choices.map(function (c, ci) { return '<button type="button" class="btn" data-tq-ch="' + ci + '">' + c.label + '</button>'; }).join("") + '</div>';
+          h += '<div class="tq-fb" data-tq-fb="1"></div><div class="row-btns" data-tq-nextwrap="1"></div>';
+          box.innerHTML = h;
+          var playBtn = box.querySelector("[data-tq-play]");
+          if (playBtn) playBtn.addEventListener("click", function () { speakTh(q.playText, 0.8); });
+          if (q.autoPlay && q.playText) setTimeout(function () { speakTh(q.playText, 0.8); }, 350);
+          box.querySelectorAll("[data-tq-ch]").forEach(function (b) {
+            b.addEventListener("click", function () {
+              var ci = +b.getAttribute("data-tq-ch");
+              var correct = !!q.choices[ci].ok;
+              box.querySelectorAll("[data-tq-ch]").forEach(function (x) {
+                x.disabled = true;
+                var xi = +x.getAttribute("data-tq-ch");
+                if (q.choices[xi].ok) x.classList.add("tq-ok");
+                else if (xi === ci) x.classList.add("tq-ng");
+              });
+              if (correct) { st.ok++; if (q.weak) weakRemove(q.weak.id); }
+              else if (q.weak) weakAdd(q.weak);
+              var fb = box.querySelector("[data-tq-fb]");
+              fb.textContent = (correct ? "⭕ 正解！ " : "❌ ") + q.fb;
+              fb.style.color = correct ? "var(--good)" : "var(--bad)";
+              var nw = box.querySelector("[data-tq-nextwrap]");
+              var last = st.i >= questions.length - 1;
+              nw.innerHTML = '<button type="button" class="btn primary" data-tq-next="1">' + (last ? "結果を見る" : "つぎへ") + '</button>';
+              nw.querySelector("[data-tq-next]").addEventListener("click", function () { st.i++; renderQ(); });
+            });
+          });
+        }
+        renderQ();
+      }
+      function pickN(arr, n) { return shuffle(arr.slice()).slice(0, n); }
+
+      /* ---- ステージ定義 ---- */
+      function consPick(chars) {
+        return CONS_ALL.filter(function (c) { return chars.indexOf(c.ch) >= 0; });
+      }
+      function consCellsHTML(list) {
+        var h = '<div class="cons-grid">';
+        list.forEach(function (c) {
+          h += '<div class="cons-cell"><span class="ch thai">' + c.ch + '</span>' +
+            '<span class="nm thai">' + c.ch + ' ' + c.nm + (c.rare ? '<span class="rare-tag">レア</span>' : '') + '</span>' +
+            '<span class="kn">' + c.kn + '</span><span class="ja">' + c.ja + '</span>' +
+            '<button type="button" class="btn" data-play="' + c.id + '">' + ICON_PLAY + '聞く</button></div>';
+        });
+        return h + '</div>';
+      }
+      var STAGES = [
+        {
+          n: 1, title: "中子音の9文字", desc: "全ての声調（5つ全部）が作れる基本グループ。タイ文字はここから始めるのが最短ルートです（「まことのタイ語ch」の進め方）。",
+          learn: function () {
+            return '<p class="small" style="margin:0 0 4px;">文字の名前（「ゴー・ガイ＝鶏」のように、物の名前で覚える伝統の方法）ごと声に出して覚えましょう。</p>' + consCellsHTML(CONS_MID.map(function (c) { return consPick([c.ch])[0]; }));
+          },
+          quiz: function () {
+            var cs = pickN(CONS_MID.map(function (c) { return consPick([c.ch])[0]; }), 4);
+            return cs.map(function (c, i) { return i % 2 === 0 ? qConsName(c) : qConsGroup(c); });
+          }
+        },
+        {
+          n: 2, title: "5つの声調の音と形", desc: "声調は「音の高さの型」。まず5つの型を耳と線の形で覚えます。ここが全ての土台です。",
+          learn: function () {
+            var h = "";
+            TONES.forEach(function (t) {
+              h += '<div style="border-top:1px dashed var(--line,#e3e6ea);padding:8px 0;"><strong>' + t.name + '</strong><span class="small"> ― ' + t.desc + '</span>' + toneSVG(t.tone, 46) +
+                '<div class="example"><span class="thai-text thai">' + t.word + '</span><span class="kana">' + t.kana + '</span><span class="meaning">' + t.ja + '</span>' +
+                '<button type="button" class="btn" data-saytext="' + t.word + '">' + ICON_PLAY + '聞く</button></div></div>';
+            });
+            return h;
+          },
+          quiz: function () { return pickN(TONE_WORDS, 4).map(function (w) { return qToneHear(w); }); }
+        },
+        {
+          n: 3, title: "高子音（息のグループ）", desc: "息を強く出す音のグループ。声調記号がないと「上声（あがる）」になるのが特徴です。",
+          learn: function () {
+            return '<p class="small" style="margin:0 0 4px;">「コー・カイ（卵）」のように、息をプッと出す音が集まっています。</p>' + consCellsHTML(consPick(CONS_HIGH.map(function (c) { return c.ch; })));
+          },
+          quiz: function () {
+            var cs = pickN(consPick(CONS_HIGH.map(function (c) { return c.ch; })), 4);
+            return cs.map(function (c, i) { return i % 2 === 0 ? qConsGroup(c) : qConsName(c); });
+          }
+        },
+        {
+          n: 4, title: "低子音の頻出10字", desc: "低子音は文字数が多いので、会話によく出る10字だけに絞ります。残りは下の参考資料で少しずつ。",
+          learn: function () {
+            return '<p class="small" style="margin:0 0 4px;">この10字（ค ง ช ท น พ ม ย ร ล）が読めれば、日常の単語の多くが読めます。</p>' + consCellsHTML(consPick(FREQ_LOW10));
+          },
+          quiz: function () {
+            var cs = pickN(consPick(FREQ_LOW10), 4);
+            return cs.map(function (c, i) { return i % 2 === 0 ? qConsName(c) : qConsGroup(c); });
+          }
+        },
+        {
+          n: 5, title: "母音の要点（短い・長い）", desc: "タイ語は母音の長さで意味が変わります。声調とは別に「長さ」を聞き分けるのが要点です。",
+          learn: function () {
+            var h = '<p class="small" style="margin:0;">短い・長いのペアを聞き比べてください（子音は全部 ゴー です）。</p>';
+            VOWEL_PAIRS.forEach(function (p, i) {
+              h += '<div class="vowel-row"><span class="thai">' + p[0] + '</span><span class="kana">' + p[1] + '</span>' +
+                '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 1)).slice(-2) + '">' + ICON_PLAY + '</button>' +
+                '<span class="thai">' + p[2] + '</span><span class="kana">' + p[3] + '</span>' +
+                '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 2)).slice(-2) + '">' + ICON_PLAY + '</button></div>';
+            });
+            return h;
+          },
+          quiz: function () { return pickN(VOWEL_PAIRS, 4).map(function (vp) { return qVowel(vp, Math.random() < 0.5); }); }
+        },
+        {
+          n: 6, title: "声調の決め方（3ステップ）", desc: "仕上げです。①文字のチームを見る → ②記号を見る → ③終わり方を見る、の順で声調が導けます。",
+          learn: function () {
+            return '<table class="tone-rule"><tr><th>チーム</th><th>記号なし</th><th>่（マイ・エーク）</th><th>้（マイ・トー）</th></tr>' +
+              '<tr><th>まんなか（中子音）</th><td>中声</td><td>低声</td><td>下声</td></tr>' +
+              '<tr><th>高い（高子音）</th><td>上声</td><td>低声</td><td>下声</td></tr>' +
+              '<tr><th>低い（低子音）</th><td>中声</td><td>下声</td><td>高声</td></tr></table>' +
+              '<p class="small" style="margin:8px 0 0;">・プッ・トッ・クッと止まる音節は別ルール：まんなか・高いチームは低声、低いチームは「短いと高声、長いと下声」です。<br>・例外もあります（ห が前について型が変わる単語や、低子音の ้ で下声になる単語など）。迷ったら単語ごとに覚えるのが確実で、そのための確認がこのクイズです。</p>';
+          },
+          quiz: function () { return pickN(STAGE6_WORDS, 5).map(function (it) { return qStage6(it); }); }
+        }
+      ];
+      function nextStageNum() {
+        for (var i = 0; i < STAGES.length; i++) { if (!stageStore.passed[STAGES[i].n]) return STAGES[i].n; }
+        return 0;
+      }
+      function stageHomeHTML() {
+        var passedN = STAGES.filter(function (s) { return stageStore.passed[s.n]; }).length;
+        var nx = nextStageNum();
+        var h = '<div class="card" style="border:2px solid #2f9e6e;padding:14px;">' +
+          '<p style="margin:0 0 2px;font-weight:bold;font-size:17px;">🔁 今日の復習クイズ</p>';
+        if (stageStore.weak.length > 0) {
+          h += '<p class="small" style="margin:0 0 8px;">苦手リストに <strong>' + stageStore.weak.length + ' 件</strong> あります。間違えたものは、ここで正解するまで何度も出ます。</p>' +
+            '<div class="row-btns"><button type="button" class="btn primary" data-review-start="1" style="font-size:16px;padding:12px 18px;">▶ 復習クイズをはじめる</button></div>';
+        } else {
+          h += '<p class="small" style="margin:0;">苦手リストは空です。ステージやフレーズのクイズで間違えると、ここに復習が出ます。</p>';
+        }
+        h += '<div id="reviewBox" style="margin-top:8px;"></div></div>';
+        h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステージごとに「小さく学ぶ → すぐ確認クイズ（全問正解で合格）」で進みます。合格は <strong>' + passedN + ' / 6</strong> ステージです。</p></div>';
+        STAGES.forEach(function (s) {
+          var passed = !!stageStore.passed[s.n];
+          var isNext = s.n === nx;
+          h += '<div class="stage-card' + (isNext ? " next" : "") + '" id="stageCard-' + s.n + '">' +
+            '<div class="stage-head"><span class="st-no">ステージ' + s.n + '</span><span class="st-title">' + s.title + '</span>' +
+            (passed ? '<span class="stage-badge pass">合格 ✓</span>' : (isNext ? '<span class="stage-badge next">つぎはこれ</span>' : '<span class="stage-badge">未合格</span>')) + '</div>' +
+            '<p class="small" style="margin:6px 0 8px;">' + s.desc + '</p>' +
+            '<div>' + s.learn() + '</div>' +
+            '<div class="row-btns" style="margin-top:10px;"><button type="button" class="btn primary" data-stage-start="' + s.n + '">🎯 確認クイズ（' + (s.n === 6 ? 5 : 4) + '問・全問正解で合格）</button></div>' +
+            '<div id="stageQuiz-' + s.n + '" style="margin-top:8px;"></div></div>';
+        });
+        return h;
+      }
+      function startStageQuiz(n) {
+        var s = null;
+        STAGES.forEach(function (x) { if (x.n === n) s = x; });
+        if (!s) return;
+        var box = document.getElementById("stageQuiz-" + n);
+        runQuiz(box, s.quiz(), function (ok, total) {
+          if (ok === total) {
+            stageStore.passed[n] = 1; saveStages();
+            renderScript();
+            var nb = document.getElementById("stageQuiz-" + n);
+            if (nb) nb.innerHTML = '<p class="tq-fb" style="color:var(--good);">🎉 全問正解！ ステージ' + n + '「' + s.title + '」合格です</p>';
+            toast("ステージ" + n + " 合格！");
+          } else {
+            box.innerHTML = '<p class="tq-fb" style="color:var(--bad);">' + ok + " / " + total + ' 正解。あと少しです。間違えたものは苦手リストに入りました。もう一度どうぞ。</p>' +
+              '<div class="row-btns"><button type="button" class="btn primary" data-stage-start="' + n + '">もう一度クイズ</button></div>';
+            wireStageButtons(box);
+          }
+        });
+      }
+      function reviewQuestions() {
+        var items = pickN(stageStore.weak, Math.min(5, stageStore.weak.length));
+        return items.map(function (it) {
+          if (it.kind === "tone") {
+            var w = { w: it.w, kn: it.kn, ja: it.ja, t: it.t };
+            return Math.random() < 0.5 ? qToneSee(w) : qToneHear(w);
+          }
+          if (it.kind === "pair") return qPair(it.pi);
+          if (it.kind === "cons") {
+            var c = consPick([it.ch])[0];
+            if (c) return Math.random() < 0.5 ? qConsName(c) : qConsGroup(c);
+          }
+          if (it.kind === "vowel") return qVowel([it.s, it.skn, it.l, it.lkn], it.playLong);
+          return qToneSee({ w: it.w || "", kn: it.kn || "", ja: it.ja || "", t: it.t || "mid" });
+        });
+      }
+      function startReviewQuiz() {
+        var box = document.getElementById("reviewBox");
+        if (!box) return;
+        if (stageStore.weak.length === 0) { box.innerHTML = '<p class="small">苦手リストは空です。</p>'; return; }
+        runQuiz(box, reviewQuestions(), function (ok, total) {
+          renderScript();
+          var nb = document.getElementById("reviewBox");
+          if (nb) nb.innerHTML = '<p class="tq-fb" style="color:var(--good);">復習クイズ： ' + ok + " / " + total + ' 正解。苦手リストの残りは ' + stageStore.weak.length + ' 件です。</p>';
+        });
+      }
+      function wireStageButtons(root) {
+        (root || document).querySelectorAll("[data-stage-start]").forEach(function (b) {
+          b.addEventListener("click", function () { startStageQuiz(+b.getAttribute("data-stage-start")); });
+        });
+      }
+      function wireStageHome() {
+        wireStageButtons(document.getElementById("view-script"));
+        var rb = document.querySelector("[data-review-start]");
+        if (rb) rb.addEventListener("click", function () { startReviewQuiz(); });
+      }
+
+      /* ---- フレーズの声調チェック（まずこれだけ30の各行） ---- */
+      document.addEventListener("click", function (ev) {
+        var b = ev.target.closest("[data-tonecheck]");
+        if (!b) return;
+        var info = PHRASE_TONE[b.getAttribute("data-tonecheck")];
+        if (!info) return;
+        var row = b.closest(".phrase-row");
+        var box = row ? row.querySelector(".tc-box") : null;
+        if (!box) return;
+        var q = qToneSee(info);
+        q.prompt = '<p class="small" style="text-align:center;margin:0;">このフレーズのキーワードの声調はどれ？</p><div class="tq-big thai">' + info.w + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + info.ja + '</p>';
+        runQuiz(box, [q], function (ok) {
+          if (ok === 1) toast("声調チェック正解！");
+        });
+      });
+
+      /* ---- ホーム（コース画面）の「今日やること」 ---- */
+      function dashHTML() {
+        var passedN = STAGES.filter(function (s) { return stageStore.passed[s.n]; }).length;
+        var nx = nextStageNum();
+        var t = todayStr(), dueN = 0;
+        PHRASES.forEach(function (p) { var r = store.prog[p.id]; if (r && r.due <= t) dueN++; });
+        var h = '<div class="card" style="border:2px solid #2f9e6e;padding:14px;">' +
+          '<p style="margin:0 0 4px;font-weight:bold;font-size:17px;">📍 今日やること</p>';
+        h += '<div class="dash-row"><div class="dt">' + (stageStore.weak.length > 0 ? '🔁 <strong>復習クイズ</strong>（苦手リスト ' + stageStore.weak.length + ' 件）' : '🔁 復習クイズ（苦手リストは空です）') + '</div>' +
+          (stageStore.weak.length > 0 ? '<button type="button" class="btn primary" data-dash="review">▶ はじめる</button>' : '') + '</div>';
+        h += '<div class="dash-row"><div class="dt">' + (nx > 0 ? '📖 <strong>つぎのステージ</strong>：ステージ' + nx + '「' + STAGES[nx - 1].title + '」' : '📖 もじ入門の6ステージは全部合格です 🎉') + '</div>' +
+          '<button type="button" class="btn primary" data-dash="stage">▶ はじめる</button></div>';
+        h += '<div class="dash-row"><div class="dt">🗣 <strong>今日のフレーズ</strong>' + (dueN > 0 ? '（復習が ' + dueN + ' 件来ています）' : '（今日の練習）') + '</div>' +
+          '<button type="button" class="btn primary" data-dash="today">▶ はじめる</button></div>';
+        h += '<div class="dash-row"><div class="dt">🎉 <strong>直近の交流イベント</strong>：11月14日（土）18:00 日泰交流会（日本橋 PADA328）</div>' +
+          '<button type="button" class="btn" data-dash="meet">詳細</button></div>';
+        h += '<div class="dash-row"><div class="dt">💻 <strong>オンラインでタイ人と話す</strong>（カフェトーク等の実践先）</div>' +
+          '<button type="button" class="btn" data-dash="meet">見る</button></div>';
+        h += '<div class="dash-row"><div class="dt">📊 進捗：ステージ合格 <strong>' + passedN + ' / 6</strong> ・ 言えるフレーズ <strong>' + learnedCount() + ' / 64</strong></div></div>';
+        h += '</div>';
+        return h;
+      }
+      function wireDash(el) {
+        if (!el) return;
+        el.querySelectorAll("[data-dash]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var k = b.getAttribute("data-dash");
+            if (k === "today") { switchView("today"); return; }
+            if (k === "meet") { switchView("meet"); return; }
+            if (k === "review") {
+              switchView("script");
+              setTimeout(function () { startReviewQuiz(); var rb2 = document.getElementById("reviewBox"); if (rb2) rb2.scrollIntoView({ behavior: "smooth", block: "center" }); }, 120);
+              return;
+            }
+            if (k === "stage") {
+              switchView("script");
+              setTimeout(function () {
+                var nx = nextStageNum();
+                var tEl = document.getElementById("stageCard-" + (nx > 0 ? nx : 1));
+                if (tEl) tEl.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 120);
+            }
+          });
+        });
+      }
+
+      /* ============ タイ人と話す・交流する ============ */
+      function renderMeet() {
+        var el = document.getElementById("view-meet");
+        var h = '<div class="sec-head"><h2>タイ人と話す・交流する</h2></div>' +
+          '<div class="card"><p style="margin:0;">アプリで覚えたら、実際にタイ人と話すのが一番の近道です。大阪・関西の対面イベントと、オンラインでタイ人と話せるサービスをまとめました。</p></div>';
+        h += '<h3 style="margin:16px 4px 8px;">対面イベント（大阪・関西）</h3>';
+        h += '<div class="card meet-item"><h3>日泰交流会（Meetup「国際交流（日泰）コミュニティ」）</h3>' +
+          '<p class="meta">📅 2026年11月14日（土）18:00〜<br>📍 PADA328 ~journey cafe~（大阪市浪速区日本橋4-17-15／なんば駅から徒歩約10分）<br>タイ料理やお菓子を持ち寄って交流する会です。タイが好きな人やタイ人の参加者と話せます。<br>💰 参加費1,500円 ＋ カフェで1ドリンク注文 ＋ シェアできる食べ物・お菓子を1品持ち寄り<br>⚠️ 当日キャンセル・無断欠席は厳禁です（主催者の決まり）。18時以降は会場のトイレが使えないので、事前に済ませてからどうぞ。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://www.meetup.com/osaka-community-cooperation-collaboration-meetup-group/" target="_blank" rel="noopener">Meetupのグループページを開く</a></div>';
+        h += '<div class="card meet-item"><h3>日タイ交流会 JTC（大阪）</h3>' +
+          '<p class="meta">2010年から続く日タイの言語交換の会です（バンコクで80回以上開催・累計5,000人以上が参加）。大阪でも定期的に開かれていて、第10回は2026年6月13日に開催されました。<br>毎回20〜25人ほどが参加。タイ語が話せなくても参加でき、遅刻・早退も自由です。申込フォームから予約が必要です。<br>📅 次回の大阪の日程は、公式サイトで確認してください。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://www.jtcbkk.com/nittaikouryuukai-osaka/" target="_blank" rel="noopener">JTC大阪のページを開く</a></div>';
+        h += '<div class="card meet-item"><h3>タイ・フェスティバル大阪・関西</h3>' +
+          '<p class="meta">タイ総領事館主催の大きなタイのお祭りです。例年5月ごろに長居公園で開かれます（次回は2027年5月ごろの見込み・要確認）。タイ料理や文化を楽しみながら、タイ語の音にも触れられます。</p></div>';
+        h += '<h3 style="margin:16px 4px 8px;">対面のマンツーマン（大阪）</h3>';
+        h += '<div class="card meet-item"><h3>ハロー先生ドットコム（タイ語の個人レッスン）</h3>' +
+          '<p class="meta">大阪府内のカフェや自宅で、タイ語をマンツーマンで教える先生を探せるサイトです。<br>💰 料金の目安：レッスン料は先生ごとに1時間1,500〜5,000円ほど（多くは2,000〜3,500円）。別途、連絡先入手のためのシステム利用料3,630円（税込・5人まで）がかかります。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://hello-sensei.com/%E8%AC%9B%E5%B8%AB%E7%B4%B9%E4%BB%8B/%E5%A4%A7%E9%98%AA%E5%BA%9C/%E3%82%BF%E3%82%A4%E8%AA%9E" target="_blank" rel="noopener">大阪のタイ語の先生一覧を開く</a></div>';
+        h += '<h3 style="margin:16px 4px 8px;">オンラインでタイ人と話す・学ぶ</h3>';
+        h += '<div class="card meet-item"><h3>カフェトーク</h3>' +
+          '<p class="meta">タイ人ネイティブ講師のオンラインレッスン。タイ人とのフリートーク（25分）は800〜1,800円（ポイント）ほどで、3回パックもあります。入会金・月会費はなく、受ける分だけの都度払いです。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://cafetalk.com/" target="_blank" rel="noopener">カフェトークを開く</a></div>';
+        h += '<div class="card meet-item"><h3>Preply</h3>' +
+          '<p class="meta">世界中のタイ語講師から選べるマンツーマンレッスン。料金は50分あたり3〜40ドル超（平均は20ドル前後）で、回数を決めて申し込むサブスク型です。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://preply.com/ja/online/thai-tutors" target="_blank" rel="noopener">Preplyのタイ語講師を開く</a></div>';
+        h += '<div class="card meet-item"><h3>AmazingTalker</h3>' +
+          '<p class="meta">講師を選んでタイ語レッスンを受けるサービス。大阪在住の講師も探せます。体験レッスンがあり、料金は講師ごとに設定されています。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://jp.amazingtalker.com/tutors/thai?city=osaka" target="_blank" rel="noopener">AmazingTalker（大阪のタイ語講師）を開く</a></div>';
+        h += '<div class="card meet-item"><h3>HelloTalk</h3>' +
+          '<p class="meta">言語交換アプリ。日本語を学びたいタイ語ネイティブと、チャットや音声メッセージを無料で交換できます（基本無料、有料のVIP機能は任意）。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://www.hellotalk.com/ja/learn/thai" target="_blank" rel="noopener">HelloTalk（タイ語）を開く</a></div>';
+        h += '<div class="card meet-item"><h3>Tandem</h3>' +
+          '<p class="meta">言語交換アプリ。タイ人のパートナーとお互いの言語を教え合います（基本無料）。参加には簡単な審査があります。</p>' +
+          '<a class="btn slow meet-link" style="text-decoration:none;" href="https://tandem.net/ja" target="_blank" rel="noopener">Tandemを開く</a></div>';
+        h += '<div class="card"><p class="small" style="margin:0;">※ 日程・料金は2026年11月時点の情報で、変わることがあります。申し込む前に、リンク先で最新の内容を確認してください。</p></div>';
+        el.innerHTML = h;
+      }
+
       /* ============ 画面切り替え ============ */
       function switchView(name) {
         stopAudio();
@@ -2934,6 +3485,7 @@
         if (name === "course") renderCourse();
         if (name === "visual") renderVisual();
         if (name === "culture") renderCulture();
+        if (name === "meet") renderMeet();
         window.scrollTo({ top: 0 });
       }
       document.querySelectorAll("nav.tabs button").forEach(function (b) {
