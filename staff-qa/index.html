@@ -22,7 +22,8 @@
   .optional-badge { display: inline-block; font-size: 12px; color: #fff; background: #e08a00; border-radius: 10px; padding: 1px 10px; margin-bottom: 8px; }
   label.field-label { display: block; font-size: 14px; font-weight: bold; margin: 14px 0 4px; }
   label.field-label .req { color: #c0392b; font-size: 12px; margin-left: 4px; }
-  input[type="text"], select, textarea { width: 100%; font-size: 16px; padding: 10px; border: 1px solid #c8d2da; border-radius: 8px; background: #fff; }
+  input[type="text"], input[type="tel"], input[type="email"], select, textarea { width: 100%; font-size: 16px; padding: 10px; border: 1px solid #c8d2da; border-radius: 8px; background: #fff; }
+  .field-hint { font-size: 12px; color: #666; margin: 2px 0 0; }
   textarea { min-height: 130px; resize: vertical; }
   textarea.small { min-height: 70px; }
   .nav { display: flex; gap: 10px; margin-top: 20px; }
@@ -69,15 +70,15 @@
     <input type="text" id="f-name" autocomplete="name" placeholder="例：山田 太郎">
     <label class="field-label" for="f-shop">店舗名・屋号</label>
     <input type="text" id="f-shop" placeholder="例：○○エアコン清掃">
-    <label class="field-label" for="f-area">担当エリア</label>
-    <input type="text" id="f-area" placeholder="例：大阪府北部（豊中市・吹田市など）">
-    <label class="field-label" for="f-media">対象媒体</label>
-    <select id="f-media">
-      <option value="おうちにプロ">おうちにプロ</option>
-      <option value="ユアマイスター">ユアマイスター</option>
-      <option value="ミツモア">ミツモア</option>
-      <option value="その他">その他</option>
-    </select>
+    <label class="field-label" for="f-address">住所<span class="req">必須</span></label>
+    <input type="text" id="f-address" autocomplete="street-address" placeholder="例：大阪府豊中市○○町1-2-3">
+    <p class="field-hint">媒体への登録に使う住所（店舗・事務所の所在地）</p>
+    <label class="field-label" for="f-phone">電話番号<span class="req">必須</span></label>
+    <input type="tel" id="f-phone" autocomplete="tel" placeholder="例：090-1234-5678">
+    <p class="field-hint">媒体に登録・掲載する電話番号</p>
+    <label class="field-label" for="f-email">メールアドレス<span class="req">必須</span></label>
+    <input type="email" id="f-email" autocomplete="email" placeholder="例：example@gmail.com">
+    <p class="field-hint">媒体登録用のメールアドレス</p>
     <div class="nav">
       <button class="btn-primary" id="btn-start">質問をはじめる</button>
     </div>
@@ -236,7 +237,7 @@ SECTIONS.forEach(function (sec) {
   });
 });
 
-let state = { basic: { name: '', shop: '', area: '', media: 'おうちにプロ' }, answers: {}, note: '', step: 0 };
+let state = { basic: { name: '', shop: '', address: '', phone: '', email: '' }, answers: {}, note: '', step: 0 };
 let current = 0; // 0=基本情報, 1..40=質問, 41=確認
 
 function save() {
@@ -248,7 +249,20 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
     const s = JSON.parse(raw);
-    if (s && s.basic && s.answers) { state = s; return true; }
+    if (s && s.basic && s.answers) {
+      state = s;
+      // 旧構造（area・media）で保存されたデータでもエラーにならないよう正規化する
+      state.basic = {
+        name: s.basic.name || '',
+        shop: s.basic.shop || '',
+        address: s.basic.address || '',
+        phone: s.basic.phone || '',
+        email: s.basic.email || ''
+      };
+      state.answers = s.answers || {};
+      state.note = s.note || '';
+      return true;
+    }
   } catch (e) {}
   return false;
 }
@@ -264,8 +278,9 @@ function show(id) {
 function renderBasic() {
   document.getElementById('f-name').value = state.basic.name || '';
   document.getElementById('f-shop').value = state.basic.shop || '';
-  document.getElementById('f-area').value = state.basic.area || '';
-  document.getElementById('f-media').value = state.basic.media || 'おうちにプロ';
+  document.getElementById('f-address').value = state.basic.address || '';
+  document.getElementById('f-phone').value = state.basic.phone || '';
+  document.getElementById('f-email').value = state.basic.email || '';
   show('screen-basic');
 }
 function renderQuestion() {
@@ -291,7 +306,7 @@ function renderReview() {
   const b = state.basic;
   let html = '';
   html += '<div class="review-item" data-goto="0"><p class="review-q">基本情報</p><p class="review-a">'
-    + esc(b.name) + '／' + esc(b.shop || '（店舗名なし）') + '／' + esc(b.area || '（エリア未記入）') + '／' + esc(b.media) + '</p></div>';
+    + esc(b.name) + '／' + esc(b.shop || '（店舗名なし）') + '<br>住所：' + esc(b.address || '（未入力）') + '<br>電話番号：' + esc(b.phone || '（未入力）') + '<br>メールアドレス：' + esc(b.email || '（未入力）') + '</p></div>';
   QUESTIONS.forEach(function (item) {
     const a = state.answers['Q' + item.n];
     html += '<div class="review-item" data-goto="' + item.n + '"><p class="review-q">Q' + item.n + '（' + esc(item.section) + '）' + esc(item.q) + '</p>'
@@ -319,24 +334,29 @@ function goTo(step) {
 function captureBasic() {
   state.basic.name = document.getElementById('f-name').value.trim();
   state.basic.shop = document.getElementById('f-shop').value.trim();
-  state.basic.area = document.getElementById('f-area').value.trim();
-  state.basic.media = document.getElementById('f-media').value;
+  state.basic.address = document.getElementById('f-address').value.trim();
+  state.basic.phone = document.getElementById('f-phone').value.trim();
+  state.basic.email = document.getElementById('f-email').value.trim();
 }
 
 // イベント
-['f-name', 'f-shop', 'f-area', 'f-media'].forEach(function (id) {
+['f-name', 'f-shop', 'f-address', 'f-phone', 'f-email'].forEach(function (id) {
   document.getElementById(id).addEventListener('input', function () { captureBasic(); save(); });
   document.getElementById(id).addEventListener('change', function () { captureBasic(); save(); });
 });
 document.getElementById('btn-start').addEventListener('click', function () {
   captureBasic();
   if (!state.basic.name) { alert('担当者名を入力してください'); document.getElementById('f-name').focus(); return; }
+  if (!state.basic.address) { alert('住所を入力してください'); document.getElementById('f-address').focus(); return; }
+  if (!state.basic.phone) { alert('電話番号を入力してください'); document.getElementById('f-phone').focus(); return; }
+  if (!state.basic.email) { alert('メールアドレスを入力してください'); document.getElementById('f-email').focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.basic.email)) { alert('メールアドレスの形式を確認してください'); document.getElementById('f-email').focus(); return; }
   goTo(1);
 });
 document.getElementById('btn-reset').addEventListener('click', function () {
   if (!confirm('入力内容をすべて消して、最初からやり直しますか？')) return;
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-  state = { basic: { name: '', shop: '', area: '', media: 'おうちにプロ' }, answers: {}, note: '', step: 0 };
+  state = { basic: { name: '', shop: '', address: '', phone: '', email: '' }, answers: {}, note: '', step: 0 };
   selectedFiles.face = []; selectedFiles.work = []; selectedFiles.other = [];
   renderThumbs();
   current = 0;
@@ -458,7 +478,7 @@ document.getElementById('btn-send').addEventListener('click', function () {
     });
   });
   Promise.all(filePromises).then(function (files) {
-    const payload = { type: 'answers', name: state.basic.name, shop: state.basic.shop, area: state.basic.area, media: state.basic.media, answers: answers, note: state.note || '', files: files };
+    const payload = { type: 'answers', name: state.basic.name, shop: state.basic.shop, address: state.basic.address, phone: state.basic.phone, email: state.basic.email, answers: answers, note: state.note || '', files: files };
     return fetch(ENDPOINT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
   }).then(function () {
     try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
