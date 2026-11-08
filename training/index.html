@@ -64,6 +64,16 @@ ul.upcoming.tag { display: inline-block; font-size: 11px; padding: 1px 7px; bord
 .tag.pending { background: #ef6c00; color: #fff;}
 .tag.blocked { background: #888; color: #fff;}
 .sub { color: #666; font-size: 12px;}
+.pinin { width: 160px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px;}
+.authbtn { padding: 10px 18px; font-size: 15px; border: 1px solid #2f5d3a; background: #2f5d3a; color: #fff; border-radius: 6px; cursor: pointer; margin-left: 8px;}
+.authbtn.ghost { background: #fff; color: #2f5d3a; margin-left: 0;}
+.slotrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid #e3e5e8; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;}
+.slotrow .sname { font-size: 15px; font-weight: bold;}
+.slotrow .sstate { font-size: 13px; color: #555; margin-top: 2px;}
+.opbtn { padding: 9px 14px; font-size: 14px; border-radius: 6px; cursor: pointer; border: 1px solid #888; background: #fff; color: #333; white-space: nowrap;}
+.opbtn.close { background: #b03a2e; border-color: #b03a2e; color: #fff;}
+.opbtn:disabled { opacity:.5; cursor: not-allowed;}
+.opstatus { font-size: 13px; margin-top: 6px; min-height: 1.4em; color: #2f5d3a;}
 footer { text-align: center; color: #888; font-size: 12px; padding: 18px 8px 28px;}
 @media (max-width: 560px) { table.cal td { height: 64px; font-size: 10px;}.slot.lb { width: 1.6em;}}
 </style>
@@ -138,17 +148,35 @@ footer { text-align: center; color: #888; font-size: 12px; padding: 18px 8px 28p
 </div>
 </section>
 
-<!-- 貸す側（管理用・閲覧専用） -->
+<!-- 貸す側（管理用） -->
 <section id="viewAdmin" style="display:none">
+<div class="card" id="authCard">
+<h2>管理者認証</h2>
+<div id="authLocked">
+<p class="sub">オープン／クローズの操作には暗証番号が必要です。</p>
+<input type="password" inputmode="numeric" class="pinin" id="pinInput" placeholder="暗証番号">
+<button type="button" class="authbtn" id="pinBtn">認証する</button>
+<p class="sub" id="pinMsg" style="color:#b03a2e;"></p>
+</div>
+<div id="authOpen" style="display:none">
+<p class="sub">管理モード：オープン／クローズ操作ができます。カレンダーの日をタップすると、その日の設定パネルが開きます。</p>
+<button type="button" class="authbtn ghost" id="lockBtn">ロックする</button>
+</div>
+</div>
 <div class="card">
-<h2>全体スケジュール（管理用・閲覧専用）</h2>
-<p class="sub">予約台帳に登録された確定・申込中の予約をすべて表示しています。登録内容の変更や承認は、予約台帳（スプレッドシート）側で行ってください。</p>
+<h2>全体スケジュール（管理用）</h2>
+<p class="sub">予約台帳に登録された確定・申込中の予約をすべて表示しています。承認や予約内容の変更は、予約台帳（スプレッドシート）側で行ってください。</p>
 <div class="cal-head">
 <button id="prevM2" type="button">◀ 前月</button>
 <div class="ym" id="ym2"></div>
 <button id="nextM2" type="button">翌月 ▶</button>
 </div>
 <table class="cal" id="cal2"></table>
+</div>
+<div class="card" id="dayPanel" style="display:none">
+<h2 id="dayPanelTitle">日の設定</h2>
+<div id="dayPanelBody"></div>
+<div class="opstatus" id="opStatus"></div>
 </div>
 <div class="card">
 <h2>直近の予約リスト</h2>
@@ -162,6 +190,10 @@ footer { text-align: center; color: #888; font-size: 12px; padding: 18px 8px 28p
 var SHEET_ID = "1krxGp4ec02Gh2SxD6Q_BIpj-zTnPQBKqYxiP6QGZlK8";
 var GVIZ_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json&sheet=" + encodeURIComponent("予約");
 var FORM_ENDPOINT = "https://formsubmit.co/ajax/tasukaru.taoka@gmail.com";
+var ADMIN_ENDPOINT = "https://script.google.com/macros/s/AKfycbwjHUo3Cw3WkeFAafarev_mqapoDA3J1MfisiR8aQdNL5A3VY97Pv-2uZMKCc1zS5t4Bg/exec";
+var ADMIN_PIN = "739204";
+var adminUnlocked = false;
+var adminSelDate = null;
 var SLOTS = ["終日", "午前", "午後"];
 var rows = []; // 台帳データ
 var loadOK = false;
@@ -185,7 +217,7 @@ return "";
 }
 
 function loadData(){
-fetch(GVIZ_URL).then(function(r){ return r.text();}).then(function(t){
+fetch(GVIZ_URL, { cache: "no-store"}).then(function(r){ return r.text();}).then(function(t){
 var start = t.indexOf("{"); var end = t.lastIndexOf("}");
 var json = JSON.parse(t.substring(start, end+1));
 var out = [];
@@ -277,7 +309,8 @@ if(!past) tdCls += " clickable";
 html += "<td class='" + tdCls + "' data-date='" + ds + "'>" + inner + "</td>";
 day++; continue;
 }
-html += "<td class='" + tdCls + "'>" + inner + "</td>";
+var aCls = tdCls + (adminSelDate === ds? " sel": "") + (adminUnlocked? " clickable": "");
+html += "<td class='" + aCls + "' data-adate='" + ds + "'>" + inner + "</td>";
 day++;
 }
 html += "</tr>";
@@ -290,6 +323,14 @@ tds[k].addEventListener("click", function(){
 var ds2 = this.getAttribute("data-date");
 if(ds2 < todayStr()) return;
 selectDate(ds2, true);
+});
+}
+} else {
+var atds = document.querySelectorAll("#cal2 td[data-adate]");
+for(var q=0;q<atds.length;q++){
+atds[q].addEventListener("click", function(){
+if(!adminUnlocked) return;
+openDayPanel(this.getAttribute("data-adate"));
 });
 }
 }
@@ -350,6 +391,7 @@ buildCal(cur, "cal1", "ym1", false);
 buildCal(curAdmin, "cal2", "ym2", true);
 renderUpcoming();
 updateSlotAvailability();
+if(adminSelDate) renderDayPanel();
 }
 
 // タブ切替
@@ -425,12 +467,164 @@ btn.disabled = false; btn.textContent = "この内容で申し込む";
 });
 });
 
+// 管理者認証
+function refreshAuthUI(){
+document.getElementById("authLocked").style.display = adminUnlocked? "none": "";
+document.getElementById("authOpen").style.display = adminUnlocked? "": "none";
+}
+document.getElementById("pinBtn").addEventListener("click", function(){
+var v = document.getElementById("pinInput").value.trim();
+if(v === ADMIN_PIN){
+adminUnlocked = true;
+try{ localStorage.setItem("kenshu_admin_pin", v);}catch(e){}
+document.getElementById("pinMsg").textContent = "";
+refreshAuthUI();
+buildCal(curAdmin, "cal2", "ym2", true);
+} else {
+document.getElementById("pinMsg").textContent = "暗証番号が違います。";
+}
+});
+document.getElementById("lockBtn").addEventListener("click", function(){
+adminUnlocked = false;
+try{ localStorage.removeItem("kenshu_admin_pin");}catch(e){}
+adminSelDate = null;
+document.getElementById("dayPanel").style.display = "none";
+refreshAuthUI();
+buildCal(curAdmin, "cal2", "ym2", true);
+});
+
+// 枠の詳細状態
+function blockedExact(ds, slot){
+for(var i=0;i<rows.length;i++){
+var r = rows[i];
+if(r.date=== ds && r.slot=== slot && r.status=== "貸出不可") return true;
+}
+return false;
+}
+function slotAffects(r, slot){
+return (r.slot === slot) || (r.slot === "終日") || (slot === "終日" && (r.slot === "午前" || r.slot === "午後"));
+}
+function slotHasBooking(ds, slot){
+for(var i=0;i<rows.length;i++){
+var r = rows[i];
+if(r.date!== ds) continue;
+if(r.status!== "申込中" && r.status!== "確定") continue;
+if(slotAffects(r, slot)) return true;
+}
+return false;
+}
+function slotBookingLabel(ds, slot){
+var hasConf = false, hasPend = false;
+for(var i=0;i<rows.length;i++){
+var r = rows[i];
+if(r.date!== ds) continue;
+if(r.status!== "申込中" && r.status!== "確定") continue;
+if(!slotAffects(r, slot)) continue;
+if(r.status === "確定") hasConf = true; else hasPend = true;
+}
+return hasConf? "予約確定あり": hasPend? "申込中あり": "";
+}
+
+function openDayPanel(ds){
+adminSelDate = ds;
+buildCal(curAdmin, "cal2", "ym2", true);
+renderDayPanel();
+document.getElementById("dayPanel").scrollIntoView({ behavior: "smooth"});
+}
+
+function renderDayPanel(){
+var panel = document.getElementById("dayPanel");
+if(!adminSelDate || !adminUnlocked){ panel.style.display = "none"; return;}
+panel.style.display = "";
+var ds = adminSelDate;
+var d = new Date(ds + "T00:00:00");
+var wd = "日月火水木金土".charAt(d.getDay());
+document.getElementById("dayPanelTitle").textContent = ds + "（" + wd + "）の設定";
+var timeLabel = { "終日": "終日（日貸し）", "午前": "午前 9:00〜12:00", "午後": "午後 13:00〜17:00"};
+var html = "";
+for(var i=0;i<SLOTS.length;i++){
+var slot = SLOTS[i];
+var exact = blockedExact(ds, slot);
+var eff = slotState(ds, slot) === "block";
+var bk = slotBookingLabel(ds, slot);
+var state, btn = "";
+if(exact){
+state = "クローズ（貸出不可）" + (bk? "／" + bk: "");
+btn = "<button type='button' class='opbtn' data-op='open' data-slot='" + slot + "'>オープンに戻す</button>";
+} else if(eff){
+if(slot === "終日"){
+state = "一部クローズ（午前・午後の設定による）" + (bk? "／" + bk: "");
+btn = "<button type='button' class='opbtn close' data-op='close' data-slot='" + slot + "'>終日クローズする</button>";
+} else {
+state = "クローズ（終日の設定による）" + (bk? "／" + bk: "");
+}
+} else {
+state = "オープン" + (bk? "／" + bk: "");
+btn = "<button type='button' class='opbtn close' data-op='close' data-slot='" + slot + "'>クローズする</button>";
+}
+html += "<div class='slotrow'><div><div class='sname'>" + timeLabel[slot] + "</div><div class='sstate'>" + state + "</div></div><div>" + btn + "</div></div>";
+}
+document.getElementById("dayPanelBody").innerHTML = html;
+var btns = document.querySelectorAll("#dayPanelBody .opbtn");
+for(var j=0;j<btns.length;j++){
+btns[j].addEventListener("click", function(){
+adminOp(this.getAttribute("data-op"), adminSelDate, this.getAttribute("data-slot"));
+});
+}
+}
+
+function adminOp(action, ds, slot){
+if(action === "close" && slotHasBooking(ds, slot)){
+if(!window.confirm(ds + " の「" + slot + "」には申込中・確定の予約が入っています。それでもクローズ（貸出不可）にしますか？")) return;
+}
+var stEl = document.getElementById("opStatus");
+stEl.textContent = "処理中…";
+var btns = document.querySelectorAll("#dayPanelBody .opbtn");
+for(var j=0;j<btns.length;j++) btns[j].disabled = true;
+fetch(ADMIN_ENDPOINT, {
+method: "POST",
+mode: "no-cors",
+headers: { "Content-Type": "text/plain"},
+body: JSON.stringify({ key: ADMIN_PIN, action: action, date: ds, kubun: slot})
+}).then(function(){
+return reloadAndCheck(action, ds, slot, 0);
+}).catch(function(){
+stEl.textContent = "送信に失敗しました。通信環境を確認して、もう一度お試しください。";
+renderDayPanel();
+});
+}
+
+function reloadAndCheck(action, ds, slot, tries){
+return new Promise(function(resolve){
+setTimeout(function(){
+loadData();
+setTimeout(function(){
+var ok = (action === "close")? blockedExact(ds, slot): !blockedExact(ds, slot);
+var stEl = document.getElementById("opStatus");
+if(ok){
+stEl.textContent = "完了しました：" + ds + " の「" + slot + "」を" + (action === "close"? "クローズ（貸出不可）": "オープン") + "にしました。";
+renderDayPanel();
+resolve();
+} else if(tries < 2){
+reloadAndCheck(action, ds, slot, tries + 1).then(resolve);
+} else {
+stEl.textContent = "送信しましたが、反映の確認ができませんでした。少し時間をおいて画面を開き直してください。";
+renderDayPanel();
+resolve();
+}
+}, 1500);
+}, tries === 0? 1200: 2000);
+});
+}
+
 // 初期表示
 (function(){
 var t = new Date();
 selectedDate = ymd(t);
 document.getElementById("fDate").value = selectedDate;
 document.getElementById("fDate").min = todayStr();
+try{ if(localStorage.getItem("kenshu_admin_pin") === ADMIN_PIN) adminUnlocked = true;}catch(e){}
+refreshAuthUI();
 renderAll();
 loadData();
 })();
