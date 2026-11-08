@@ -45,6 +45,9 @@ width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radi
 .slotsel label { display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin: 0; cursor: pointer;}
 .slotsel label.dis { background: #f0f0f0; color: #999; cursor: not-allowed;}
 .slotsel input { width: 18px; height: 18px;}
+.headsel { display: flex; flex-wrap: wrap; gap: 8px;}
+.headsel .headchip { padding: 10px 16px; font-size: 15px; border: 1px solid #ccc; background: #fff; border-radius: 20px; cursor: pointer;}
+.headsel .headchip.sel { background: #2f5d3a; color: #fff; border-color: #2f5d3a; font-weight: bold;}
 .submitbtn { width: 100%; margin-top: 18px; padding: 14px; font-size: 16px; font-weight: bold; background: #2f5d3a; color: #fff; border: none; border-radius: 8px; cursor: pointer;}
 .submitbtn:disabled { background: #9db8a4;}
 .result { display: none; border-radius: 8px; padding: 12px; font-size: 14px; margin-top: 14px; line-height: 1.7;}
@@ -113,8 +116,14 @@ footer { text-align: center; color: #888; font-size: 12px; padding: 18px 8px 28p
 <input type="text" id="fContact" required placeholder="例：090-0000-0000 / example@mail.com">
 <label for="fPurpose">利用目的</label>
 <input type="text" id="fPurpose" placeholder="例：新人研修、会議 など">
-<label for="fHeads">人数</label>
-<input type="number" id="fHeads" min="1" max="999" placeholder="例：10">
+<label>人数（必須）</label>
+<div class="headsel" id="headSel">
+<button type="button" class="headchip" data-heads="〜5人">〜5人</button>
+<button type="button" class="headchip" data-heads="6〜10人">6〜10人</button>
+<button type="button" class="headchip" data-heads="11〜20人">11〜20人</button>
+<button type="button" class="headchip" data-heads="21〜30人">21〜30人</button>
+<button type="button" class="headchip" data-heads="31人以上">31人以上</button>
+</div>
 <label for="fNote">備考</label>
 <textarea id="fNote" rows="3" placeholder="ご希望・ご質問があればご記入ください"></textarea>
 <button class="submitbtn" id="submitBtn" type="submit">この内容で申し込む</button>
@@ -324,7 +333,7 @@ var wd = "日月火水木金土".charAt(d.getDay());
 var tagCls = r.status === "確定"? "confirmed": r.status === "申込中"? "pending": "blocked";
 html += "<li><b>" + r.date + "（" + wd + "） " + esc(r.slot) + "</b>" +
 "<span class='tag " + tagCls + "'>" + esc(r.status) + "</span><br>" +
-(r.status === "貸出不可"? "貸出不可": esc(r.name) + (r.purpose? " ／ " + esc(r.purpose): "") + (r.heads? " ／ " + esc(r.heads) + "名": "")) +
+(r.status === "貸出不可"? "貸出不可": esc(r.name) + (r.purpose? " ／ " + esc(r.purpose): "") + (r.heads? " ／ " + esc(r.heads) + (/^[0-9]+$/.test(r.heads)? "名": ""): "")) +
 (r.contact? "<br><span class='sub'>連絡先：" + esc(r.contact) + "</span>": "") +
 "</li>";
 }
@@ -354,6 +363,19 @@ document.getElementById("prevM2").addEventListener("click", function(){ curAdmin
 document.getElementById("nextM2").addEventListener("click", function(){ curAdmin.setMonth(curAdmin.getMonth()+1); buildCal(curAdmin,"cal2","ym2",true);});
 document.getElementById("fDate").addEventListener("change", function(){ selectedDate = this.value; updateSlotAvailability(); buildCal(cur,"cal1","ym1",false);});
 
+// 人数チップ選択
+var selectedHeads = "";
+(function(){
+var chips = document.querySelectorAll("#headSel .headchip");
+for(var i=0;i<chips.length;i++){
+chips[i].addEventListener("click", function(){
+for(var j=0;j<chips.length;j++) chips[j].classList.remove("sel");
+this.classList.add("sel");
+selectedHeads = this.getAttribute("data-heads");
+});
+}
+})();
+
 // 送信
 document.getElementById("bookForm").addEventListener("submit", function(ev){
 ev.preventDefault();
@@ -363,18 +385,19 @@ var result = document.getElementById("formResult");
 result.className = "result"; result.textContent = "";
 if(!ds){ result.classList.add("err"); result.textContent = "ご希望日を選んでください。"; return;}
 if(!slotEl){ result.classList.add("err"); result.textContent = "区分（終日・午前・午後）を選んでください。埋まっている枠は選べません。"; return;}
+if(!selectedHeads){ result.classList.add("err"); result.textContent = "人数を選んでください。"; return;}
 var slotLabel = slotEl.value === "終日"? "終日（日貸し）": slotEl.value === "午前"? "午前 9:00〜12:00": "午後 13:00〜17:00";
 var btn = document.getElementById("submitBtn");
 btn.disabled = true; btn.textContent = "送信中…";
 var payload = {
-_subject: "" + ds + " " + slotEl.value + " " + document.getElementById("fName").value,
+_subject: "【研修所予約申込】" + ds + " " + slotEl.value + " " + document.getElementById("fName").value,
 _template: "table",
 "ご希望日": ds,
 "区分": slotLabel,
 "申込者名": document.getElementById("fName").value,
 "連絡先": document.getElementById("fContact").value,
 "利用目的": document.getElementById("fPurpose").value,
-"人数": document.getElementById("fHeads").value,
+"人数": selectedHeads,
 "備考": document.getElementById("fNote").value
 };
 fetch(FORM_ENDPOINT, {
@@ -386,6 +409,9 @@ result.classList.add("ok");
 result.textContent = "申込を受け付けました。確定は承認のご連絡後となります。ご連絡までしばらくお待ちください。";
 btn.textContent = "送信しました";
 document.getElementById("bookForm").reset();
+selectedHeads = "";
+var chips2 = document.querySelectorAll("#headSel .headchip");
+for(var q=0;q<chips2.length;q++) chips2[q].classList.remove("sel");
 document.getElementById("fDate").value = ds;
 }).catch(function(){
 result.classList.add("err");
