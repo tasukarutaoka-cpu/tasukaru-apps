@@ -134,6 +134,13 @@
       <div class="attach-thumbs" id="thumbs-other"></div>
     </div>
 
+    <div class="attach-group">
+      <h3>4. 家族・ペットの写真（複数可）</h3>
+      <p class="desc">お子さんやペットなど、家族との写真です。ページや動画に載せて大丈夫な写真だけを送ってください。可能な範囲で多めにいただけると、その人らしさが出ます。</p>
+      <input type="file" id="file-family" accept="image/*" multiple>
+      <div class="attach-thumbs" id="thumbs-family"></div>
+    </div>
+
     <p class="attach-size" id="attach-size"></p>
     <p class="photo-later-note">写真が今お手元にない場合は、このまま送信して大丈夫です。後から写真だけ送れるフォームもあります：<a href="photos.html">写真だけ送るフォーム</a></p>
     <p class="photo-later-note">声の自己紹介は、回答をもとに台本をお渡ししてから、音声だけ送るフォームで送ってください（今ここで送る必要はありません）：<a href="voice.html">音声だけ送るフォーム</a></p>
@@ -353,7 +360,7 @@ document.getElementById('btn-reset').addEventListener('click', function () {
   if (!confirm('入力内容をすべて消して、最初からやり直しますか？')) return;
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
   state = { basic: { name: '', shop: '', address: '', phone: '', email: '' }, answers: {}, note: '', step: 0 };
-  selectedFiles.face = []; selectedFiles.work = []; selectedFiles.other = [];
+  selectedFiles.face = []; selectedFiles.work = []; selectedFiles.other = []; selectedFiles.family = [];
   renderThumbs();
   current = 0;
   document.getElementById('resume-note').classList.add('hidden');
@@ -381,10 +388,11 @@ document.getElementById('btn-back-last').addEventListener('click', function () {
 const FILE_GROUPS = [
   { key: 'face', inputId: 'file-face', thumbsId: 'thumbs-face', prefix: '顔写真_', multiple: false },
   { key: 'work', inputId: 'file-work', thumbsId: 'thumbs-work', prefix: '作業写真_', multiple: true },
-  { key: 'other', inputId: 'file-other', thumbsId: 'thumbs-other', prefix: '素材_', multiple: true }
+  { key: 'other', inputId: 'file-other', thumbsId: 'thumbs-other', prefix: '素材_', multiple: true },
+  { key: 'family', inputId: 'file-family', thumbsId: 'thumbs-family', prefix: '家族ペット_', multiple: true }
 ];
-const selectedFiles = { face: [], work: [], other: [] };
-const thumbUrls = { face: [], work: [], other: [] };
+const selectedFiles = { face: [], work: [], other: [], family: [] };
+const thumbUrls = { face: [], work: [], other: [], family: [] };
 
 function allSelectedFiles() {
   const out = [];
