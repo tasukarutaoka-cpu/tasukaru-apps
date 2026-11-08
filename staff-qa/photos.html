@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>写真だけ送るフォーム（店舗ページ用）</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; background: #f4f6f8; color: #222; line-height: 1.7; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+  header h1 { font-size: 20px; margin: 12px 0 4px; }
+  header p.lead { margin: 0 0 16px; color: #555; font-size: 14px; }
+  .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .section-title { font-size: 14px; font-weight: bold; color: #1f6fb2; margin: 0 0 4px; }
+  label.field-label { display: block; font-size: 14px; font-weight: bold; margin: 14px 0 4px; }
+  label.field-label .req { color: #c0392b; font-size: 12px; margin-left: 4px; }
+  input[type="text"], textarea { width: 100%; font-size: 16px; padding: 10px; border: 1px solid #c8d2da; border-radius: 8px; background: #fff; }
+  textarea { min-height: 70px; resize: vertical; }
+  .nav { display: flex; gap: 10px; margin-top: 20px; }
+  button { font-size: 16px; border: none; border-radius: 8px; padding: 12px 18px; cursor: pointer; }
+  .btn-primary { background: #1f6fb2; color: #fff; flex: 1; font-weight: bold; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .attach-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .thumb { position: relative; width: 76px; }
+  .thumb img { width: 76px; height: 76px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; display: block; }
+  .thumb .thumb-name { font-size: 10px; color: #666; word-break: break-all; line-height: 1.3; margin-top: 2px; }
+  .thumb button.thumb-remove { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #c0392b; color: #fff; font-size: 14px; line-height: 1; padding: 0; }
+  .attach-size { font-size: 13px; color: #555; margin-top: 6px; }
+  .error { color: #c0392b; font-size: 14px; margin-top: 10px; }
+  .done { text-align: center; padding: 24px 0; }
+  .done .big { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>写真だけ送るフォーム（店舗ページ用）</h1>
+    <p class="lead">ヒアリングの回答のときに写真が無かった方は、こちらから写真だけを送れます。顔写真・作業中やビフォーアフターの写真・店舗外観など、店舗ページに使えそうな写真を送ってください。</p>
+  </header>
+
+  <section id="screen-form" class="card">
+    <h2 class="section-title">写真の送信</h2>
+    <label class="field-label" for="f-name">担当者名<span class="req">必須</span></label>
+    <input type="text" id="f-name" autocomplete="name" placeholder="例：山田 太郎">
+    <label class="field-label" for="f-shop">店舗名・屋号（任意）</label>
+    <input type="text" id="f-shop" placeholder="例：○○エアコン清掃">
+    <label class="field-label" for="f-files">写真の添付（複数可）</label>
+    <input type="file" id="f-files" accept="image/*" multiple>
+    <div class="attach-thumbs" id="thumbs"></div>
+    <p class="attach-size" id="attach-size"></p>
+    <label class="field-label" for="f-note">ひとことメモ（任意）</label>
+    <textarea id="f-note" placeholder="例：1枚目が顔写真です／ビフォーアフターのペアです など"></textarea>
+    <div class="nav">
+      <button class="btn-primary" id="btn-send">写真を送信する</button>
+    </div>
+    <p class="error hidden" id="send-error">送信に失敗しました。通信環境を確認して、もう一度お試しください。</p>
+  </section>
+
+  <section id="screen-done" class="card hidden">
+    <div class="done">
+      <p class="big">写真を受け付けました。ありがとうございました</p>
+      <p style="color:#555;font-size:14px;">いただいた写真は、店舗ページの作成に使わせていただきます。</p>
+    </div>
+  </section>
+</div>
+
+<script>
+// 送信先エンドポイント（Apps Script ウェブアプリのURLをデプロイ後に差し替える）
+const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbzm1I25K1YN6tW7H5erFDtUDfXC3x5EFruVAeVMp5XUiJ0q2yhcw6h1Esdm9BcRHEdRPg/exec';
+
+let selected = [];
+let thumbUrls = [];
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function totalSize() {
+  return selected.reduce(function (sum, f) { return sum + f.size; }, 0);
+}
+function renderThumbs() {
+  thumbUrls.forEach(function (u) { URL.revokeObjectURL(u); });
+  thumbUrls = [];
+  const box = document.getElementById('thumbs');
+  box.innerHTML = '';
+  selected.forEach(function (f, idx) {
+    const url = URL.createObjectURL(f);
+    thumbUrls.push(url);
+    const div = document.createElement('div');
+    div.className = 'thumb';
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = f.name;
+    const name = document.createElement('div');
+    name.className = 'thumb-name';
+    name.textContent = f.name;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'thumb-remove';
+    btn.textContent = '×';
+    btn.setAttribute('aria-label', 'この写真を取り消す');
+    btn.addEventListener('click', function () {
+      selected.splice(idx, 1);
+      renderThumbs();
+    });
+    div.appendChild(img);
+    div.appendChild(btn);
+    div.appendChild(name);
+    box.appendChild(div);
+  });
+  const total = totalSize();
+  document.getElementById('attach-size').textContent = selected.length
+    ? '添付中：' + selected.length + '件（合計 ' + (total / 1048576).toFixed(1) + ' MB）' + (total > 20 * 1024 * 1024 ? ' ※合計が20MBを超えています。送信時に警告が出ます' : '')
+    : '';
+}
+document.getElementById('f-files').addEventListener('change', function (ev) {
+  const picked = Array.prototype.slice.call(ev.target.files || []);
+  selected = selected.concat(picked);
+  ev.target.value = '';
+  renderThumbs();
+});
+function fileToBase64(file) {
+  return new Promise(function (resolve, reject) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      const result = String(reader.result || '');
+      const comma = result.indexOf(',');
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+document.getElementById('btn-send').addEventListener('click', function () {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('担当者名を入力してください'); document.getElementById('f-name').focus(); return; }
+  if (!selected.length) { alert('写真を1枚以上選んでください'); return; }
+  const total = totalSize();
+  if (total > 20 * 1024 * 1024) {
+    if (!confirm('添付ファイルの合計が20MBを超えています（現在 ' + (total / 1048576).toFixed(1) + ' MB）。送信に時間がかかったり、失敗したりすることがあります。このまま送信しますか？')) return;
+  }
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  document.getElementById('send-error').classList.add('hidden');
+  const promises = selected.map(function (f) {
+    return fileToBase64(f).then(function (b64) {
+      return { filename: f.name, mimeType: f.type || 'application/octet-stream', dataBase64: b64 };
+    });
+  });
+  Promise.all(promises).then(function (files) {
+    const payload = {
+      type: 'photos',
+      name: name,
+      shop: document.getElementById('f-shop').value.trim(),
+      note: document.getElementById('f-note').value.trim(),
+      files: files
+    };
+    return fetch(ENDPOINT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+  }).then(function () {
+    document.getElementById('screen-form').classList.add('hidden');
+    document.getElementById('screen-done').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }).catch(function () {
+    document.getElementById('send-error').classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = '写真を送信する';
+  });
+});
+</script>
+</body>
+</html>
