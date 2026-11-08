@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>店舗ページ作成ヒアリング（一問一答）</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif; background: #f4f6f8; color: #222; line-height: 1.7; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+  header h1 { font-size: 20px; margin: 12px 0 4px; }
+  header p.lead { margin: 0 0 16px; color: #555; font-size: 14px; }
+  .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .progress-area { margin-bottom: 14px; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 6px; }
+  .progress-bar { height: 8px; background: #e2e8ee; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #1f6fb2; width: 0%; transition: width .3s; }
+  .section-title { font-size: 14px; font-weight: bold; color: #1f6fb2; margin: 0 0 4px; }
+  .qnum { font-size: 13px; color: #888; margin: 0 0 2px; }
+  .question { font-size: 18px; font-weight: bold; margin: 0 0 10px; }
+  .hint { font-size: 13px; color: #666; background: #f0f5fa; border-left: 3px solid #1f6fb2; padding: 8px 10px; margin: 0 0 14px; border-radius: 0 6px 6px 0; }
+  .optional-badge { display: inline-block; font-size: 12px; color: #fff; background: #e08a00; border-radius: 10px; padding: 1px 10px; margin-bottom: 8px; }
+  label.field-label { display: block; font-size: 14px; font-weight: bold; margin: 14px 0 4px; }
+  label.field-label .req { color: #c0392b; font-size: 12px; margin-left: 4px; }
+  input[type="text"], select, textarea { width: 100%; font-size: 16px; padding: 10px; border: 1px solid #c8d2da; border-radius: 8px; background: #fff; }
+  textarea { min-height: 130px; resize: vertical; }
+  textarea.small { min-height: 70px; }
+  .nav { display: flex; gap: 10px; margin-top: 20px; }
+  button { font-size: 16px; border: none; border-radius: 8px; padding: 12px 18px; cursor: pointer; }
+  .btn-primary { background: #1f6fb2; color: #fff; flex: 1; font-weight: bold; }
+  .btn-secondary { background: #e8edf1; color: #333; }
+  .btn-skip { background: #fff; color: #e08a00; border: 1px solid #e08a00; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .resume-note { background: #fff7e6; border: 1px solid #f0d9a0; color: #7a5b00; font-size: 13px; padding: 8px 10px; border-radius: 8px; margin-bottom: 12px; }
+  .reset-link { display: inline-block; margin-top: 14px; font-size: 13px; color: #888; background: none; padding: 0; text-decoration: underline; }
+  .review-item { border-bottom: 1px solid #eee; padding: 10px 0; cursor: pointer; }
+  .review-item:last-child { border-bottom: none; }
+  .review-q { font-size: 13px; color: #555; margin: 0 0 2px; }
+  .review-a { font-size: 15px; margin: 0; white-space: pre-wrap; word-break: break-word; }
+  .review-a.empty { color: #aaa; }
+  .error { color: #c0392b; font-size: 14px; margin-top: 10px; }
+  .done { text-align: center; padding: 24px 0; }
+  .done .big { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+  .hidden { display: none; }
+  .attach-group { border: 1px solid #e2e8ee; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .attach-group h3 { font-size: 16px; margin: 0 0 4px; }
+  .attach-group p.desc { font-size: 13px; color: #555; margin: 0 0 10px; }
+  .attach-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .thumb { position: relative; width: 76px; }
+  .thumb img { width: 76px; height: 76px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; display: block; }
+  .thumb .thumb-name { font-size: 10px; color: #666; word-break: break-all; line-height: 1.3; margin-top: 2px; }
+  .thumb button.thumb-remove { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #c0392b; color: #fff; font-size: 14px; line-height: 1; padding: 0; }
+  .attach-size { font-size: 13px; color: #555; margin-top: 6px; }
+  .photo-later-note { background: #f0f5fa; border: 1px solid #cfe0ef; border-radius: 8px; padding: 10px 12px; font-size: 14px; margin: 14px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>店舗ページ作成ヒアリング（一問一答）</h1>
+    <p class="lead">ポータルサイトの店舗ページを作るための質問です。1問ずつ、具体的に答えてください。「丁寧にやります」のような一般論ではなく、数字・固有名詞・実際の場面を書いていただくと、そのままページの強みになります。入力内容は自動で保存されるので、途中で閉じても続きから再開できます。</p>
+  </header>
+
+  <!-- 基本情報 -->
+  <section id="screen-basic" class="card">
+    <div id="resume-note" class="resume-note hidden">前回入力した内容が残っています。続きから再開できます。</div>
+    <h2 class="section-title">はじめに：基本情報</h2>
+    <label class="field-label" for="f-name">担当者名<span class="req">必須</span></label>
+    <input type="text" id="f-name" autocomplete="name" placeholder="例：山田 太郎">
+    <label class="field-label" for="f-shop">店舗名・屋号</label>
+    <input type="text" id="f-shop" placeholder="例：○○エアコン清掃">
+    <label class="field-label" for="f-area">担当エリア</label>
+    <input type="text" id="f-area" placeholder="例：大阪府北部（豊中市・吹田市など）">
+    <label class="field-label" for="f-media">対象媒体</label>
+    <select id="f-media">
+      <option value="おうちにプロ">おうちにプロ</option>
+      <option value="ユアマイスター">ユアマイスター</option>
+      <option value="ミツモア">ミツモア</option>
+      <option value="その他">その他</option>
+    </select>
+    <div class="nav">
+      <button class="btn-primary" id="btn-start">質問をはじめる</button>
+    </div>
+    <button class="reset-link" id="btn-reset">入力内容をすべて消して最初からやり直す</button>
+  </section>
+
+  <!-- 質問 -->
+  <section id="screen-question" class="card hidden">
+    <div class="progress-area">
+      <div class="progress-meta"><span id="pm-section"></span><span id="pm-count"></span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <p class="section-title" id="q-section"></p>
+    <p class="qnum" id="q-num"></p>
+    <div id="q-optional"></div>
+    <p class="question" id="q-text"></p>
+    <p class="hint" id="q-hint"></p>
+    <textarea id="q-answer" placeholder="ここに回答を書いてください"></textarea>
+    <div class="nav">
+      <button class="btn-secondary" id="btn-prev">戻る</button>
+      <button class="btn-skip hidden" id="btn-skip">スキップ</button>
+      <button class="btn-primary" id="btn-next">次へ</button>
+    </div>
+  </section>
+
+  <!-- 素材の添付 -->
+  <section id="screen-files" class="card hidden">
+    <div class="progress-area">
+      <div class="progress-meta"><span>素材の添付</span><span>全40問 回答済み</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    </div>
+    <h2 class="section-title">写真・素材の添付（任意）</h2>
+    <p style="font-size:14px;color:#555;margin-top:0;">店舗ページに使う写真や素材があれば、ここで添付してください。すべて任意です。</p>
+
+    <div class="attach-group">
+      <h3>1. 顔写真（1枚）</h3>
+      <p class="desc">ページに載せる顔写真です。なければ後日の送信でも大丈夫です。</p>
+      <input type="file" id="file-face" accept="image/*">
+      <div class="attach-thumbs" id="thumbs-face"></div>
+    </div>
+
+    <div class="attach-group">
+      <h3>2. 作業中・ビフォーアフターなどの写真（複数可）</h3>
+      <p class="desc">作業の様子や、施工前後の写真などです。</p>
+      <input type="file" id="file-work" accept="image/*" multiple>
+      <div class="attach-thumbs" id="thumbs-work"></div>
+    </div>
+
+    <div class="attach-group">
+      <h3>3. その他の素材（複数可）</h3>
+      <p class="desc">資格証・店舗外観など、その他の素材です。</p>
+      <input type="file" id="file-other" accept="image/*" multiple>
+      <div class="attach-thumbs" id="thumbs-other"></div>
+    </div>
+
+    <p class="attach-size" id="attach-size"></p>
+    <p class="photo-later-note">写真が今お手元にない場合は、このまま送信して大丈夫です。後から写真だけ送れるフォームもあります：<a href="photos.html">写真だけ送るフォーム</a></p>
+    <div class="nav">
+      <button class="btn-secondary" id="btn-back-q40">戻る</button>
+      <button class="btn-primary" id="btn-to-review">確認画面へ</button>
+    </div>
+  </section>
+
+  <!-- 確認 -->
+  <section id="screen-review" class="card hidden">
+    <h2 class="section-title">最終確認</h2>
+    <p style="font-size:14px;color:#555;margin-top:0;">内容を確認してください。項目をタップすると、その質問に戻って修正できます。未回答の項目があっても送信できますが、具体的に書けているほどページの仕上がりが良くなります。</p>
+    <div id="review-list"></div>
+    <div id="review-files"></div>
+    <label class="field-label" for="f-note">備考（任意）</label>
+    <textarea id="f-note" class="small" placeholder="その他、伝えておきたいことがあれば書いてください"></textarea>
+    <p class="photo-later-note">写真が今お手元にない場合は、このまま送信して大丈夫です。後から写真だけ送れるフォームもあります：<a href="photos.html">写真だけ送るフォーム</a></p>
+    <div class="nav">
+      <button class="btn-secondary" id="btn-back-last">戻る</button>
+      <button class="btn-primary" id="btn-send">この内容で送信する</button>
+    </div>
+    <p class="error hidden" id="send-error">送信に失敗しました。通信環境を確認して、もう一度お試しください。入力内容は保存されています。</p>
+  </section>
+
+  <!-- 完了 -->
+  <section id="screen-done" class="card hidden">
+    <div class="done">
+      <p class="big">回答を受け付けました。ありがとうございました</p>
+      <p style="color:#555;font-size:14px;">いただいた回答をもとに、店舗ページの文章と画像の準備を進めます。</p>
+    </div>
+  </section>
+</div>
+
+<script>
+// 送信先エンドポイント（Apps Script ウェブアプリのURLをデプロイ後に差し替える）
+const ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbzm1I25K1YN6tW7H5erFDtUDfXC3x5EFruVAeVMp5XUiJ0q2yhcw6h1Esdm9BcRHEdRPg/exec';
+const STORAGE_KEY = 'staffQaForm.v1';
+
+const SECTIONS = [
+  { title: '第0部 事実と数字の棚卸し', items: [
+    { q: 'これまでの施工実績を、確認できる数字で教えてください（累計台数・件数、年間件数）。その数字の根拠は何ですか。', hint: '例：「累計○台（○年○月から集計）」のように、数字とその根拠（何で数えたか）を書いてください。' },
+    { q: 'ポータルやGoogleの口コミは、今どんな数字ですか（評価・件数）。一番多い評価のされ方は何ですか。', hint: '今の画面で確認できる評価の平均と件数を書いてください。一番多い褒められ方も一言で。' },
+    { q: '対応できる機種・メーカーと、対応できない機種・メーカーを、具体名で教えてください（完全分解洗浄の可否も機種ごとに）。', hint: 'メーカー名・シリーズ名などの固有名詞で書いてください。「だいたい全部」ではなく具体名で。' },
+    { q: '保証として約束できることは何ですか。「何日以内に、どういう場合に、何をするか」まで言えますか。', hint: '例：「○日以内にご連絡いただければ無償で再施工します」のように、日数と内容を数字で書いてください。' },
+    { q: '損害保険の加入状況と、作業中に物を壊したときの実際の対応手順を教えてください。', hint: '加入している保険が分かればその旨も。対応手順は、実際にやる順番で書いてください。' },
+    { q: '逆に、この店では「できない・やらない」と決めていることを、全部挙げてください。', hint: '正直に書くことが信頼につながります。思いつく限り全部どうぞ。' }
+  ]},
+  { title: '第1部 タイトルと「サービスの特徴」欄', items: [
+    { q: 'この店は、どんなお客様のための店ですか。一言で言ってください。', hint: '例：「小さなお子さまがいるご家庭のための」のように、対象を絞って一言で。' },
+    { q: 'そのお客様が、業者選びで一番不安に思っていることは何だと思いますか。', hint: '実際に言われた言葉があれば、そのまま書いてください。' },
+    { q: '他店と逆のことを、あえて言い切れる点はありますか（例：速さより仕上がり、安さより○○）。なければ、どの点で他店と一番違うと思いますか。', hint: '「○○より○○を大事にする」という形で言い切ってみてください。' },
+    { q: '作業手順の中で、他店がやらない・手間を惜しんで省く一手はありますか。', hint: '手順の名前や、そこにかける時間まで具体的に書いてください。' },
+    { q: '使っている洗剤と道具について、名前・種類と「なぜそれを選んだか」を教えてください。', hint: '商品名・メーカー名などの固有名詞で。選んだ理由もセットで書いてください。' },
+    { q: '仕上がりの「終わり」は、どこを見て判断しますか。自分の合格基準を教えてください。', hint: '例：「○○を触って○○でなければやり直す」のように、見る場所と基準を書いてください。' }
+  ]},
+  { title: '第2部 「サービスの強み」3件（不安からの逆算）', items: [
+    { q: 'お客様が申し込み前に感じる不安を、思いつく限り全部挙げてください（料金・誰が来るか・汚れが落ちるか・家を汚されないか、など）。', hint: '1つずつ改行して、思いつく限り全部どうぞ。' },
+    { q: 'その不安の中で、当店が一番自信を持って解消できるのはどれですか。その根拠（手順・数字・約束）を具体的に教えてください。', hint: '「丁寧にやります」ではなく、手順・数字・約束で書いてください。' },
+    { q: '「他店で断られた」「他店で嫌な思いをした」というお客様の受け皿になれる点はありますか。実例があれば教えてください。', hint: '実際の場面を思い出して書いてください（お客様が特定できる情報は書かなくて大丈夫です）。' },
+    { q: '料金の不安（当日の追加料金など）に対して、当店の決め事は何ですか。事前にどう説明していますか。', hint: '実際に伝えている言葉があれば、そのまま書いてください。' },
+    { q: 'あなたの店の強みだと思うことを、思いつく限り全部挙げてください。', hint: '数は多いほど良いです。1つずつ改行して書いてください。ここから強み3件を一緒に絞り込みます。' }
+  ]},
+  { title: '第3部 作業の細部', items: [
+    { q: '訪問の前日〜当日の朝、お客様へどんな連絡をしていますか（内容・タイミング）。', hint: '例：「前日○時に、○○という内容で」のように、タイミングと内容を書いてください。' },
+    { q: '到着してから作業に入るまで、決めていることはありますか（挨拶、身だしなみ、スリッパや靴下、駐車場所の確認など）。', hint: '自分で決めている小さなルールほど、具体的に書いてください。' },
+    { q: '養生は、どこからどこまで、どうやりますか。', hint: '場所の名前と、使うもの・やり方を書いてください。' },
+    { q: '音が出る作業や、水を使う作業の前に、お客様へ声をかけていますか。何と言っていますか。', hint: '実際のセリフをそのまま書いてください。' },
+    { q: '作業の後、お客様に何を見せて、どう説明していますか（写真、汚水、仕上がりの確認方法）。普段の手入れのアドバイスはしていますか。', hint: '見せるもの・伝える順番まで書いてください。' },
+    { q: 'お風呂場や洗面所を借りた場合、返すときはどうしていますか。作業場所の片付けの基準も教えてください。', hint: '「返すときはどういう状態か」の基準を具体的に書いてください。' },
+    { q: 'ペットやお子さまがいるお宅で、決めている接し方や配慮はありますか。', hint: '実際の場面でしていることを書いてください。' }
+  ]},
+  { title: '第4部 保証と、正直なところ', items: [
+    { q: '仕上がりに満足してもらえなかったとき、実際にはどう対応しましたか。実例を教えてください。', hint: '実際の出来事を、そのときの対応の順番で書いてください。' },
+    { q: '過去の失敗やクレームで、印象に残っているものはありますか。その後、何を変えましたか。', hint: 'その後に変えたルールまで書いてください。' },
+    { q: '当日に追加料金が発生するのは、どんな場合だけですか。逆に、どんなに汚れていても追加にならない範囲はどこまでですか。', hint: '金額や条件を数字で書いてください。' },
+    { q: 'この店に向いていないお客様・断る依頼は、どんなものですか。', hint: '正直に書くことが、合うお客様との信頼につながります。' }
+  ]},
+  { title: '第5部 「お店から一言」と人柄', items: [
+    { q: 'なぜこの仕事をしているのですか。きっかけになった体験や出来事があれば教えてください（動機の物語）。', hint: '「いつ・どこで・何があったか」という場面で書くと伝わります。' },
+    { q: 'この仕事の前は何をしていましたか。前職で身についたことで、今に活きていることは何ですか。', hint: '前職の名前と、今に活きている具体的な場面を書いてください。' },
+    { q: '家族構成を教えてください。（任意回答）お子さんの年齢層や、家族との休日の過ごし方も。', hint: '任意回答です。出せる範囲だけで大丈夫です。答えたくない場合はスキップできます。', optional: true },
+    { q: 'ペットを飼っていますか。（任意回答）種類と名前、ペットへの接し方が仕事に出る場面はありますか。', hint: '任意回答です。飼っていない場合は「飼っていない」と書いて進んでください。スキップもできます。', optional: true },
+    { q: '趣味や休みの日の過ごし方を教えてください。', hint: '具体的な名前や場所があると人柄が伝わります。' },
+    { q: '担当エリアとの関わり（出身・在住・ゆかり）と、この地域の好きなところを教えてください。', hint: '好きな場所やお店の名前など、固有名詞でどうぞ。' },
+    { q: '当日お客様の家に伺うのは、誰ですか（「店長の○○が伺います」と名指しで固定できますか）。その人の「らしい」エピソードも教えてください。', hint: '名前と、その人らしい具体的なエピソードを1つ書いてください。' },
+    { q: '初めて頼むお客様に、一番伝えたいことを一言で言うと何ですか。', hint: '一言で言い切ってください。' }
+  ]},
+  { title: '第6部 FAQの自作', items: [
+    { q: 'お客様から実際に聞かれた質問で、印象に残っているものを挙げてください（上位5つ）。', hint: '実際に聞かれた言葉のまま、1つずつ改行して5つまでどうぞ。' },
+    { q: '「他店で断られた機種なんですが」と相談されたことはありますか。どう答えましたか。', hint: '実際のやり取りを思い出して書いてください。' },
+    { q: 'ペット・お子さま・妊娠中の方などから、安全性について聞かれたことはありますか。どう答えていますか。', hint: '実際に伝えている説明を書いてください。' },
+    { q: '駐車場がない場合、支払い方法、日程変更など、実務でよく聞かれることは何ですか。', hint: 'よく聞かれる順に書いてください。' }
+  ]}
+];
+
+// フラットな質問リスト（Q1〜Q40）を組み立てる
+const QUESTIONS = [];
+SECTIONS.forEach(function (sec) {
+  sec.items.forEach(function (item) {
+    QUESTIONS.push({ n: QUESTIONS.length + 1, section: sec.title, q: item.q, hint: item.hint, optional: !!item.optional });
+  });
+});
+
+let state = { basic: { name: '', shop: '', area: '', media: 'おうちにプロ' }, answers: {}, note: '', step: 0 };
+let current = 0; // 0=基本情報, 1..40=質問, 41=確認
+
+function save() {
+  state.step = current;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (s && s.basic && s.answers) { state = s; return true; }
+  } catch (e) {}
+  return false;
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function show(id) {
+  ['screen-basic', 'screen-question', 'screen-files', 'screen-review', 'screen-done'].forEach(function (x) {
+    document.getElementById(x).classList.toggle('hidden', x !== id);
+  });
+  window.scrollTo(0, 0);
+}
+function renderBasic() {
+  document.getElementById('f-name').value = state.basic.name || '';
+  document.getElementById('f-shop').value = state.basic.shop || '';
+  document.getElementById('f-area').value = state.basic.area || '';
+  document.getElementById('f-media').value = state.basic.media || 'おうちにプロ';
+  show('screen-basic');
+}
+function renderQuestion() {
+  const item = QUESTIONS[current - 1];
+  document.getElementById('pm-section').textContent = item.section;
+  document.getElementById('pm-count').textContent = '全40問中 ' + item.n + '問目';
+  document.getElementById('progress-fill').style.width = (item.n / 40 * 100) + '%';
+  document.getElementById('q-section').textContent = item.section;
+  document.getElementById('q-num').textContent = 'Q' + item.n + ' / Q40';
+  document.getElementById('q-optional').innerHTML = item.optional ? '<span class="optional-badge">任意回答</span>' : '';
+  document.getElementById('q-text').textContent = item.q;
+  document.getElementById('q-hint').textContent = item.hint;
+  document.getElementById('q-answer').value = state.answers['Q' + item.n] || '';
+  document.getElementById('btn-skip').classList.toggle('hidden', !item.optional);
+  document.getElementById('btn-next').textContent = item.n === 40 ? '素材の添付へ' : '次へ';
+  show('screen-question');
+}
+function renderFiles() {
+  renderThumbs();
+  show('screen-files');
+}
+function renderReview() {
+  const b = state.basic;
+  let html = '';
+  html += '<div class="review-item" data-goto="0"><p class="review-q">基本情報</p><p class="review-a">'
+    + esc(b.name) + '／' + esc(b.shop || '（店舗名なし）') + '／' + esc(b.area || '（エリア未記入）') + '／' + esc(b.media) + '</p></div>';
+  QUESTIONS.forEach(function (item) {
+    const a = state.answers['Q' + item.n];
+    html += '<div class="review-item" data-goto="' + item.n + '"><p class="review-q">Q' + item.n + '（' + esc(item.section) + '）' + esc(item.q) + '</p>'
+      + '<p class="review-a' + (a ? '' : ' empty') + '">' + (a ? esc(a) : '（未回答）') + '</p></div>';
+  });
+  document.getElementById('review-list').innerHTML = html;
+  const fileNames = allSelectedFiles().map(function (x) { return x.outName; });
+  document.getElementById('review-files').innerHTML = '<div class="review-item" data-goto="42"><p class="review-q">添付ファイル（' + fileNames.length + '件）</p>'
+    + '<p class="review-a' + (fileNames.length ? '' : ' empty') + '">' + (fileNames.length ? esc(fileNames.join('、')) : '（添付なし）') + '</p></div>';
+  document.querySelectorAll('.review-item').forEach(function (el) {
+    el.addEventListener('click', function () { goTo(parseInt(el.getAttribute('data-goto'), 10)); });
+  });
+  document.getElementById('f-note').value = state.note || '';
+  document.getElementById('send-error').classList.add('hidden');
+  show('screen-review');
+}
+function goTo(step) {
+  current = step;
+  save();
+  if (step === 0) renderBasic();
+  else if (step >= 1 && step <= 40) renderQuestion();
+  else if (step === 42) renderFiles();
+  else renderReview();
+}
+function captureBasic() {
+  state.basic.name = document.getElementById('f-name').value.trim();
+  state.basic.shop = document.getElementById('f-shop').value.trim();
+  state.basic.area = document.getElementById('f-area').value.trim();
+  state.basic.media = document.getElementById('f-media').value;
+}
+
+// イベント
+['f-name', 'f-shop', 'f-area', 'f-media'].forEach(function (id) {
+  document.getElementById(id).addEventListener('input', function () { captureBasic(); save(); });
+  document.getElementById(id).addEventListener('change', function () { captureBasic(); save(); });
+});
+document.getElementById('btn-start').addEventListener('click', function () {
+  captureBasic();
+  if (!state.basic.name) { alert('担当者名を入力してください'); document.getElementById('f-name').focus(); return; }
+  goTo(1);
+});
+document.getElementById('btn-reset').addEventListener('click', function () {
+  if (!confirm('入力内容をすべて消して、最初からやり直しますか？')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  state = { basic: { name: '', shop: '', area: '', media: 'おうちにプロ' }, answers: {}, note: '', step: 0 };
+  selectedFiles.face = []; selectedFiles.work = []; selectedFiles.other = [];
+  renderThumbs();
+  current = 0;
+  document.getElementById('resume-note').classList.add('hidden');
+  renderBasic();
+});
+document.getElementById('q-answer').addEventListener('input', function () {
+  state.answers['Q' + QUESTIONS[current - 1].n] = document.getElementById('q-answer').value;
+  save();
+});
+document.getElementById('btn-next').addEventListener('click', function () {
+  state.answers['Q' + QUESTIONS[current - 1].n] = document.getElementById('q-answer').value;
+  goTo(current === 40 ? 42 : current + 1);
+});
+document.getElementById('btn-skip').addEventListener('click', function () {
+  goTo(current === 40 ? 42 : current + 1);
+});
+document.getElementById('btn-prev').addEventListener('click', function () {
+  state.answers['Q' + QUESTIONS[current - 1].n] = document.getElementById('q-answer').value;
+  goTo(current - 1);
+});
+document.getElementById('btn-back-q40').addEventListener('click', function () { goTo(40); });
+document.getElementById('btn-to-review').addEventListener('click', function () { goTo(41); });
+document.getElementById('btn-back-last').addEventListener('click', function () { goTo(42); });
+// ===== 素材添付（FileオブジェクトはlocalStorageに保存できないため、画面を開いている間だけ保持） =====
+const FILE_GROUPS = [
+  { key: 'face', inputId: 'file-face', thumbsId: 'thumbs-face', prefix: '顔写真_', multiple: false },
+  { key: 'work', inputId: 'file-work', thumbsId: 'thumbs-work', prefix: '作業写真_', multiple: true },
+  { key: 'other', inputId: 'file-other', thumbsId: 'thumbs-other', prefix: '素材_', multiple: true }
+];
+const selectedFiles = { face: [], work: [], other: [] };
+const thumbUrls = { face: [], work: [], other: [] };
+
+function allSelectedFiles() {
+  const out = [];
+  FILE_GROUPS.forEach(function (g) {
+    selectedFiles[g.key].forEach(function (f) { out.push({ file: f, outName: g.prefix + f.name }); });
+  });
+  return out;
+}
+function totalFileSize() {
+  return allSelectedFiles().reduce(function (sum, x) { return sum + x.file.size; }, 0);
+}
+function renderThumbs() {
+  FILE_GROUPS.forEach(function (g) {
+    thumbUrls[g.key].forEach(function (u) { URL.revokeObjectURL(u); });
+    thumbUrls[g.key] = [];
+    const box = document.getElementById(g.thumbsId);
+    box.innerHTML = '';
+    selectedFiles[g.key].forEach(function (f, idx) {
+      const url = URL.createObjectURL(f);
+      thumbUrls[g.key].push(url);
+      const div = document.createElement('div');
+      div.className = 'thumb';
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = f.name;
+      const name = document.createElement('div');
+      name.className = 'thumb-name';
+      name.textContent = f.name;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'thumb-remove';
+      btn.textContent = '×';
+      btn.setAttribute('aria-label', 'この写真を取り消す');
+      btn.addEventListener('click', function () {
+        selectedFiles[g.key].splice(idx, 1);
+        renderThumbs();
+      });
+      div.appendChild(img);
+      div.appendChild(btn);
+      div.appendChild(name);
+      box.appendChild(div);
+    });
+  });
+  const total = totalFileSize();
+  const count = allSelectedFiles().length;
+  document.getElementById('attach-size').textContent = count
+    ? '添付中：' + count + '件（合計 ' + (total / 1048576).toFixed(1) + ' MB）' + (total > 20 * 1024 * 1024 ? ' ※合計が20MBを超えています。送信時に警告が出ます' : '')
+    : '';
+}
+FILE_GROUPS.forEach(function (g) {
+  document.getElementById(g.inputId).addEventListener('change', function (ev) {
+    const picked = Array.prototype.slice.call(ev.target.files || []);
+    if (g.multiple) selectedFiles[g.key] = selectedFiles[g.key].concat(picked);
+    else selectedFiles[g.key] = picked.slice(0, 1);
+    ev.target.value = '';
+    renderThumbs();
+  });
+});
+function fileToBase64(file) {
+  return new Promise(function (resolve, reject) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      const result = String(reader.result || '');
+      const comma = result.indexOf(',');
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('f-note').addEventListener('input', function () { state.note = document.getElementById('f-note').value; save(); });
+document.getElementById('btn-send').addEventListener('click', function () {
+  const items = allSelectedFiles();
+  const total = totalFileSize();
+  if (total > 20 * 1024 * 1024) {
+    if (!confirm('添付ファイルの合計が20MBを超えています（現在 ' + (total / 1048576).toFixed(1) + ' MB）。送信に時間がかかったり、失敗したりすることがあります。このまま送信しますか？')) return;
+  }
+  const btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  const answers = {};
+  QUESTIONS.forEach(function (item) { answers['Q' + item.n] = state.answers['Q' + item.n] || ''; });
+  const filePromises = items.map(function (x) {
+    return fileToBase64(x.file).then(function (b64) {
+      return { filename: x.outName, mimeType: x.file.type || 'application/octet-stream', dataBase64: b64 };
+    });
+  });
+  Promise.all(filePromises).then(function (files) {
+    const payload = { type: 'answers', name: state.basic.name, shop: state.basic.shop, area: state.basic.area, media: state.basic.media, answers: answers, note: state.note || '', files: files };
+    return fetch(ENDPOINT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+  }).then(function () {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    show('screen-done');
+  }).catch(function () {
+    document.getElementById('send-error').classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'この内容で送信する';
+  });
+});
+
+// 初期表示（保存データがあれば続きから）
+const resumed = load();
+current = Math.min(Math.max(state.step || 0, 0), 42);
+if (resumed && (state.basic.name || Object.keys(state.answers).length > 0)) {
+  document.getElementById('resume-note').classList.remove('hidden');
+}
+goTo(current);
+</script>
+</body>
+</html>
