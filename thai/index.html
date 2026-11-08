@@ -292,6 +292,9 @@
       .row-head { margin-bottom: 2px; }
       .row-head .badge { margin-left: 0; }
       body.kana-off .b-kana { display: none; }
+      .ipa-sub { display: block; font-size: 11.5px; font-weight: 400; color: #7a8699; letter-spacing: .02em; line-height: 1.5; margin-top: 1px; }
+      .ipa-in { font-size: 11.5px; font-weight: 400; color: #7a8699; letter-spacing: .02em; }
+      body.ipa-off .ipa-sub, body.ipa-off .ipa-in { display: none; }
       .memo-area { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
       .my-memo { font-size: 14px; color: var(--accent); background: var(--surface2); border-radius: 8px; padding: 7px 10px; margin-bottom: 8px; word-break: break-all; }
       .memo-edit { margin-top: 8px; }
@@ -385,6 +388,11 @@
           <button class="reset" id="kanaToggleBtn" type="button" style="margin-top:0;">カナなしモード：オフ（カタカナを表示中）</button>
         </div>
         <div class="settings-box">
+          <p style="margin:0 0 4px;"><strong>表示の設定：発音記号（IPA）</strong></p>
+          <p style="margin:0 0 8px;">発音記号（IPA）は、発音を精密に表す世界共通の目印です。タイ文字とカタカナのそばに小さく併記します。記号の見方：<strong>ʰ</strong>＝息を強く出す音（例：ทา /tʰaː/）、<strong>ː</strong>＝音を長くのばす、母音の上の記号＝声調（無印＝まっすぐ、à＝ひくい、â＝さがる、á＝たかい、ǎ＝あがる）。</p>
+          <button class="reset" id="ipaToggleBtn" type="button" style="margin-top:0;">発音記号（IPA）：表示中</button>
+        </div>
+        <div class="settings-box">
           <p style="margin:0 0 4px;"><strong>マイクの診断（聞き取りが反応しない時）</strong></p>
           <p style="margin:0 0 8px;">ボタンを押して10秒間、好きな言葉を話してください。聞き取りの状態が下に表示されます。その画面の写真をモコに送ると、原因が特定できます。</p>
           <button class="reset" id="recDiagBtn" type="button" style="margin-top:0;">マイク診断をはじめる</button>
@@ -394,7 +402,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.07-7（フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
+        <p>アプリの版：2026.11.08-1（発音記号（IPA）を、カタカナ読みが表示される箇所に小さく併記。表示のオン・オフは「表示の設定：発音記号（IPA）」で切り替え可能。以下は前版までの変更点：フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
       </footer>
     </div>
 
@@ -589,6 +597,62 @@
         if (hide) return '<button type="button" class="btn slow kana-peek-btn" data-kana-peek="1">カナを見る</button><span class="kana-sub" style="display:none">' + kanaText + '</span>';
         return '<span class="kana-sub">' + kanaText + '</span>';
       }
+      /* ============ 発音記号（IPA）：カタカナのそばに小さく併記する ============ */
+      var IPA_PHRASE = {"s1p1": ["sà wàt diː", "sà wàt diː kʰráp"], "s1p2": ["sà wàt diː toːn tɕʰáw", "sà wàt diː toːn tɕʰáw kʰráp"], "s1p3": ["kʰɔ̀ːp kʰun", "kʰɔ̀ːp kʰun kʰráp"], "s1p4": ["kʰɔ̀ːp kʰun mâːk", "kʰɔ̀ːp kʰun mâːk kʰráp"], "s1p5": ["kʰɔ̌ː tʰôːt", "kʰɔ̌ː tʰôːt kʰráp"], "s1p6": ["mâj pen raj", "mâj pen raj kʰráp"], "s1p7": ["lɛ́ːw tɕəː kan", "lɛ́ːw tɕəː kan kʰráp"], "s1p8": ["tɕʰôːk diː", "tɕʰôːk diː kʰráp"], "s2p1": ["pen kʰon jîː pùn", "pʰǒm pen kʰon jîː pùn kʰráp"], "s2p2": ["maː tɕàːk jîː pùn", "pʰǒm maː tɕàːk jîː pùn kʰráp"], "s2p3": ["pʰûːt pʰaː sǎː tʰaj dâj nít nɔ̀j", "pʰǒm pʰûːt pʰaː sǎː tʰaj dâj nít nɔ̀j kʰráp"], "s2p4": ["rian pʰaː sǎː tʰaj jùː", "pʰǒm kam laŋ rian pʰaː sǎː tʰaj jùː kʰráp"], "s2p5": ["kʰun tɕʰɯ̂ː ʔà raj", "tɕʰɯ̂ː kʰɔ̌ːŋ kʰun kʰɯː ʔà raj kʰráp"], "s2p6": ["jin diː tʰîː dâj rúː tɕàk", "jin diː tʰîː dâj rúː tɕàk kʰráp"], "s2p7": ["pʰûːt pʰaː sǎː jîː pùn dâj mǎj", "kʰun pʰûːt pʰaː sǎː jîː pùn dâj mǎj kʰráp"], "s2p8": ["pʰûːt tɕʰáː tɕʰáː nɔ̀j", "pʰûːt tɕʰáː tɕʰáː nɔ̀j dâj mǎj kʰráp"], "s3p1": ["ʔan níː tʰâw ràj", "ʔan níː tʰâw ràj kʰráp"], "s3p2": ["pʰɛːŋ paj", "pʰɛːŋ paj nɔ̀j kʰráp"], "s3p3": ["lót nɔ̀j dâj mǎj", "lót nɔ̀j dâj mǎj kʰráp"], "s3p4": ["kʰɔ̌ː duː nɔ̀j", "kʰɔ̌ː duː nɔ̀j kʰráp"], "s3p5": ["miː sǐː ʔɯ̀ːn mǎj", "miː sǐː ʔɯ̀ːn mǎj kʰráp"], "s3p6": ["ʔaw ʔan níː", "ʔaw ʔan níː kʰráp"], "s3p7": ["kʰɛ̂ː duː tɕʰə̌ːj tɕʰə̌ːj", "kʰɛ̂ː duː tɕʰə̌ːj tɕʰə̌ːj kʰráp"], "s3p8": ["miː tʰǔŋ mǎj", "miː tʰǔŋ mǎj kʰráp"], "s4p1": ["kʰɔ̌ː duː meː nuː nɔ̀j", "kʰɔ̌ː duː meː nuː nɔ̀j kʰráp"], "s4p2": ["ʔan níː ʔà raj", "ʔan níː kʰɯː ʔà raj kʰráp"], "s4p3": ["mâj pʰèt ná", "mâj pʰèt ná kʰráp"], "s4p4": ["pʰèt nít nɔ̀j", "pʰèt nít nɔ̀j kʰráp"], "s4p5": ["ʔà rɔ̀j mâːk", "ʔà rɔ̀j mâːk kʰráp"], "s4p6": ["kʰɔ̌ː náːm nɔ̀j", "kʰɔ̌ː náːm nɔ̀j kʰráp"], "s4p7": ["tɕʰék bin", "tɕʰék bin dûaj kʰráp"], "s4p8": ["ʔìm lɛ́ːw", "ʔìm lɛ́ːw kʰráp"], "s5p1": ["paj tʰîː nîː", "paj tʰîː nîː kʰráp"], "s5p2": ["tɕɔ̀ːt troŋ níː", "tɕɔ̀ːt troŋ níː kʰráp"], "s5p3": ["líaw sáːj", "líaw sáːj kʰráp"], "s5p4": ["líaw kʰwǎː", "líaw kʰwǎː kʰráp"], "s5p5": ["troŋ paj", "troŋ paj kʰráp"], "s5p6": ["sà tʰǎː niː rót faj paj tʰaːŋ nǎj", "sà tʰǎː niː rót faj paj tʰaːŋ nǎj kʰráp"], "s5p7": ["klaj mǎj", "klaj mǎj kʰráp"], "s5p8": ["tɕʰáj weː laː naːn tʰâw ràj", "tɕʰáj weː laː naːn tʰâw ràj kʰráp"], "s6p1": ["tɕɔːŋ wáj", "pʰǒm tɕɔːŋ wáj kʰráp"], "s6p2": ["kʰɔ̌ː kun tɕɛː nɔ̀j", "kʰɔ̌ː kun tɕɛː nɔ̀j kʰráp"], "s6p3": ["hɔ̂ŋ náːm jùː nǎj", "hɔ̂ŋ náːm jùː nǎj kʰráp"], "s6p4": ["ʔɛː mâj tʰam ŋaːn", "ʔɛː mâj tʰam ŋaːn kʰráp"], "s6p5": ["kʰɔ̌ː pʰâː kʰǒn nǔː pʰə̂ːm", "kʰɔ̌ː pʰâː kʰǒn nǔː pʰə̂ːm kʰráp"], "s6p6": ["ʔaː hǎːn tɕʰáw kìː moːŋ", "ʔaː hǎːn tɕʰáw kìː moːŋ kʰráp"], "s6p7": ["fàːk kà pǎw dâj mǎj", "fàːk kà pǎw wáj dâj mǎj kʰráp"], "s6p8": ["pʰrûŋ níː tɕʰék ʔaw", "pʰrûŋ níː tɕʰék ʔaw kʰráp"], "s7p1": ["tɕʰûaj dûaj", "tɕʰûaj dûaj kʰráp"], "s7p2": ["lǒŋ tʰaːŋ", "pʰǒm lǒŋ tʰaːŋ kʰráp"], "s7p3": ["mâj kʰâw tɕaj", "pʰǒm mâj kʰâw tɕaj kʰráp"], "s7p4": ["pʰûːt ʔìːk kʰráŋ dâj mǎj", "pʰûːt ʔìːk kʰráŋ dâj mǎj kʰráp"], "s7p5": ["kʰǐan hâj nɔ̀j", "kʰǐan hâj nɔ̀j dâj mǎj kʰráp"], "s7p6": ["rúː sɯ̀k mâj sà baːj", "pʰǒm rúː sɯ̀k mâj sà baːj kʰráp"], "s7p7": ["rîak tʰɛ́k sîː hâj nɔ̀j", "rîak tʰɛ́k sîː hâj nɔ̀j kʰráp"], "s7p8": ["roːŋ pʰá jaː baːn jùː nǎj", "roːŋ pʰá jaː baːn jùː nǎj kʰráp"], "s8p1": ["sà núk mâːk", "sà núk mâːk kʰráp"], "s8p2": ["tɕʰɔ̂ːp prà tʰêːt tʰaj", "pʰǒm tɕʰɔ̂ːp prà tʰêːt tʰaj kʰráp"], "s8p3": ["wan níː ʔaː kàːt diː ná", "wan níː ʔaː kàːt diː ná kʰráp"], "s8p4": ["tɕaj diː mâːk", "kʰun tɕaj diː mâːk kʰráp"], "s8p5": ["diː tɕaj tʰîː dâj tɕəː", "diː tɕaj tʰîː dâj tɕəː kʰun kʰráp"], "s8p6": ["tɕà klàp maː ʔìːk", "pʰǒm tɕà klàp maː ʔìːk kʰráp"], "s8p7": ["tʰàːj rûːp dûaj kan mǎj", "tʰàːj rûːp dûaj kan mǎj kʰráp"], "s8p8": ["rák sǎː sùk pʰâːp ná", "rák sǎː sùk pʰâːp dûaj ná kʰráp"], "e1": ["sà baːj diː mǎj", "sà baːj diː mǎj kʰráp"], "e2": ["pʰǒm tɕʰɯ̂ː tʰaː kʰaː hí ró", "pʰǒm tɕʰɯ̂ː tʰaː kʰaː hí ró kʰráp"], "e3": ["kʰun jùː tʰîː nǎj", "kʰun jùː tʰîː nǎj kʰráp"], "e4": ["kʰun tʰam ŋaːn ʔà raj", "kʰun tʰam ŋaːn ʔà raj kʰráp"]};
+      var IPA_WORD = {"สวัสดี": "sà wàt diː", "ขอบคุณ": "kʰɔ̀ːp kʰun", "มาก": "mâːk", "ขอ": "kʰɔ̌ː", "โทษ": "tʰôːt", "ไม่": "mâj", "เป็น": "pen", "ไร": "raj", "แล้ว": "lɛ́ːw", "เจอ": "tɕəː", "กัน": "kan", "โชค": "tɕʰôːk", "ดี": "diː", "คน": "kʰon", "ญี่ปุ่น": "jîː pùn", "มา": "maː", "จาก": "tɕàːk", "พูด": "pʰûːt", "ภาษา": "pʰaː sǎː", "ภาษาไทย": "pʰaː sǎː tʰaj", "ภาษาญี่ปุ่น": "pʰaː sǎː jîː pùn", "ไทย": "tʰaj", "ได้": "dâj", "นิดหน่อย": "nít nɔ̀j", "นิด": "nít", "เรียน": "rian", "อยู่": "jùː", "คุณ": "kʰun", "ชื่อ": "tɕʰɯ̂ː", "อะไร": "ʔà raj", "ยินดี": "jin diː", "ที่": "tʰîː", "รู้จัก": "rúː tɕàk", "รู้": "rúː", "จัก": "tɕàk", "ไหม": "mǎj", "ช้าๆ": "tɕʰáː tɕʰáː", "ช้า": "tɕʰáː", "หน่อย": "nɔ̀j", "อันนี้": "ʔan níː", "อันนั้น": "ʔan nán", "เท่าไหร่": "tʰâw ràj", "เท่า": "tʰâw", "ไหร่": "ràj", "แพง": "pʰɛːŋ", "ไป": "paj", "ลด": "lót", "ดู": "duː", "เอา": "ʔaw", "เมนู": "meː nuː", "เผ็ด": "pʰèt", "นะ": "ná", "อร่อย": "ʔà rɔ̀j", "น้ำ": "náːm", "เช็คบิล": "tɕʰék bin", "เช็ค": "tɕʰék", "อิ่ม": "ʔìm", "ที่นี่": "tʰîː nîː", "จอด": "tɕɔ̀ːt", "ตรง": "troŋ", "นี้": "níː", "เลี้ยว": "líaw", "ขวา": "kʰwǎː", "ซ้าย": "sáːj", "สถานี": "sà tʰǎː niː", "รถไฟ": "rót faj", "รถ": "rót", "ไฟ": "faj", "ทาง": "tʰaːŋ", "ไหน": "nǎj", "ใช้": "tɕʰáj", "เวลา": "weː laː", "นาน": "naːn", "จอง": "tɕɔːŋ", "ไว้": "wáj", "กุญแจ": "kun tɕɛː", "กุญ": "kun", "ห้องน้ำ": "hɔ̂ŋ náːm", "ห้อง": "hɔ̂ŋ", "ผ้าขนหนู": "pʰâː kʰǒn nǔː", "ผ้า": "pʰâː", "ขน": "kʰǒn", "หนู": "nǔː", "เพิ่ม": "pʰə̂ːm", "อาหาร": "ʔaː hǎːn", "อาหารเช้า": "ʔaː hǎːn tɕʰáw", "อาหารเย็น": "ʔaː hǎːn jen", "เย็น": "jen", "เช้า": "tɕʰáw", "กี่": "kìː", "โมง": "moːŋ", "ฝาก": "fàːk", "กระเป๋า": "kà pǎw", "ช่วย": "tɕʰûaj", "ด้วย": "dûaj", "หลง": "lǒŋ", "เข้าใจ": "kʰâw tɕaj", "เข้า": "kʰâw", "ใจ": "tɕaj", "อีก": "ʔìːk", "ครั้ง": "kʰráŋ", "เขียน": "kʰǐan", "ให้": "hâj", "ชอบ": "tɕʰɔ̂ːp", "ประเทศ": "prà tʰêːt", "ประเทศไทย": "prà tʰêːt tʰaj", "ดีใจ": "diː tɕaj", "สบาย": "sà baːj", "สบายดี": "sà baːj diː", "ผม": "pʰǒm", "ทาคาฮิโระ": "tʰaː kʰaː hí ró", "ทำงาน": "tʰam ŋaːn", "ทำ": "tʰam", "งาน": "ŋaːn", "ครับ": "kʰráp", "ของ": "kʰɔ̌ːŋ", "คือ": "kʰɯː", "กำลัง": "kam laŋ", "วันนี้": "wan níː", "วัน": "wan", "จะ": "tɕà", "ใคร": "kʰraj", "เที่ยว": "tʰîaw", "กับ": "kàp", "อยาก": "jàːk", "มาร์ค": "mâːk", "สู้ๆ": "sûː sûː", "สู้": "sûː", "เก่ง": "kèŋ", "จัง": "tɕaŋ", "เลย": "ləːj", "ใกล้ๆ": "klâj klâj", "ใกล้": "klâj", "ไกล": "klaj", "เอง": "ʔeːŋ", "แท็กซี่": "tʰɛ́k sîː", "ประมาณ": "prà maːn", "นาที": "naː tʰiː", "สิบ": "sìp", "สักครู่": "sák kʰrûː", "รอ": "rɔː", "โอเค": "ʔoː kʰeː", "เผ็ดๆ": "pʰèt pʰèt", "ค่อยๆ": "kʰɔ̂j kʰɔ̂j", "ฝึก": "fɯ̀k", "น่า": "nâː", "สนุก": "sà núk", "นุก": "núk", "คุณภาพ": "kʰun ná pʰâːp", "ร้าน": "râːn", "ลอง": "lɔːŋ", "ช่วงนี้": "tɕʰûaŋ níː", "ฝน": "fǒn", "ตก": "tòk", "บ่อย": "bɔ̀j", "ระวัง": "rá waŋ", "ร้อน": "rɔ́ːn", "ดื่ม": "dɯ̀ːm", "เยอะๆ": "jə́ʔ jə́ʔ", "เยอะ": "jə́ʔ", "พักผ่อน": "pʰák pʰɔ̀n", "พัก": "pʰák", "อ๋อ": "ʔɔ̌ː", "หรือ": "rɯ̌ː", "น่ารัก": "nâː rák", "รัก": "rák", "ก็": "kɔ̂ː", "แมว": "mɛːw", "สุนัข": "sù nák", "เพื่อน": "pʰɯ̂an", "สำคัญ": "sǎm kʰan", "ครอบครัว": "kʰrɔ̂ːp kʰrua", "ที่สุด": "tʰîː sùt", "สุด": "sùt", "เดินทาง": "dəːn tʰaːŋ", "ปลอดภัย": "plɔ̀ːt pʰaj", "เบียร์": "bia", "แต่": "tɛ̀ː", "พอดีๆ": "pʰɔː diː pʰɔː diː", "พอดี": "pʰɔː diː", "ผลไม้": "pʰǒn lá mâj", "ฟัง": "faŋ", "เพลง": "pʰleːŋ", "หนัง": "nǎŋ", "เรื่อง": "rɯ̂aŋ", "นั้น": "nán", "ฟุตบอล": "fút bɔːn", "กรุงเทพฯ": "krun tʰêːp", "ล่ะ": "lâʔ", "ห้า": "hâː", "บาท": "bàːt", "ว่า": "wâː", "ใช่": "tɕʰâj", "ยัง": "jaŋ", "ฝัน": "fǎn", "คิดถึง": "kʰít tʰɯ̌ŋ", "ถึง": "tʰɯ̌ŋ", "เหนื่อย": "nɯ̀aj", "ต้อง": "tɔ̂ŋ", "ห่วง": "hùaŋ", "อาบน้ำ": "ʔàːp náːm", "อาบ": "ʔàːp", "เดี๋ยว": "dǐaw", "ก่อน": "kɔ̀ːn", "พรุ่งนี้": "pʰrûŋ níː", "พรุ่ง": "pʰrûŋ", "หยุด": "jùt", "ลูกค้า": "lûːk kʰáː", "เงินเดือน": "ŋəːn dɯan", "เงิน": "ŋəːn", "ออก": "ʔɔ̀ːk", "หา": "hǎː", "กิน": "kin", "ข้าว": "kʰâːw", "สวย": "sǔaj", "ถ่าย": "tʰàːj", "ทุก": "tʰúk", "ทุกวัน": "tʰúk wan", "ถ้า": "tʰâː", "บ้าน": "bâːn", "บอก": "bɔ̀ːk", "ไอติม": "ʔâj tim", "โรงพยาบาล": "roːŋ pʰá jaː baːn", "โรง": "roːŋ", "กาแฟ": "kaː fɛː", "อิอิ": "ʔì ʔì", "ฮ่าๆ": "hâː hâː", "งับ": "ŋáp", "เอาท์": "ʔaw", "เรียก": "rîak", "ความ": "kʰwaːm", "นั่ง": "nâŋ", "ผัดไทย": "pʰàt tʰaj", "ผัด": "pʰàt", "โดยเฉพาะ": "doːj tɕʰà pʰɔ́ʔ", "สะดวก": "sà duàk", "ขอบ": "kʰɔ̀ːp", "สี่": "sìː", "หมา": "mǎː", "นี่": "nîː", "เจน": "tɕeːn", "เฉยๆ": "tɕʰə̌ːj tɕʰə̌ːj", "เฉย": "tɕʰə̌ːj", "แอร์": "ʔɛː", "ตอน": "toːn", "รูป": "rûːp", "รักษา": "rák sǎː", "สุขภาพ": "sùk pʰâːp", "อากาศ": "ʔaː kàːt", "กลับ": "klàp", "ถุง": "tʰǔŋ", "สี": "sǐː", "อื่น": "ʔɯ̀ːn", "แค่": "kʰɛ̂ː", "ไก่": "kàj", "ไข่": "kʰàj", "ตา": "taː", "ทา": "tʰaː", "ปา": "paː", "พา": "pʰaː", "ปี": "piː", "ผี": "pʰǐː", "ตี": "tiː", "ตาย": "taːj", "ทาย": "tʰaːj", "กา": "kaː", "คา": "kʰaː", "ขาว": "kʰǎːw", "กาว": "kaːw", "นั่น": "nân", "ขาด": "kʰàːt", "ขัด": "kʰàt", "วัด": "wát", "วาด": "wâːt", "ปาก": "pàːk", "ปัก": "pàk", "ตาก": "tàːk", "ตัก": "tàk", "ลาก": "lâːk", "ลัก": "lák", "สูด": "sùːt", "หัด": "hàt", "หาด": "hàːt", "รัด": "rát", "รับ": "ráp", "ลาบ": "lâːp", "ปาด": "pàːt", "กอด": "kɔ̀ːt", "กอบ": "kɔ̀ːp", "รอด": "rɔ̂ːt", "รอบ": "rɔ̂ːp", "จบ": "tɕòp", "จด": "tɕòt", "ตบ": "tòp", "นับ": "náp", "นัด": "nát", "จับ": "tɕàp", "จัด": "tɕàt", "ป่า": "pàː", "ป้า": "pâː", "ยา": "jaː", "ย่า": "jâː", "มือ": "mɯː", "มื้อ": "mɯ́ː", "เสือ": "sɯ̌a", "เสื่อ": "sɯ̀a", "นำ": "nam", "เขา": "kʰǎw", "หู": "hǔː", "สอง": "sɔ̌ːŋ", "สาม": "sǎːm", "พ่อ": "pʰɔ̂ː", "แม่": "mɛ̂ː", "พี่": "pʰîː", "เก้า": "kâw", "ไม้": "mâj", "ใหม่": "màj", "หนึ่ง": "nɯ̀ŋ", "เจ็ด": "tɕèt", "แปด": "pɛ̀ːt", "หก": "hòk", "เจ็บ": "tɕèp", "ถูก": "tʰùːk", "เรา": "raw", "มี": "miː", "คิด": "kʰít", "ซื้อ": "sɯ́ː", "เล็ก": "lék", "น้อง": "nɔ́ːŋ", "ม้า": "máː", "สึก": "sɯ̀k", "กะ": "kàʔ", "กิ": "kìʔ", "กี": "kiː", "กึ": "kɯ̀ʔ", "กือ": "kɯː", "กุ": "kùʔ", "กู": "kuː", "เกะ": "kèʔ", "เก": "keː", "แกะ": "kɛ̀ʔ", "แก": "kɛː", "โกะ": "kòʔ", "โก": "koː", "เกาะ": "kɔ̀ʔ", "กอ": "kɔː", "เกอะ": "kə̀ʔ", "เกอ": "kəː", "ก่า": "kàː", "ก้า": "kâː", "ก๊า": "káː", "ก๋า": "kǎː", "ขา": "kʰǎː", "ข่า": "kʰàː", "ข้า": "kʰâː", "ค่า": "kʰâː", "ค้า": "kʰáː"};
+      var IPA_CONS = {"ก": "kɔː kàj", "จ": "tɕaːn", "ฎ": "tɕʰá daː", "ฏ": "pà tàk", "ด": "dèk", "ต": "tàw", "บ": "baj mâj", "ป": "plaː", "อ": "ʔàːŋ", "ข": "kʰàj", "ฉ": "tɕʰìŋ", "ฐ": "tʰǎːn", "ถ": "tʰǔŋ", "ผ": "pʰɯ̂ŋ", "ฝ": "fǎː", "ศ": "sǎː laː", "ษ": "rɯː sǐː", "ส": "sɯ̌a", "ห": "hìːp", "ค": "kʰwaːj", "ฆ": "rá kʰaŋ", "ง": "ŋuː", "ช": "tɕʰáːŋ", "ซ": "sôː", "ฌ": "tɕʰəː", "ญ": "jǐŋ", "ฑ": "mon tʰoː", "ฒ": "pʰûː tʰâw", "ณ": "neːn", "ท": "tʰá hǎːn", "ธ": "tʰoŋ", "น": "nǔː", "พ": "pʰaːn", "ฟ": "fan", "ภ": "sǎm pʰaw", "ม": "máː", "ย": "ják", "ร": "rɯa", "ล": "liŋ", "ว": "wɛ̌ːn", "ฬ": "tɕù laː", "ฮ": "nók hûːk"};
+      var IPA_KEYS = Object.keys(IPA_WORD).sort(function (a, b) { return b.length - a.length; });
+      var IPA_TONEMARK = { low: "\u0300", falling: "\u0302", high: "\u0301", rising: "\u030C" };
+      function ipaStripMarks(s) { return String(s).normalize("NFD").replace(/[\u0300\u0301\u0302\u030C]/g, "").normalize("NFC"); }
+      function ipaToneMark(base, toneKey) {
+        var mk = IPA_TONEMARK[toneKey];
+        if (!mk) return base;
+        var m = base.match(/[aeiou\u026F\u0259\u025B\u0254]/);
+        if (!m) return base;
+        return (base.slice(0, m.index + 1) + mk + base.slice(m.index + 1)).normalize("NFC");
+      }
+      function composeIPA(text) {
+        if (!text) return null;
+        var clean = String(text).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, "");
+        var chunks = clean.split(/\s+/), out = [], ci, chunk, rest, hit, ki;
+        for (ci = 0; ci < chunks.length; ci++) {
+          chunk = chunks[ci];
+          if (!chunk) continue;
+          if (chunk === "ๆ") { if (!out.length) return null; out.push(out[out.length - 1]); continue; }
+          rest = chunk;
+          while (rest.length) {
+            hit = null;
+            for (ki = 0; ki < IPA_KEYS.length; ki++) { if (rest.indexOf(IPA_KEYS[ki]) === 0) { hit = IPA_KEYS[ki]; break; } }
+            if (!hit) return null;
+            out.push(IPA_WORD[hit]);
+            rest = rest.slice(hit.length);
+          }
+        }
+        return out.length ? out.join(" ") : null;
+      }
+      function ipaOfPhrase(p, full) {
+        if (!p) return null;
+        var d = IPA_PHRASE[p.id];
+        if (d) return full ? d[1] : d[0];
+        return composeIPA(full ? p.th : (p.sTh || p.th));
+      }
+      function ipaOfText(t) { return composeIPA(t); }
+      function ipaOfWordStr(w) { return IPA_WORD[w] || composeIPA(w); }
+      function ipaOfWordObj(o) {
+        if (!o || !o.w) return null;
+        var full = IPA_WORD[o.w];
+        if (full) {
+          var toks = full.split(" ");
+          if (toks.length === 1 && o.t) return ipaToneMark(ipaStripMarks(toks[0]), o.t);
+          return full;
+        }
+        return composeIPA(o.w);
+      }
+      function ipaSpan(txt) { return txt ? '<span class="ipa-sub">/' + txt + "/</span>" : ""; }
+      function ipaIn(txt) { return txt ? ' <span class="ipa-in">/' + txt + "/</span>" : ""; }
+      function fbSlash(s) { return s ? " /" + s + "/" : ""; }
+      window.__IPA = { phrase: IPA_PHRASE, word: IPA_WORD, cons: IPA_CONS, compose: composeIPA, ofPhrase: ipaOfPhrase, ofText: ipaOfText, ofWordStr: ipaOfWordStr, ofWordObj: ipaOfWordObj };
+
       function getMemo(id) {
         return (store.memo && store.memo[id]) || "";
       }
@@ -627,7 +691,7 @@
       function wordsPanelHTML(p, ctx) {
         var w = WORDS_BY_ID[p.id];
         if (!w) return "";
-        return '<div class="parts words-panel" id="wp-' + ctx + '-' + p.id + '">' + w.map(function (x) { return '<span class="pw thai">' + x[0] + '</span> ' + x[1] + '（' + x[2] + '）'; }).join('<br>') + '</div>';
+        return '<div class="parts words-panel" id="wp-' + ctx + '-' + p.id + '">' + w.map(function (x) { return '<span class="pw thai">' + x[0] + '</span> ' + x[1] + '（' + x[2] + '）' + ipaIn(ipaOfWordStr(x[0])); }).join('<br>') + '</div>';
       }
       function shadowBoxHTML(p, ctx) {
         var target = p.sTh || p.th;
@@ -636,7 +700,7 @@
           : '<button type="button" class="btn primary" data-play="' + p.id + '-s">▶ お手本を聞く' + (settings.voiceFile ? '' : '（機械の声）') + '</button>';
         return '<div class="shadow-box" id="sh-' + ctx + '-' + p.id + '">' +
           '<p class="small" style="margin:0 0 6px;"><b>モノマネ練習</b>：①お手本を聞く → ②マイクでまねして話す → ③聞き取りとお手本を見比べる → もう一度お手本を聞く、を繰り返します。まねることで、発音が耳と口に染み込んでいきます。</p>' +
-          '<div style="margin:0 0 8px;">カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
+          '<div style="margin:0 0 8px;">カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + ipaIn(ipaOfPhrase(p)) + '</div>' +
           '<div class="row-btns">' + playBtn +
           '<button type="button" class="btn" data-shadow-mic="' + ctx + ':' + p.id + '">🎤 まねして話す</button></div>' +
           '<div id="shres-' + ctx + '-' + p.id + '"></div></div>';
@@ -649,7 +713,7 @@
         return '<div class="phrase-row"><div class="row-head">' + (i + 1) + '. ' + statusChip(p) + '</div>' +
           '<div class="thai-text thai">' + (p.sTh || p.th) + '</div>' +
           '<p class="meaning">' + p.ja + '</p>' +
-          '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
+          '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + ipaSpan(ipaOfPhrase(p)) + '</div>' +
           sPartsHTML(p) +
           play +
           '<div class="row-btns"><button type="button" class="btn slow" data-shadow="' + ctx + ':' + p.id + '">🔁 モノマネ練習</button>' + (PHRASE_TONE[p.id] ? '<button type="button" class="btn slow" data-tonecheck="' + p.id + '">🎯 声調チェック</button>' : '') +
@@ -710,7 +774,7 @@
           : '<button type="button" class="btn slow" data-play="' + p.id + '-s">お手本を聞く</button>';
         res.innerHTML =
           '<p class="small">このブラウザではマイク判定が使えないため、<b>判定なしモード</b>で練習します。やることは今までと同じです。</p>' +
-          '<div class="heard-box">お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
+          '<div class="heard-box">お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + ipaIn(ipaOfPhrase(p)) + '</div>' +
           '<p class="small">①お手本を聞く → ②声に出してまねる → ③上の文字と見比べて、もう一度お手本を聞く。これで十分に身につきます。</p>' +
           '<div class="row-btns">' + again +
           '<button type="button" class="btn slow" data-mic-retry="' + ctx + ':' + pid + '">マイク判定を試す</button></div>';
@@ -792,7 +856,7 @@
             res.innerHTML = (best >= 0.55
               ? '<p class="judge-ok">' + (best >= 0.85 ? "🎉 完璧！お手本そっくりです" : "✓ 通じました！") + '</p>'
               : '<p class="judge-ng">あと少し！</p>') +
-              '<div class="heard-box">聞き取り：' + bestTxt + '<br>お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
+              '<div class="heard-box">聞き取り：' + bestTxt + '<br>お手本：' + target + '<br>カナ（目印）：' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + ipaIn(ipaOfPhrase(p)) + '</div>' +
               '<div class="row-btns">' + again + '</div><p class="small">見比べたら、もう一度お手本を聞いて、もう一度まねしてみましょう。</p>' +
               '<p class="small">※マイクを使ったあとにお手本の音が小さくなったら、iPhoneの消音（マナーモード）を切って、ページを開き直してください。iPhoneの仕様で、マイク使用後は音声が通話用の小さい音に切り替わるためです。</p>';
           }
@@ -933,18 +997,23 @@
       }
       /* ============ 表示設定（カナなしモード）。既存の記録とは別のキーで追加保存 ============ */
       var SETTINGS_KEY = "thaiSettings.v1";
-      var settings = { kanaOff: false, micBlocked: false, voiceFile: false };
+      var settings = { kanaOff: false, micBlocked: false, voiceFile: false, ipaOff: false };
       try {
         var sraw = localStorage.getItem(SETTINGS_KEY);
-        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV3 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; if (sp2 && sp2.micBlocked) settings.micBlocked = true; if (sp2 && sp2.voiceFile) settings.voiceFile = true; }
+        if (sraw) { var sp2 = JSON.parse(sraw); if (sp2 && sp2.kanaV3 && typeof sp2.kanaOff === "boolean") settings.kanaOff = sp2.kanaOff; if (sp2 && sp2.micBlocked) settings.micBlocked = true; if (sp2 && sp2.voiceFile) settings.voiceFile = true; if (sp2 && sp2.ipaOff) settings.ipaOff = true; }
       } catch (e) {}
       function saveSettings() {
-        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1, kanaV3: 1, micBlocked: settings.micBlocked ? 1 : 0, voiceFile: settings.voiceFile ? 1 : 0 })); } catch (e) {}
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ kanaOff: settings.kanaOff, kanaV2: 1, kanaV3: 1, micBlocked: settings.micBlocked ? 1 : 0, voiceFile: settings.voiceFile ? 1 : 0, ipaOff: settings.ipaOff ? 1 : 0 })); } catch (e) {}
       }
       function applyKanaSetting() {
         if (document.body) document.body.classList.toggle("kana-off", !!settings.kanaOff);
         var kb = document.getElementById("kanaToggleBtn");
         if (kb) kb.textContent = settings.kanaOff ? "カナなしモード：オン（カタカナを隠しています）" : "カナなしモード：オフ（カタカナを表示中）";
+      }
+      function applyIpaSetting() {
+        if (document.body) document.body.classList.toggle("ipa-off", !!settings.ipaOff);
+        var ib = document.getElementById("ipaToggleBtn");
+        if (ib) ib.textContent = settings.ipaOff ? "発音記号（IPA）：非表示" : "発音記号（IPA）：表示中";
       }
       function todayStr() {
         var d = new Date();
@@ -1031,7 +1100,9 @@
       }
       function sPartsHTML(p) {
         if (!p.sParts) return "";
-        return '<div class="parts">' + p.sParts.map(function (w) { return '<span class="pw b-kana">' + w[0] + '</span>（' + w[1] + '）'; }).join('・') + '</div>';
+        var wsx = WORDS_BY_ID[p.id];
+        var aligned = wsx && wsx.length === p.sParts.length;
+        return '<div class="parts">' + p.sParts.map(function (w, wi) { return '<span class="pw b-kana">' + w[0] + '</span>（' + w[1] + '）' + (aligned ? ipaIn(ipaOfWordStr(wsx[wi][0])) : ""); }).join('・') + '</div>';
       }
       /* 声調（タイ文字で決まる厳密な型）を音節ごとに描く */
       var TONE_TRACK = { mid: [3, 3], low: [1.3, 1.3], falling: [4.7, 1.3], high: [4.7, 4.7], rising: [1.5, 4.5] };
@@ -1058,14 +1129,14 @@
       }
       function politeHTML(p) {
         return '<details class="polite"><summary>丁寧な言い方（お店の人・目上の人向け）</summary>' +
-          '<div class="kana b-kana">' + p.kana + '</div>' +
+          '<div class="kana b-kana">' + p.kana + '</div>' + ipaSpan(ipaOfPhrase(p, true)) +
           '<div class="thai-text thai">' + p.th + '</div>' +
           partsHTML(p) + formHTML(p) +
           '<div class="play-row"><button type="button" class="btn slow" data-play="' + p.id + '">' + ICON_PLAY + '丁寧な音声</button>' +
           '<button type="button" class="btn slow" data-play="' + p.id + '-slow">' + ICON_PLAY + 'ゆっくり</button></div>' + toneBoxPolite(p) + '</details>';
       }
       function politeLineHTML(p) {
-        return '<div class="polite-line">丁寧：<span class="b-kana">' + p.kana + '</span><button type="button" class="btn slow" data-play="' + p.id + '">聞く</button></div>';
+        return '<div class="polite-line">丁寧：<span class="b-kana">' + p.kana + '</span>' + ipaIn(ipaOfPhrase(p, true)) + '<button type="button" class="btn slow" data-play="' + p.id + '">聞く</button></div>';
       }
       function statusChip(p) {
         var r = store.prog[p.id];
@@ -1089,7 +1160,7 @@
         return '<div class="scene-name">' + SCENES[p.scene] + (badgeText ? '<span class="badge' + (badgeText === "新規" ? " new" : "") + '">' + badgeText + '</span>' : "") + '</div>' +
           '<div class="thai-text thai" style="font-size:24px;">' + (p.sTh || p.th) + '</div>' +
           '<p class="meaning">' + p.ja + '</p>' +
-          '<div>' + kanaHTML(p.sKana || p.kana, hideKana) + '</div>' +
+          '<div>' + kanaHTML(p.sKana || p.kana, hideKana) + ipaSpan(ipaOfPhrase(p)) + '</div>' +
           sPartsHTML(p) +
           toneBoxHTML(p) +
           playButtonsS(p) +
@@ -1199,7 +1270,7 @@
             var p = BY_ID[q];
             return '<div class="phrase-row"><div class="row-head">' + statusChip(p) + '</div>' +
               '<div class="thai-text thai">' + (p.sTh || p.th) + '</div><p class="meaning">' + p.ja + '</p>' +
-              '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
+              '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + ipaSpan(ipaOfPhrase(p)) + '</div>' +
               sPartsHTML(p) + playButtonsS(p) + '<div class="row-btns">' + (PHRASE_TONE[p.id] ? '<button type="button" class="btn slow" data-tonecheck="' + p.id + '">🎯 声調チェック</button>' : '') + '</div><div class="tc-box"></div>' + politeLineHTML(p) + memoHTML(p, "d") + '</div>';
           }).join("");
           el.innerHTML = essentSectionHTML("t") + cultureDailyHTML() + '<div class="card done-box"><div class="face">よくできました</div><p>' + msg + '</p>' +
@@ -1295,7 +1366,7 @@
               '<div class="row-head">' + statusChip(p) + '</div>' +
               '<div class="thai-text thai">' + (p.sTh || p.th) + '</div>' +
               '<p class="meaning">' + p.ja + '</p>' +
-              '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + '</div>' +
+              '<div>' + kanaHTML(p.sKana || p.kana, settings.kanaOff) + ipaSpan(ipaOfPhrase(p)) + '</div>' +
               sPartsHTML(p) +
               playButtonsS(p) +
               '<div class="row-btns"><button type="button" class="btn slow" data-shadow="s:' + p.id + '">🔁 モノマネ練習</button>' + (PHRASE_TONE[p.id] ? '<button type="button" class="btn slow" data-tonecheck="' + p.id + '">🎯 声調チェック</button>' : '') + '</div>' +
@@ -1380,8 +1451,8 @@
           else if (b === btn) b.classList.add("wrong");
         });
         var fb = document.getElementById("quizFb");
-        if (correct) { quiz.score++; fb.textContent = "正解！ 「" + (p.sKana || p.kana) + "」"; fb.style.color = "var(--good)"; }
-        else { fb.textContent = "正解は「" + p.ja + "」（" + (p.sKana || p.kana) + "）"; fb.style.color = "var(--bad)"; }
+        if (correct) { quiz.score++; fb.textContent = "正解！ 「" + (p.sKana || p.kana) + "」" + fbSlash(ipaOfPhrase(p)); fb.style.color = "var(--good)"; }
+        else { fb.textContent = "正解は「" + p.ja + "」（" + (p.sKana || p.kana) + fbSlash(ipaOfPhrase(p)) + "）"; fb.style.color = "var(--bad)"; }
         setTimeout(function () { quiz.idx++; quiz.answered = false; stopAudio(); renderQuiz(); }, 2400);
       }
 
@@ -1393,7 +1464,7 @@
           html += '<div class="card tone-card"><div class="tone-head"><span class="tone-name">' + t.name + '</span></div>' +
             '<p class="tone-desc" style="margin:4px 0 0;">' + t.desc + '</p>' +
             toneSVG(t.tone, 64) +
-            '<div class="example"><span class="thai-text thai">' + t.word + '</span><span class="kana">' + t.kana + '</span><span class="meaning">' + t.ja + '</span></div>' +
+            '<div class="example"><span class="thai-text thai">' + t.word + '</span><span class="kana">' + t.kana + '</span><span class="meaning">' + t.ja + '</span>' + ipaIn(ipaOfWordStr(t.word)) + '</div>' +
             '<div class="play-row"><button type="button" class="btn primary" data-play="' + t.id + '">' + ICON_PLAY + '音声を聞く</button>' +
             '<button type="button" class="btn slow" data-play="' + t.id + '-slow">' + ICON_PLAY + 'ゆっくり</button></div></div>';
         });
@@ -1466,7 +1537,7 @@
         list.forEach(function (c, i) {
           h += '<div class="cons-cell"><span class="ch thai">' + c.ch + '</span>' +
             '<span class="nm thai">' + c.ch + ' ' + c.nm + (c.rare ? '<span class="rare-tag">レア</span>' : '') + '</span>' +
-            '<span class="kn">' + c.kn + '</span><span class="ja">' + c.ja + '</span>' +
+            '<span class="kn">' + c.kn + '</span>' + ipaIn(IPA_CONS[c.ch]) + '<span class="ja">' + c.ja + '</span>' +
             '<button type="button" class="btn" data-play="cons' + ("0" + (startIdx + i)).slice(-2) + '">' + ICON_PLAY + '聞く</button></div>';
         });
         return h + '</div>';
@@ -1474,7 +1545,7 @@
       function demoRow(set, startIdx) {
         var h = '<div class="demo-row">';
         set.forEach(function (d, i) {
-          h += '<div class="demo-chip"><span class="thai">' + d[0] + '</span><span class="tn">' + d[1] + '</span>' +
+          h += '<div class="demo-chip"><span class="thai">' + d[0] + '</span><span class="tn">' + d[1] + '</span>' + ipaIn(ipaOfWordStr(d[0])) +
             '<button type="button" class="btn" data-play="dm' + ("0" + (startIdx + i)).slice(-2) + '">' + ICON_PLAY + '</button></div>';
         });
         return h + '</div>';
@@ -1508,16 +1579,16 @@
         html += '<div class="card"><h3 style="margin:0 0 6px;">5. 母音（短い・長いのペア）</h3>' +
           '<p class="small" style="margin:0;">タイ語は母音の長さで意味が変わります。短い・長いを聞き比べてください（子音は全部 ゴー です）。</p>';
         VOWEL_PAIRS.forEach(function (p, i) {
-          html += '<div class="vowel-row"><span class="thai">' + p[0] + '</span><span class="kana">' + p[1] + '</span>' +
+          html += '<div class="vowel-row"><span class="thai">' + p[0] + '</span><span class="kana">' + p[1] + '</span>' + ipaIn(ipaOfWordStr(p[0])) +
             '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 1)).slice(-2) + '">' + ICON_PLAY + '</button>' +
-            '<span class="thai">' + p[2] + '</span><span class="kana">' + p[3] + '</span>' +
+            '<span class="thai">' + p[2] + '</span><span class="kana">' + p[3] + '</span>' + ipaIn(ipaOfWordStr(p[2])) +
             '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 2)).slice(-2) + '">' + ICON_PLAY + '</button></div>';
         });
         html += '</div>';
 
         html += '<div class="card"><h3 style="margin:0 0 6px;">6. 知っている単語を読んでみる</h3>';
         READ_WORDS.forEach(function (w, i) {
-          html += '<div class="example"><span class="thai-text thai">' + w.w + '</span><span class="kana">' + w.kn + '</span><span class="meaning">' + w.ja + '</span>' +
+          html += '<div class="example"><span class="thai-text thai">' + w.w + '</span><span class="kana">' + w.kn + '</span><span class="meaning">' + w.ja + '</span>' + ipaIn(ipaOfWordStr(w.w)) +
             '<button type="button" class="btn" data-play="wd' + ("0" + (i + 1)).slice(-2) + '">' + ICON_PLAY + '聞く</button></div>' +
             '<p class="small" style="margin:2px 0 8px;">' + w.note + '</p>';
         });
@@ -1687,7 +1758,7 @@
         talk.done.forEach(function (t) {
           var p = BY_ID[t.id];
           if (t.w === "p") {
-            html2 += '<div class="bubble p"><div>🗣 ' + p.th + '</div><div class="b-kana">' + p.kana + '</div><div class="b-ja">' + p.ja + '</div><button type="button" class="btn slow" data-play="' + p.id + '">もう一度聞く</button></div>';
+            html2 += '<div class="bubble p"><div>🗣 ' + p.th + '</div><div class="b-kana">' + p.kana + '</div>' + ipaSpan(ipaOfPhrase(p, true)) + '<div class="b-ja">' + p.ja + '</div><button type="button" class="btn slow" data-play="' + p.id + '">もう一度聞く</button></div>';
           } else {
             html2 += '<div class="bubble u"><div>' + p.th + '</div><div class="b-ja">' + (t.retry ? '（あとでリトライ）' : t.skip ? '（スキップ）' : '✓ 通じました') + '</div></div>';
           }
@@ -1699,7 +1770,7 @@
               '<p class="small">先に進めたフレーズです。まとめてもう一度挑戦できます。</p>' +
               talk.retry.map(function (rid) {
                 var rp = BY_ID[rid];
-                return '<div class="heard-box">' + rp.ja + '：' + (rp.sKana || rp.kana) +
+                return '<div class="heard-box">' + rp.ja + '：' + (rp.sKana || rp.kana) + ipaIn(ipaOfPhrase(rp)) +
                   (WORDS_BY_ID[rid] ? ' <button type="button" class="btn slow" data-words="wp-r-' + rid + '">🧩 分解</button>' : '') +
                   wordsPanelHTML(rp, "r") + '</div>';
               }).join("") +
@@ -1721,7 +1792,7 @@
         var cur = d.turns[talk.idx];
         var cp = BY_ID[cur.id];
         html2 += '<div class="turn-card" id="turnCard"><div class="small">あなたの番です。タイ語で言ってみましょう</div>' +
-          '<div class="t-ja">' + cp.ja + '</div>' + (settings.kanaOff ? '<div style="margin-top:4px;">' + kanaHTML(cp.sKana || cp.kana, true) + '</div>' : '<div class="t-kana">' + (cp.sKana || cp.kana) + '</div>') +
+          '<div class="t-ja">' + cp.ja + '</div>' + (settings.kanaOff ? '<div style="margin-top:4px;">' + kanaHTML(cp.sKana || cp.kana, true) + '</div>' : '<div class="t-kana">' + (cp.sKana || cp.kana) + '</div>') + ipaSpan(ipaOfPhrase(cp)) +
           playButtonsS(cp) +
           (WORDS_BY_ID[cp.id] ? '<div class="row-btns"><button type="button" class="btn slow" data-words="wp-k-' + cp.id + '">🧩 単語に分解</button></div>' + wordsPanelHTML(cp, "k") : '') +
           '<button type="button" class="mic-btn" id="micBtn">🎤 タップして話す</button>' +
@@ -1954,7 +2025,7 @@
           setTimeout(function () { passTalk(true); }, 1100);
         } else {
           if (res) {
-            res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (heard || "（聞き取れませんでした）") + '<br>お手本：' + (target.sTh || target.th) + '（' + (target.sKana || target.kana) + '）</div><p class="small">お手本を聞いてもう一度話すか、先に進んで後からリトライできます。</p><div class="row-btns"><button type="button" class="btn slow" id="talkAgainBtn">🎤 もう一度話す</button><button type="button" class="btn" id="talkDeferBtn">次へ進む（あとでリトライ）</button></div>';
+            res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + (heard || "（聞き取れませんでした）") + '<br>お手本：' + (target.sTh || target.th) + '（' + (target.sKana || target.kana) + '）' + ipaIn(ipaOfPhrase(target)) + '</div><p class="small">お手本を聞いてもう一度話すか、先に進んで後からリトライできます。</p><div class="row-btns"><button type="button" class="btn slow" id="talkAgainBtn">🎤 もう一度話す</button><button type="button" class="btn" id="talkDeferBtn">次へ進む（あとでリトライ）</button></div>';
             var ab2 = document.getElementById("talkAgainBtn");
             if (ab2) ab2.addEventListener("click", function () { startRec(false); });
             var db2 = document.getElementById("talkDeferBtn");
@@ -2037,19 +2108,19 @@
             '<p class="small">' + pt.desc + '</p>';
           pt.ex.forEach(function (id) {
             var p = BY_ID[id];
-            html += '<div class="heard-box">' + p.ja + '：' + (p.sKana || p.kana) + ' <button type="button" class="btn slow" data-play="' + p.id + '-s">聞く</button></div>';
+            html += '<div class="heard-box">' + p.ja + '：' + (p.sKana || p.kana) + ipaIn(ipaOfPhrase(p)) + ' <button type="button" class="btn slow" data-play="' + p.id + '-s">聞く</button></div>';
           });
           var pq = PREDICT[pi];
           if (pq) {
             html += '<div style="margin-top:10px;"><div class="small"><b>予測クイズ</b>：ドリルの前に、形を予測してみましょう</div>' +
               '<div class="t-ja" style="font-size:16px;">' + pq.q + '</div>' +
               '<div class="choices" id="pqChoices' + pi + '">' + pq.choices.map(function (c, ci) {
-                return '<button type="button" data-pq="' + pi + '" data-pqc="' + ci + '"><span class="thai">' + c[0] + '</span><br><span class="small">' + c[1] + '</span></button>';
+                return '<button type="button" data-pq="' + pi + '" data-pqc="' + ci + '"><span class="thai">' + c[0] + '</span><br><span class="small">' + c[1] + '</span>' + ipaIn(ipaOfText(c[0])) + '</button>';
               }).join("") + '</div><div id="pqRes' + pi + '"></div></div>';
           }
           html += '<div style="margin-top:10px;"><div class="small"><b>入れ替えドリル</b>：次の文をタイ語で言ってみましょう</div>' +
             '<div class="t-ja" style="font-size:17px;">' + pt.drill.ja + '</div>' +
-            '<div id="drillAns' + pi + '" class="heard-box" style="display:none;">' + pt.drill.th + '（' + pt.drill.kana + '）</div>' +
+            '<div id="drillAns' + pi + '" class="heard-box" style="display:none;">' + pt.drill.th + '（' + pt.drill.kana + '）' + ipaIn(ipaOfText(pt.drill.th)) + '</div>' +
             '<div class="row-btns"><button type="button" class="btn slow" data-ans="' + pi + '">読み方を見る</button><button type="button" class="btn slow" data-tts="' + pi + '">お手本（機械の声）</button></div>' +
             '<button type="button" class="mic-btn" data-drillmic="' + pi + '">🎤 タップして話す</button>' +
             '<div id="drillRes' + pi + '"></div></div></div>';
@@ -2141,7 +2212,7 @@
           btn.dataset.rec = ""; btn.classList.remove("listening"); btn.textContent = "🎤 タップして話す";
           if (res) {
             if (dBest >= 0.55) res.innerHTML = '<p class="judge-ok">' + (dBest >= 0.85 ? "🎉 完璧！通じました" : "✓ 通じました！") + '</p><div class="heard-box">聞き取り：' + dBestTxt + '</div>';
-            else res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + dBestTxt + '<br>お手本：' + pt.drill.th + '（' + pt.drill.kana + '）</div>';
+            else res.innerHTML = '<p class="judge-ng">あと少し！</p><div class="heard-box">聞き取り：' + dBestTxt + '<br>お手本：' + pt.drill.th + '（' + pt.drill.kana + '）' + ipaIn(ipaOfText(pt.drill.th)) + '</div>';
           }
         }
         btn._to = setTimeout(function () {
@@ -2368,7 +2439,7 @@
         var html = '<div class="sec-head"><h2>フリー会話（マークと）</h2></div>' +
           '<p class="small">あなたの発言 ' + freeChat.count + ' 回　<button type="button" class="btn slow" id="freeReset">最初からやり直す</button></p>';
         freeChat.turns.forEach(function (t, i) {
-          if (t.w === "p") html += '<div class="bubble p"><div>🗣 ' + t.th + '</div><div class="b-kana">' + t.kana + '</div><div class="b-ja">' + t.ja + '</div>' + partsHTML(t) + '<button type="button" class="btn slow" data-say="' + i + '">もう一度聞く</button></div>';
+          if (t.w === "p") html += '<div class="bubble p"><div>🗣 ' + t.th + '</div><div class="b-kana">' + t.kana + '</div>' + ipaSpan(ipaOfText(t.th)) + '<div class="b-ja">' + t.ja + '</div>' + partsHTML(t) + '<button type="button" class="btn slow" data-say="' + i + '">もう一度聞く</button></div>';
           else html += '<div class="bubble u"><div>' + t.th + '</div><div class="b-ja">（あなたの発言）</div></div>';
         });
         html += '<div class="turn-card"><div class="small">マイクを押して、タイ語で話しかけてください</div>' +
@@ -2379,7 +2450,7 @@
           freeChat.hints.forEach(function (id) {
             var p = BY_ID[id];
             if (!p) return;
-            html += '<div class="heard-box">' + p.ja + '：' + (p.sKana || p.kana) + ' <button type="button" class="btn slow" data-play="' + p.id + '-s">聞く</button></div>';
+            html += '<div class="heard-box">' + p.ja + '：' + (p.sKana || p.kana) + ipaIn(ipaOfPhrase(p)) + ' <button type="button" class="btn slow" data-play="' + p.id + '-s">聞く</button></div>';
           });
         }
         el.innerHTML = html;
@@ -2619,6 +2690,8 @@
           var pr = document.getElementById("flowProg");
           if (st) st.textContent = "止めました。また聞きたくなったら「はじめる」を押してください。";
           if (th) th.textContent = "—";
+          var ipx = document.getElementById("flowIpa");
+          if (ipx) ipx.textContent = "";
           if (ja) ja.textContent = "";
           if (pr) pr.textContent = "";
         }
@@ -2657,6 +2730,8 @@
         }
         var p = flow.list[flow.idx];
         if (thEl) thEl.textContent = p.sTh || p.th;
+        var ipEl = document.getElementById("flowIpa");
+        if (ipEl) { var fip = ipaOfPhrase(p); ipEl.textContent = fip ? "/" + fip + "/" : ""; }
         if (jaEl) jaEl.textContent = "";
         if (prEl) prEl.textContent = (flow.idx + 1) + " / " + flow.list.length + "（" + flow.setName + "）";
         if (stEl) stEl.textContent = "🔊 まず音だけを聞きましょう";
@@ -2738,6 +2813,7 @@
           '<div class="row-btns"><button type="button" class="btn primary" id="flowPlayBtn">▶ 聞き流しをはじめる</button></div>' +
           '<p class="note" id="flowProg" style="margin-top:10px"></p>' +
           '<div class="thai-text thai" id="flowThai" style="font-size:26px;min-height:40px">—</div>' +
+          '<div class="ipa-sub" id="flowIpa" style="min-height:16px"></div>' +
           '<p class="meaning" id="flowJa" style="min-height:26px"></p>' +
           '<p class="small" id="flowStatus">セットを選んで「はじめる」を押してください。場面は「場面別」のときだけ使われます。</p>' +
           '<div id="flowNext"></div>' +
@@ -2798,9 +2874,9 @@
           '<p style="margin:8px 0 0;">読むコツ：スタンプ単体ではなく、<strong>言葉とセットか・自分から送ってくるか・頻度が上がっているか</strong>の組み合わせで判断する。</p></div>';
         html += '<h3 style="margin:18px 4px 8px">タイのチャット記号</h3><div class="card">' +
           '<div class="sym-row"><span class="sym">555</span><span class="exp"><strong>ハハハ</strong>。タイ語で5は「ハー」と読むので、笑い声そのもの。数が多いほど大笑い（55555）。</span></div>' +
-          '<div class="sym-row"><span class="sym">อิอิ</span><span class="exp"><strong>イイ</strong>。含み笑い・照れ笑い。「ふふ」という感じ。</span></div>' +
-          '<div class="sym-row"><span class="sym">ฮ่าๆ</span><span class="exp"><strong>ハー</strong>。笑いのタイ文字表記。555と同じ意味。</span></div>' +
-          '<div class="sym-row"><span class="sym">งับ</span><span class="exp"><strong>ンガップ</strong>。「クラップ（男性の丁寧語）」の可愛い崩し方。親しい相手や若い女性が使うと、距離の近さのサイン。</span></div>' +
+          '<div class="sym-row"><span class="sym">อิอิ</span><span class="exp"><strong>イイ</strong> <span class="ipa-in">/ʔì ʔì/</span>。含み笑い・照れ笑い。「ふふ」という感じ。</span></div>' +
+          '<div class="sym-row"><span class="sym">ฮ่าๆ</span><span class="exp"><strong>ハー</strong> <span class="ipa-in">/hâː hâː/</span>。笑いのタイ文字表記。555と同じ意味。</span></div>' +
+          '<div class="sym-row"><span class="sym">งับ</span><span class="exp"><strong>ンガップ</strong> <span class="ipa-in">/ŋáp/</span>。「クラップ（男性の丁寧語）」の可愛い崩し方。親しい相手や若い女性が使うと、距離の近さのサイン。</span></div>' +
           '<div class="sym-row"><span class="sym">🙏</span><span class="exp"><strong>万能の合掌</strong>。ありがとう・ごめんなさい・お願いします・こんにちは、まで全部カバー。絵文字でも同じ。</span></div>' +
           '</div>';
         html += '<h3 style="margin:18px 4px 8px">送る時の目安</h3><div class="card">' +
@@ -3150,7 +3226,7 @@
         return {
           prompt: '<p class="small" style="text-align:center;margin:0;">この単語の声調はどれ？</p><div class="tq-big thai">' + word.w + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + word.ja + '</p>',
           playText: word.w, choices: toneChoiceList(word.t),
-          fb: word.w + "（" + word.kn + "）は " + TONE_META[word.t].name + " です",
+          fb: word.w + "（" + word.kn + fbSlash(ipaOfWordObj(word)) + "）は " + TONE_META[word.t].name + " です",
           weak: weakToneItem(word)
         };
       }
@@ -3158,7 +3234,7 @@
         return {
           prompt: '<p class="small" style="text-align:center;margin:0;">音を聞いて、声調はどれ？（もう一度聞くときは下のボタン）</p>',
           playText: word.w, autoPlay: true, choices: toneChoiceList(word.t),
-          fb: word.w + "（" + word.kn + "／" + word.ja + "）は " + TONE_META[word.t].name + " です",
+          fb: word.w + "（" + word.kn + fbSlash(ipaOfWordObj(word)) + "／" + word.ja + "）は " + TONE_META[word.t].name + " です",
           weak: weakToneItem(word)
         };
       }
@@ -3173,7 +3249,7 @@
         return {
           prompt: '<p class="small" style="text-align:center;margin:0;">聞こえたのはどっち？（音が同じで、声調だけが違うペアです）</p>',
           playText: target.w, autoPlay: true, choices: choices,
-          fb: "正解は " + target.w + "（" + target.kn + "／" + target.ja + "）＝ " + TONE_META[target.t].name + "。もう一方の " + other.w + "（" + other.ja + "）は " + TONE_META[other.t].name + " です",
+          fb: "正解は " + target.w + "（" + target.kn + fbSlash(ipaOfWordObj(target)) + "／" + target.ja + "）＝ " + TONE_META[target.t].name + "。もう一方の " + other.w + "（" + other.ja + fbSlash(ipaOfWordObj(other)) + "）は " + TONE_META[other.t].name + " です",
           weak: { id: "pair:" + pair.a.w, kind: "pair", pi: pi }
         };
       }
@@ -3267,7 +3343,7 @@
           prompt: '<p class="small" style="text-align:center;margin:0;">音を聞いて、聞こえた単語を当ててください（通じるペア聞き分け：' + catName + "）</p>",
           playText: target.w, autoPlay: true,
           choices: shuffle(e.opts.map(function (o) { return { label: o.w + "（" + o.ja + "）", ok: o.w === target.w }; })),
-          fb: "正解は " + target.w + "（" + target.kn + "／" + target.ja + "）です。" + target.tag + "。" + e.hint,
+          fb: "正解は " + target.w + "（" + target.kn + fbSlash(ipaOfWordStr(target.w)) + "／" + target.ja + "）です。ペアの発音記号：" + e.opts.map(function (o) { return o.w + (ipaOfWordStr(o.w) ? " /" + ipaOfWordStr(o.w) + "/" : ""); }).join("、") + "。" + target.tag + "。" + e.hint,
           weak: { id: "lp:" + idx, kind: "lpair", pi: idx }
         };
       }
@@ -3278,7 +3354,7 @@
         return {
           prompt: '<p class="small" style="text-align:center;margin:0;">この文字の読み方（名前）は？</p><div class="tq-big thai">' + c.ch + '</div>',
           playText: c.ch + " " + c.nm, choices: choices,
-          fb: c.ch + " は「" + c.kn + "」（" + c.ch + " " + c.nm + "＝" + c.ja + "）で、" + c.g + " です",
+          fb: c.ch + " は「" + c.kn + fbSlash(IPA_CONS[c.ch]) + "」（" + c.ch + " " + c.nm + "＝" + c.ja + "）で、" + c.g + " です",
           weak: { id: "cons:" + c.ch, kind: "cons", ch: c.ch }
         };
       }
@@ -3287,7 +3363,7 @@
         return {
           prompt: '<p class="small" style="text-align:center;margin:0;">この文字はどのグループ？</p><div class="tq-big thai">' + c.ch + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + c.kn + '</p><p class="small" style="text-align:center;margin:4px 0 0;color:#8a6100;">ヒント：中子音は9文字だけ。息が強い音は高子音、それ以外は低子音です</p>',
           playText: c.ch + " " + c.nm, choices: choices,
-          fb: c.ch + "（" + c.kn + "）は " + c.g + " です",
+          fb: c.ch + "（" + c.kn + fbSlash(IPA_CONS[c.ch]) + "）は " + c.g + " です",
           weak: { id: "cons:" + c.ch, kind: "cons", ch: c.ch }
         };
       }
@@ -3300,7 +3376,7 @@
             { label: vp[0] + "（" + vp[1] + "）", ok: !playLong },
             { label: vp[2] + "（" + vp[3] + "）", ok: playLong }
           ],
-          fb: "聞こえたのは " + target + "（" + (playLong ? vp[3] : vp[1]) + "）です",
+          fb: "聞こえたのは " + target + "（" + (playLong ? vp[3] : vp[1]) + fbSlash(ipaOfWordStr(target)) + "）です",
           weak: { id: "vw:" + vp[0], kind: "vowel", s: vp[0], l: vp[2], skn: vp[1], lkn: vp[3], playLong: playLong }
         };
       }
@@ -3308,7 +3384,7 @@
         return {
           prompt: '<p class="small" style="text-align:center;margin:0;">3ステップで考えてみましょう。この単語の声調はどれ？</p><div class="tq-big thai">' + item.w + '</div><p class="small" style="text-align:center;margin:2px 0 0;">' + item.ja + '</p>',
           playText: item.w, choices: toneChoiceList(item.t),
-          fb: item.w + "（" + item.kn + "）は " + TONE_META[item.t].name + "。" + item.why,
+          fb: item.w + "（" + item.kn + fbSlash(ipaOfWordObj(item)) + "）は " + TONE_META[item.t].name + "。" + item.why,
           weak: weakToneItem(item)
         };
       }
@@ -3363,7 +3439,7 @@
         list.forEach(function (c) {
           h += '<div class="cons-cell"><span class="ch thai">' + c.ch + '</span>' +
             '<span class="nm thai">' + c.ch + ' ' + c.nm + (c.rare ? '<span class="rare-tag">レア</span>' : '') + '</span>' +
-            '<span class="kn">' + c.kn + '</span><span class="ja">' + c.ja + '</span>' +
+            '<span class="kn">' + c.kn + '</span>' + ipaIn(IPA_CONS[c.ch]) + '<span class="ja">' + c.ja + '</span>' +
             '<button type="button" class="btn" data-play="' + c.id + '">' + ICON_PLAY + '聞く</button></div>';
         });
         return h + '</div>';
@@ -3385,7 +3461,7 @@
             var h = "";
             TONES.forEach(function (t) {
               h += '<div style="border-top:1px dashed var(--line,#e3e6ea);padding:8px 0;"><strong>' + t.name + '</strong><span class="small"> ― ' + t.desc + '</span>' + toneSVG(t.tone, 46) +
-                '<div class="example"><span class="thai-text thai">' + t.word + '</span><span class="kana">' + t.kana + '</span><span class="meaning">' + t.ja + '</span>' +
+                '<div class="example"><span class="thai-text thai">' + t.word + '</span><span class="kana">' + t.kana + '</span><span class="meaning">' + t.ja + '</span>' + ipaIn(ipaOfWordStr(t.word)) +
                 '<button type="button" class="btn" data-saytext="' + t.word + '">' + ICON_PLAY + '聞く</button></div></div>';
             });
             return h;
@@ -3417,9 +3493,9 @@
           learn: function () {
             var h = '<p class="small" style="margin:0;">短い・長いのペアを聞き比べてください（子音は全部 ゴー です）。</p>';
             VOWEL_PAIRS.forEach(function (p, i) {
-              h += '<div class="vowel-row"><span class="thai">' + p[0] + '</span><span class="kana">' + p[1] + '</span>' +
+              h += '<div class="vowel-row"><span class="thai">' + p[0] + '</span><span class="kana">' + p[1] + '</span>' + ipaIn(ipaOfWordStr(p[0])) +
                 '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 1)).slice(-2) + '">' + ICON_PLAY + '</button>' +
-                '<span class="thai">' + p[2] + '</span><span class="kana">' + p[3] + '</span>' +
+                '<span class="thai">' + p[2] + '</span><span class="kana">' + p[3] + '</span>' + ipaIn(ipaOfWordStr(p[2])) +
                 '<button type="button" class="btn" data-play="vw' + ("0" + (2 * i + 2)).slice(-2) + '">' + ICON_PLAY + '</button></div>';
             });
             return h;
@@ -3695,7 +3771,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
             prompt: '<p class="small" style="text-align:center;margin:0;">音を聞いて、意味を当ててください</p><div class="tq-big thai">' + (p.sTh || p.th) + '</div>',
             playText: p.sTh || p.th, autoPlay: true,
             choices: shuffle([p].concat(others)).map(function (x) { return { label: x.ja, ok: x.id === p.id }; }),
-            fb: (p.sTh || p.th) + "（" + (p.sKana || p.kana) + "）＝ " + p.ja
+            fb: (p.sTh || p.th) + "（" + (p.sKana || p.kana) + fbSlash(ipaOfPhrase(p)) + "）＝ " + p.ja
           };
         }
         var c = CONS_ALL[Math.floor(Math.random() * CONS_ALL.length)];
@@ -3811,7 +3887,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
             h += '<div style="border-top:1px solid var(--line); padding:10px 0;">' +
               '<div style="display:flex; align-items:center; gap:8px;"><span class="thai" lang="th" style="font-size:19px;">' + x.th + '</span><button type="button" class="btn slow" data-saytext="' + x.th + '">🔊</button></div>' +
               '<div style="margin-top:6px;"><button type="button" class="btn line-reveal">意味と読みを見る</button></div>' +
-              '<div class="line-ans" style="display:none; margin-top:6px;"><div class="small">' + x.kn + '</div><div>' + x.ja + '</div></div>' +
+              '<div class="line-ans" style="display:none; margin-top:6px;"><div class="small">' + x.kn + ipaIn(ipaOfText(x.th)) + '</div><div>' + x.ja + '</div></div>' +
               "</div>";
           });
           h += "</div>";
@@ -3935,8 +4011,17 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         rerenderActive();
         toast(settings.kanaOff ? "カナなしモードにしました。耳を主役に練習しましょう" : "カタカナを表示します");
       });
+      var ipaToggleBtn = document.getElementById("ipaToggleBtn");
+      if (ipaToggleBtn) ipaToggleBtn.addEventListener("click", function () {
+        settings.ipaOff = !settings.ipaOff;
+        saveSettings();
+        applyIpaSetting();
+        rerenderActive();
+        toast(settings.ipaOff ? "発音記号（IPA）を隠しました" : "発音記号（IPA）を表示します");
+      });
       saveSettings();
       applyKanaSetting();
+      applyIpaSetting();
       updateProgress();
       renderCourse();
     </script>
