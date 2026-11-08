@@ -344,6 +344,27 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 </div>
 </div>
 
+<!-- モテ日課タブ -->
+<div class="tabpage" id="page-mote">
+<div class="card flush">
+<div class="sec-head"><h2>モテ日課</h2><span class="time" id="moteCount">今日 0/10</span></div>
+<p class="small" style="padding:0 16px;margin:4px 0 0;">51歳のモテは若さではなく、清潔感×佇まい×余裕。1日1回、自分を整えるチェックです。全部できなくて大丈夫で、意識すること自体が効きます。</p>
+<div id="moteList"></div>
+<div class="prog"><div id="moteProg" style="width:0%"></div></div>
+<div id="moteCelebration"></div>
+</div>
+
+<div class="card">
+<h2>効く理由（3つの柱）</h2>
+<ul class="tight">
+<li><b>清潔感</b>：肌・髪・爪・歯・服・香り。年齢が上がるほど「不潔さのなさ」がそのまま魅力になります。</li>
+<li><b>佇まい</b>：姿勢・歩き方・笑顔・目線。ゆっくり落ち着いて動く人は、それだけで余裕に見えます。</li>
+<li><b>余裕</b>：求める人ではなく、溢れる人でいる。機嫌を自分で管理し、人の話を聞け、具体で褒められる人。</li>
+</ul>
+<p class="small">逆に消したいのは、必死さ・下心の透け・若作りの頑張りすぎ。この3つを消すだけで上位に入ります。</p>
+</div>
+</div>
+
 <!-- 写真タブ -->
 <div class="tabpage" id="page-photo">
 <div class="card">
@@ -687,7 +708,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="card">
 <h2>記録について</h2>
 <p class="small">チェック・状態・写真の記録は、すべてこのブラウザの中に保存されています。ブラウザのデータを消すと記録も消えます。大事な写真はスマホの写真アプリにも残しておいてください。</p>
-<p class="tiny">アプリの版：2026.11.04-5（眼輪筋トレーニング・側頭筋ほぐし・頬の表情筋トレーニングを追加／今週のケアはレチノールの枠のみに整理）</p>
+<p class="tiny">アプリの版：2026.11.09-1（「モテ日課」チェックを追加）</p>
 <button type="button" class="btn danger block" id="resetBtn">すべての記録を消して最初からにする</button>
 </div>
 </div>
@@ -698,6 +719,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <button type="button" data-tab="today" class="on"><span class="ic">☀</span>今日</button>
 <button type="button" data-tab="photo"><span class="ic">📷</span>写真</button>
 <button type="button" data-tab="body"><span class="ic">🏋</span>体づくり</button>
+<button type="button" data-tab="mote"><span class="ic">✨</span>モテ日課</button>
 <button type="button" data-tab="guide"><span class="ic">📖</span>ガイド</button>
 <button type="button" data-tab="settings"><span class="ic">⚙</span>設定</button>
 </nav>
@@ -759,6 +781,7 @@ if(!state.logs[k]) state.logs[k]={ am:{}, pm:{}, inner:{}, body:{}, cond:{ red:-
 if(!state.logs[k].cond) state.logs[k].cond={ red:-1, dry:-1, puff:-1, eye:-1};
 if(!state.logs[k].inner) state.logs[k].inner={};
 if(!state.logs[k].body) state.logs[k].body={};
+if(!state.logs[k].mote) state.logs[k].mote={};
 return state.logs[k];
 }
 
@@ -1297,9 +1320,64 @@ renderTaskList("body", menu.items, log.body);
 paintStats();
 }
 
+/* ---------- モテ日課 ---------- */
+var MOTE_GROUPS=[
+{ title:"清潔感", items:[
+{ id:"nails", name:"爪をチェックした（短く清潔に）"},
+{ id:"breath", name:"歯と口臭のケアをした"},
+{ id:"skin", name:"髪と肌を整えた"},
+{ id:"clothes", name:"服のシワ・汚れをチェックした"},
+{ id:"scent", name:"香りは「ほのかに」までにした"}
+]},
+{ title:"佇まい", items:[
+{ id:"posture", name:"姿勢と歩き方を意識した"},
+{ id:"smile", name:"笑顔と目線を意識した"}
+]},
+{ title:"余裕", items:[
+{ id:"mood", name:"機嫌よく過ごした（愚痴・焦りを見せない）"},
+{ id:"listen", name:"誰かの話をよく聞いた"},
+{ id:"praise", name:"具体で誰かを褒めた"}
+]}
+];
+function renderMote(){
+var log=dayLog(todayKey());
+if(!log.mote) log.mote={};
+var el=$("moteList"); el.innerHTML="";
+var total=0, doneCount=0;
+MOTE_GROUPS.forEach(function(g){
+var head=document.createElement("div");
+head.className="sec-head";
+head.innerHTML="<h3>"+esc(g.title)+"</h3>";
+el.appendChild(head);
+g.items.forEach(function(it){
+total++;
+var done=!!log.mote[it.id];
+if(done) doneCount++;
+var b=document.createElement("button");
+b.type="button"; b.className="task"+(done?" done":"");
+b.innerHTML='<span class="box">✓</span><span style="flex:1"><span class="t-name">'+esc(it.name)+"</span></span>";
+b.addEventListener("click", function(){
+var L=dayLog(todayKey());
+if(!L.mote) L.mote={};
+L.mote[it.id]=!L.mote[it.id];
+save(); renderMote();
+});
+el.appendChild(b);
+});
+});
+$("moteCount").textContent="今日 "+doneCount+"/"+total;
+$("moteProg").style.width=(total? Math.round(doneCount/total*100): 0)+"%";
+var cel=$("moteCelebration");
+if(doneCount===total && total>0){
+cel.innerHTML='<div style="padding:2px 16px 16px;text-align:center;"><div style="font-weight:700;font-size:16px;">✨ 今日も溢れる男です</div><div class="small">清潔感・佇まい・余裕、全部そろいました。</div></div>';
+} else {
+cel.innerHTML="";
+}
+}
+
 /* ---------- タブ切替 ---------- */
 function switchTab(name){
-["today","photo","body","guide","settings"].forEach(function(t){
+["today","photo","body","mote","guide","settings"].forEach(function(t){
 $("page-"+t).classList.toggle("on", t===name);
 });
 document.querySelectorAll(".tabbar button").forEach(function(b){
@@ -1308,6 +1386,7 @@ b.classList.toggle("on", b.getAttribute("data-tab")===name);
 window.scrollTo(0,0);
 if(name==="photo") renderPhotos();
 if(name==="body") renderBody();
+if(name==="mote") renderMote();
 if(name==="settings") renderSettings();
 }
 
