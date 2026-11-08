@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>研修所 予約カレンダー</title>
+<style>
+* { box-sizing: border-box;}
+body { font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif; margin: 0; background: #f5f6f8; color: #222;}
+header { background: #2f5d3a; color: #fff; padding: 14px 16px;}
+header h1 { font-size: 20px; margin: 0;}
+header p { margin: 4px 0 0; font-size: 13px; opacity:.9;}
+main { max-width: 960px; margin: 0 auto; padding: 12px;}
+.tabs { display: flex; gap: 8px; margin: 8px 0 14px;}
+.tabs button { flex: 1; padding: 10px; font-size: 15px; border: 1px solid #2f5d3a; background: #fff; color: #2f5d3a; border-radius: 8px; cursor: pointer;}
+.tabs button.active { background: #2f5d3a; color: #fff;}
+.card { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08);}
+.card h2 { font-size: 17px; margin: 0 0 10px;}
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;}
+.cal-head.ym { font-size: 17px; font-weight: bold;}
+.cal-head button { padding: 6px 14px; font-size: 14px; border: 1px solid #ccc; background: #fff; border-radius: 6px; cursor: pointer;}
+table.cal { width: 100%; border-collapse: collapse; table-layout: fixed;}
+table.cal th { font-size: 12px; padding: 4px 0; color: #666;}
+table.cal th.sun { color: #c0392b;} table.cal th.sat { color: #2456a6;}
+table.cal td { border: 1px solid #e3e5e8; vertical-align: top; height: 74px; padding: 3px; font-size: 11px; background: #fff;}
+table.cal td.out { background: #fafafa; color: #bbb;}
+table.cal td.past { background: #f4f4f4; color: #aaa;}
+table.cal td.sel { outline: 2px solid #2f5d3a; outline-offset: -2px;}
+table.cal td.clickable { cursor: pointer;}
+.dnum { font-size: 13px; font-weight: bold; margin-bottom: 2px;}
+.sun.dnum { color: #c0392b;}.sat.dnum { color: #2456a6;}
+.slot { line-height: 1.5; white-space: nowrap;}
+.slot.lb { display: inline-block; width: 2.2em; color: #555;}
+.st-free { color: #2e7d32; font-weight: bold;}
+.st-pend { color: #ef6c00; font-weight: bold;}
+.st-full { color: #b0b0b0; font-weight: bold;}
+.st-block { color: #9e9e9e; font-weight: bold;}
+td.blocked { background: #ececec;}
+.legend { font-size: 12px; color: #555; margin-top: 8px; line-height: 1.7;}
+.notice { background: #fff3cd; border: 1px solid #e6c860; color: #664d03; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; display: none;}
+form label { display: block; font-size: 13px; font-weight: bold; margin: 12px 0 4px;}
+form input[type="text"], form input[type="tel"], form input[type="email"], form input[type="number"], form input[type="date"], form textarea {
+width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px;}
+.slotsel { display: flex; flex-direction: column; gap: 8px;}
+.slotsel label { display: flex; align-items: center; gap: 8px; font-weight: normal; font-size: 15px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin: 0; cursor: pointer;}
+.slotsel label.dis { background: #f0f0f0; color: #999; cursor: not-allowed;}
+.slotsel input { width: 18px; height: 18px;}
+.submitbtn { width: 100%; margin-top: 18px; padding: 14px; font-size: 16px; font-weight: bold; background: #2f5d3a; color: #fff; border: none; border-radius: 8px; cursor: pointer;}
+.submitbtn:disabled { background: #9db8a4;}
+.result { display: none; border-radius: 8px; padding: 12px; font-size: 14px; margin-top: 14px; line-height: 1.7;}
+.result.ok { background: #e6f4ea; border: 1px solid #57a773; color: #1e4620; display: block;}
+.result.err { background: #fdecea; border: 1px solid #d66; color: #7a1f1f; display: block;}
+.bk { font-size: 10px; line-height: 1.45; border-radius: 4px; padding: 1px 3px; margin-top: 2px; overflow: hidden;}
+.bk.confirmed { background: #dcefe2; color: #1e4620;}
+.bk.pending { background: #fdeeda; color: #7a4a00;}
+.bk.blocked { background: #e0e0e0; color: #555;}
+ul.upcoming { list-style: none; padding: 0; margin: 0;}
+ul.upcoming li { border-bottom: 1px solid #eee; padding: 9px 2px; font-size: 14px; line-height: 1.6;}
+ul.upcoming.tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle;}
+.tag.confirmed { background: #2f5d3a; color: #fff;}
+.tag.pending { background: #ef6c00; color: #fff;}
+.tag.blocked { background: #888; color: #fff;}
+.sub { color: #666; font-size: 12px;}
+footer { text-align: center; color: #888; font-size: 12px; padding: 18px 8px 28px;}
+@media (max-width: 560px) { table.cal td { height: 64px; font-size: 10px;}.slot.lb { width: 1.6em;}}
+</style>
+</head>
+<body>
+<header>
+<h1>研修所 予約カレンダー</h1>
+<p>空き状況を確認して、そのままお申し込みいただけます。日貸し（終日）と時間貸し（午前・午後）に対応しています。</p>
+</header>
+<main>
+<div class="tabs">
+<button id="tabBook" class="active" type="button">予約カレンダー（申込）</button>
+<button id="tabAdmin" type="button">全体スケジュール（管理用）</button>
+</div>
+<div id="loadNotice" class="notice">空き状況を読み込めませんでした。表示は目安となります。お申し込みはそのまま送信できます。</div>
+
+<!-- 借りる側 -->
+<section id="viewBook">
+<div class="card">
+<div class="cal-head">
+<button id="prevM1" type="button">◀ 前月</button>
+<div class="ym" id="ym1"></div>
+<button id="nextM1" type="button">翌月 ▶</button>
+</div>
+<table class="cal" id="cal1"></table>
+<div class="legend">
+各日の見方：<b>終</b>=終日（日貸し）／<b>前</b>=午前 9:00〜12:00／<b>後</b>=午後 13:00〜17:00<br>
+<span class="st-free">○ 空き</span>　
+<span class="st-pend">△ 申込中あり</span>　
+<span class="st-full">× 予約済み</span>　
+<span class="st-block">― 貸出不可</span><br>
+日付をタップすると、その日のお申し込みができます。
+</div>
+</div>
+
+<div class="card" id="formCard">
+<h2>お申し込みフォーム</h2>
+<form id="bookForm">
+<label for="fDate">ご希望日</label>
+<input type="date" id="fDate" required>
+<label>区分</label>
+<div class="slotsel" id="slotSel">
+<label data-slotwrap="終日"><input type="radio" name="slot" value="終日"> 終日（日貸し）<span class="sub slotnote"></span></label>
+<label data-slotwrap="午前"><input type="radio" name="slot" value="午前"> 午前 9:00〜12:00<span class="sub slotnote"></span></label>
+<label data-slotwrap="午後"><input type="radio" name="slot" value="午後"> 午後 13:00〜17:00<span class="sub slotnote"></span></label>
+</div>
+<label for="fName">申込者名（必須）</label>
+<input type="text" id="fName" required placeholder="例：山田 太郎">
+<label for="fContact">連絡先（電話またはメール・必須）</label>
+<input type="text" id="fContact" required placeholder="例：090-0000-0000 / example@mail.com">
+<label for="fPurpose">利用目的</label>
+<input type="text" id="fPurpose" placeholder="例：新人研修、会議 など">
+<label for="fHeads">人数</label>
+<input type="number" id="fHeads" min="1" max="999" placeholder="例：10">
+<label for="fNote">備考</label>
+<textarea id="fNote" rows="3" placeholder="ご希望・ご質問があればご記入ください"></textarea>
+<button class="submitbtn" id="submitBtn" type="submit">この内容で申し込む</button>
+<div class="result" id="formResult"></div>
+</form>
+<p class="sub">※ お申し込み時点では仮受付です。担当者からの承認のご連絡をもって予約確定となります。</p>
+</div>
+</section>
+
+<!-- 貸す側（管理用・閲覧専用） -->
+<section id="viewAdmin" style="display:none">
+<div class="card">
+<h2>全体スケジュール（管理用・閲覧専用）</h2>
+<p class="sub">予約台帳に登録された確定・申込中の予約をすべて表示しています。登録内容の変更や承認は、予約台帳（スプレッドシート）側で行ってください。</p>
+<div class="cal-head">
+<button id="prevM2" type="button">◀ 前月</button>
+<div class="ym" id="ym2"></div>
+<button id="nextM2" type="button">翌月 ▶</button>
+</div>
+<table class="cal" id="cal2"></table>
+</div>
+<div class="card">
+<h2>直近の予約リスト</h2>
+<ul class="upcoming" id="upcoming"></ul>
+</div>
+</section>
+</main>
+<footer>研修所 予約カレンダー</footer>
+
+<script>
+var SHEET_ID = "1krxGp4ec02Gh2SxD6Q_BIpj-zTnPQBKqYxiP6QGZlK8";
+var GVIZ_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json&sheet=" + encodeURIComponent("予約");
+var FORM_ENDPOINT = "https://formsubmit.co/ajax/tasukaru.taoka@gmail.com";
+var SLOTS = ["終日", "午前", "午後"];
+var rows = []; // 台帳データ
+var loadOK = false;
+var cur = new Date(); cur.setDate(1);
+var curAdmin = new Date(); curAdmin.setDate(1);
+var selectedDate = null;
+
+function pad(n){ return (n<10?"0":"")+n;}
+function ymd(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function todayStr(){ return ymd(new Date());}
+
+function normDate(v){
+if(v === null || v === undefined || v === "") return "";
+var s = String(v);
+var m = s.match(/Date\((\d+),(\d+),(\d+)/);
+if(m) return m[1]+"-"+pad(parseInt(m[2],10)+1)+"-"+pad(parseInt(m[3],10));
+s = s.replace(/\//g,"-").replace(/[.]/g,"-");
+m = s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+if(m) return m[1]+"-"+pad(parseInt(m[2],10))+"-"+pad(parseInt(m[3],10));
+return "";
+}
+
+function loadData(){
+fetch(GVIZ_URL).then(function(r){ return r.text();}).then(function(t){
+var start = t.indexOf("{"); var end = t.lastIndexOf("}");
+var json = JSON.parse(t.substring(start, end+1));
+var out = [];
+var trs = (json.table && json.table.rows) || [];
+for(var i=0;i<trs.length;i++){
+var c = trs[i].c || [];
+function val(idx){
+var cell = c[idx]; if(!cell) return "";
+if(idx===1){ return normDate(cell.f!== undefined && cell.f!== null && cell.f!== ""? cell.f: cell.v);}
+return cell.v === null || cell.v === undefined? "": String(cell.v);
+}
+var rec = { id: val(0), date: val(1), slot: val(2).trim(), name: val(3), contact: val(4),
+purpose: val(5), heads: val(6), status: val(7).trim(), applied: val(8), note: val(9)};
+if(i===0 && rec.date==="" && rec.slot==="") continue; // 見出し行スキップ
+if(rec.date==="" && rec.slot==="" && rec.name==="") continue;
+out.push(rec);
+}
+rows = out; loadOK = true;
+renderAll();
+}).catch(function(){
+loadOK = false;
+document.getElementById("loadNotice").style.display = "block";
+renderAll();
+});
+}
+
+// 枠の状態: free / pend / full / block
+function slotState(dateStr, slot){
+var st = "free";
+for(var i=0;i<rows.length;i++){
+var r = rows[i];
+if(r.date!== dateStr) continue;
+if(r.status!== "申込中" && r.status!== "確定" && r.status!== "貸出不可") continue;
+var affects = (r.slot === slot) || (r.slot === "終日") || (slot === "終日" && (r.slot === "午前" || r.slot === "午後"));
+if(!affects) continue;
+if(r.status === "貸出不可") return "block";
+if(r.status === "確定") st = "full";
+else if(r.status === "申込中" && st === "free") st = "pend";
+}
+return st;
+}
+function markOf(st){ return st==="free"? "○": st==="pend"? "△": st==="full"? "×": "―";}
+function clsOf(st){ return st==="free"? "st-free": st==="pend"? "st-pend": st==="full"? "st-full": "st-block";}
+
+function buildCal(base, tbodyId, ymId, admin){
+var y = base.getFullYear(), mo = base.getMonth();
+document.getElementById(ymId).textContent = y + "年" + (mo+1) + "月";
+var first = new Date(y, mo, 1);
+var startDay = first.getDay();
+var days = new Date(y, mo+1, 0).getDate();
+var html = "<tr><th class='sun'>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th class='sat'>土</th></tr>";
+var day = 1;
+for(var w=0; w<6 && day<=days; w++){
+html += "<tr>";
+for(var d=0; d<7; d++){
+if((w===0 && d<startDay) || day>days){ html += "<td class='out'></td>"; continue;}
+var dt = new Date(y, mo, day);
+var ds = ymd(dt);
+var dowCls = d===0? "sun": d===6? "sat": "";
+var past = ds < todayStr();
+var tdCls = dowCls + (past? " past": "");
+var inner = "<div class='dnum'>" + day + "</div>";
+if(admin){
+var list = [];
+for(var i=0;i<rows.length;i++){
+var r = rows[i];
+if(r.date!== ds) continue;
+if(r.status!== "確定" && r.status!== "申込中" && r.status!== "貸出不可") continue;
+list.push(r);
+}
+list.sort(function(a,b){ return SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot);});
+for(var j=0;j<list.length;j++){
+var rr = list[j];
+var bc = rr.status === "確定"? "confirmed": rr.status === "申込中"? "pending": "blocked";
+var label = rr.status === "貸出不可"? (rr.slot + " 貸出不可"): (rr.slot + " " + rr.name);
+inner += "<div class='bk " + bc + "'>" + esc(label) + "</div>";
+}
+} else {
+var labels = { "終日":"終", "午前":"前", "午後":"後"};
+var allBlock = true;
+for(var s=0;s<SLOTS.length;s++){
+var stt = slotState(ds, SLOTS[s]);
+if(stt!== "block") allBlock = false;
+inner += "<div class='slot'><span class='lb'>" + labels[SLOTS[s]] + "</span><span class='" + clsOf(stt) + "'>" + markOf(stt) + "</span></div>";
+}
+if(allBlock) tdCls += " blocked";
+if(selectedDate === ds) tdCls += " sel";
+if(!past) tdCls += " clickable";
+html += "<td class='" + tdCls + "' data-date='" + ds + "'>" + inner + "</td>";
+day++; continue;
+}
+html += "<td class='" + tdCls + "'>" + inner + "</td>";
+day++;
+}
+html += "</tr>";
+}
+document.getElementById(tbodyId).innerHTML = html;
+if(!admin){
+var tds = document.querySelectorAll("#cal1 td[data-date]");
+for(var k=0;k<tds.length;k++){
+tds[k].addEventListener("click", function(){
+var ds2 = this.getAttribute("data-date");
+if(ds2 < todayStr()) return;
+selectDate(ds2, true);
+});
+}
+}
+}
+
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function selectDate(ds, scroll){
+selectedDate = ds;
+document.getElementById("fDate").value = ds;
+updateSlotAvailability();
+buildCal(cur, "cal1", "ym1", false);
+if(scroll) document.getElementById("formCard").scrollIntoView({ behavior: "smooth"});
+}
+
+function updateSlotAvailability(){
+var ds = document.getElementById("fDate").value;
+var wraps = document.querySelectorAll("#slotSel label[data-slotwrap]");
+var checkedTaken = false;
+for(var i=0;i<wraps.length;i++){
+var slot = wraps[i].getAttribute("data-slotwrap");
+var input = wraps[i].querySelector("input");
+var note = wraps[i].querySelector(".slotnote");
+var st = ds? slotState(ds, slot): "free";
+var usable = (!ds) || st === "free";
+input.disabled =!usable;
+if(!usable){ wraps[i].classList.add("dis"); if(input.checked){ input.checked = false; checkedTaken = true;}}
+else wraps[i].classList.remove("dis");
+note.textContent = ds? (st === "free"? "": st === "pend"? "（申込中あり）": st === "full"? "（予約済み）": "（貸出不可）"): "";
+}
+if(checkedTaken){ /* 選択が外れた場合はそのまま */}
+}
+
+function renderUpcoming(){
+var ul = document.getElementById("upcoming");
+var t = todayStr();
+var list = rows.filter(function(r){
+return r.date >= t && (r.status === "確定" || r.status === "申込中" || r.status === "貸出不可");
+}).sort(function(a,b){ return a.date < b.date? -1: a.date > b.date? 1: SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot);});
+if(list.length === 0){ ul.innerHTML = "<li class='sub'>直近の予約はありません。</li>"; return;}
+var html = "";
+for(var i=0;i<list.length;i++){
+var r = list[i];
+var d = new Date(r.date + "T00:00:00");
+var wd = "日月火水木金土".charAt(d.getDay());
+var tagCls = r.status === "確定"? "confirmed": r.status === "申込中"? "pending": "blocked";
+html += "<li><b>" + r.date + "（" + wd + "） " + esc(r.slot) + "</b>" +
+"<span class='tag " + tagCls + "'>" + esc(r.status) + "</span><br>" +
+(r.status === "貸出不可"? "貸出不可": esc(r.name) + (r.purpose? " ／ " + esc(r.purpose): "") + (r.heads? " ／ " + esc(r.heads) + "名": "")) +
+(r.contact? "<br><span class='sub'>連絡先：" + esc(r.contact) + "</span>": "") +
+"</li>";
+}
+ul.innerHTML = html;
+}
+
+function renderAll(){
+buildCal(cur, "cal1", "ym1", false);
+buildCal(curAdmin, "cal2", "ym2", true);
+renderUpcoming();
+updateSlotAvailability();
+}
+
+// タブ切替
+document.getElementById("tabBook").addEventListener("click", function(){
+this.classList.add("active"); document.getElementById("tabAdmin").classList.remove("active");
+document.getElementById("viewBook").style.display = ""; document.getElementById("viewAdmin").style.display = "none";
+});
+document.getElementById("tabAdmin").addEventListener("click", function(){
+this.classList.add("active"); document.getElementById("tabBook").classList.remove("active");
+document.getElementById("viewBook").style.display = "none"; document.getElementById("viewAdmin").style.display = "";
+});
+// 月移動
+document.getElementById("prevM1").addEventListener("click", function(){ cur.setMonth(cur.getMonth()-1); buildCal(cur,"cal1","ym1",false);});
+document.getElementById("nextM1").addEventListener("click", function(){ cur.setMonth(cur.getMonth()+1); buildCal(cur,"cal1","ym1",false);});
+document.getElementById("prevM2").addEventListener("click", function(){ curAdmin.setMonth(curAdmin.getMonth()-1); buildCal(curAdmin,"cal2","ym2",true);});
+document.getElementById("nextM2").addEventListener("click", function(){ curAdmin.setMonth(curAdmin.getMonth()+1); buildCal(curAdmin,"cal2","ym2",true);});
+document.getElementById("fDate").addEventListener("change", function(){ selectedDate = this.value; updateSlotAvailability(); buildCal(cur,"cal1","ym1",false);});
+
+// 送信
+document.getElementById("bookForm").addEventListener("submit", function(ev){
+ev.preventDefault();
+var ds = document.getElementById("fDate").value;
+var slotEl = document.querySelector("input[name='slot']:checked");
+var result = document.getElementById("formResult");
+result.className = "result"; result.textContent = "";
+if(!ds){ result.classList.add("err"); result.textContent = "ご希望日を選んでください。"; return;}
+if(!slotEl){ result.classList.add("err"); result.textContent = "区分（終日・午前・午後）を選んでください。埋まっている枠は選べません。"; return;}
+var slotLabel = slotEl.value === "終日"? "終日（日貸し）": slotEl.value === "午前"? "午前 9:00〜12:00": "午後 13:00〜17:00";
+var btn = document.getElementById("submitBtn");
+btn.disabled = true; btn.textContent = "送信中…";
+var payload = {
+_subject: "" + ds + " " + slotEl.value + " " + document.getElementById("fName").value,
+_template: "table",
+"ご希望日": ds,
+"区分": slotLabel,
+"申込者名": document.getElementById("fName").value,
+"連絡先": document.getElementById("fContact").value,
+"利用目的": document.getElementById("fPurpose").value,
+"人数": document.getElementById("fHeads").value,
+"備考": document.getElementById("fNote").value
+};
+fetch(FORM_ENDPOINT, {
+method: "POST",
+headers: { "Content-Type": "application/json", "Accept": "application/json"},
+body: JSON.stringify(payload)
+}).then(function(r){ return r.json().catch(function(){ return {};});}).then(function(){
+result.classList.add("ok");
+result.textContent = "申込を受け付けました。確定は承認のご連絡後となります。ご連絡までしばらくお待ちください。";
+btn.textContent = "送信しました";
+document.getElementById("bookForm").reset();
+document.getElementById("fDate").value = ds;
+}).catch(function(){
+result.classList.add("err");
+result.textContent = "送信に失敗しました。お手数ですが、時間をおいて再度お試しください。";
+btn.disabled = false; btn.textContent = "この内容で申し込む";
+});
+});
+
+// 初期表示
+(function(){
+var t = new Date();
+selectedDate = ymd(t);
+document.getElementById("fDate").value = selectedDate;
+document.getElementById("fDate").min = todayStr();
+renderAll();
+loadData();
+})();
+</script>
+</body>
+</html>
