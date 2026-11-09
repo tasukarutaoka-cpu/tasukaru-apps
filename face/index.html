@@ -717,7 +717,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="card">
 <h2>記録について</h2>
 <p class="small">チェック・状態・写真の記録は、すべてこのブラウザの中に保存されています。ブラウザのデータを消すと記録も消えます。大事な写真はスマホの写真アプリにも残しておいてください。</p>
-<p class="tiny">アプリの版：2026.11.09-3（直近7日の達成ドットを追加）</p>
+<p class="tiny">アプリの版：2026.11.09-4（朝ルーティンにリフトロジーを追加）</p>
 <button type="button" class="btn danger block" id="resetBtn">すべての記録を消して最初からにする</button>
 </div>
 </div>
@@ -836,6 +836,7 @@ function amTasks(){
 return [
 { id:"foam", name:"泡洗顔", desc:"2分。泡でなでるだけ、こすらない。タオルは押さえるだけ", time:"2分"},
 { id:"moist", name:"保湿（ワセリンを薄く）", desc:"1分。顔全体に薄く伸ばす。乾きやすい部分は少し多めに", time:"1分"},
+{ id:"lift", name:"リフトロジー（半顔1分ずつ・計2分）", desc:"EMSレベルは弱めから。肌を整えたあとに", time:"2分"},
 { id:"eye", name:"眼輪筋トレーニング", desc:"1分。下まぶた引き上げ5秒×5回＋目を閉じる・開く×5回。指は添えるだけ、引っ張らない", time:"1分"},
 { id:"temple", name:"側頭筋ほぐし", desc:"30秒。こめかみの上を指の腹で、皮膚ごと小さく回す（こすらない）", time:"30秒"},
 { id:"sun", name:"日焼け止め", desc:"2分。顔・首・耳に。鼻と額は重ね塗り。曇りの日も", time:"2分"}
@@ -909,7 +910,7 @@ var amLeft=amTasks().filter(function(t){ return !log.am[t.id]; }).length;
 var pmLeft=pmTasks().filter(function(t){ return !log.pm[t.id]; }).length;
 var faceDone = (amLeft===0 && pmLeft===0);
 var items=[
-{ id:"face", name:"顔ケア（美容）", time:"約5分", auto:true, done:faceDone,
+{ id:"face", name:"顔ケア（美容）", time:"約7分", auto:true, done:faceDone,
 desc: faceDone? "今日の朝・夜ケアは完了です" : ("朝・夜のルーティンを全部終えると自動で付きます（朝あと"+amLeft+"つ・夜あと"+pmLeft+"つ）") },
 { id:"thai", name:"タイ語（最小セット）", time:"5〜10分", done:!!log.three.thai,
 desc:"今日の最小セットだけでもOKです",
@@ -961,7 +962,7 @@ var L=state.logs[kk];
 var cnt=0;
 if(L){
 var fOk=true;
-amTasks().forEach(function(t){ if(!L.am || !L.am[t.id]) fOk=false; });
+amTasks().forEach(function(t){ if(t.id==="lift" && kk<"2026-11-09") return; if(!L.am || !L.am[t.id]) fOk=false; }); // リフトロジーは2026-11-09導入。それ以前の日は必須にしない（過去日の判定を壊さないため）
 pmTasks().forEach(function(t){ if(!L.pm || !L.pm[t.id]) fOk=false; });
 if(fOk) cnt++;
 if(L.three && L.three.thai) cnt++;
