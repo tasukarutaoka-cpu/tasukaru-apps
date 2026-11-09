@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>どこでも筋トレ｜ジェシーズトレ式×カリステニクス</title>
+<style>
+:root{
+--bg:#f6f4ef;
+--surface:#ffffff;
+--surface2:#efede6;
+--ink:#22302a;
+--ink2:#5c6a62;
+--line:#ddd8cc;
+--accent:#17604c;
+--accent-ink:#ffffff;
+--accent-soft:#dcebe3;
+--warn:#9a5a12;
+--warn-bg:#fbf0da;
+--danger:#a33327;
+--danger-bg:#fbe7e2;
+--shadow:0 1px 3px rgba(34,48,42,.08);
+color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){
+:root{
+--bg:#141a17;
+--surface:#1e2622;
+--surface2:#28312c;
+--ink:#e8ede9;
+--ink2:#a7b5ab;
+--line:#39443d;
+--accent:#4cb894;
+--accent-ink:#0e241c;
+--accent-soft:#234034;
+--warn:#e0a44e;
+--warn-bg:#3a2f1a;
+--danger:#e88a7c;
+--danger-bg:#3d231f;
+--shadow:0 1px 3px rgba(0,0,0,.4);
+}
+}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+margin:0;background:var(--bg);color:var(--ink);
+font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif;
+font-size:16px;line-height:1.65;
+padding-bottom:calc(76px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 8px;}
+h1{font-size:21px;margin:0;line-height:1.35;}
+h2{font-size:18px;margin:0 0 8px;line-height:1.4;}
+h3{font-size:16px;margin:0 0 6px;}
+p{margin:0 0 10px;}
+.small{font-size:13px;color:var(--ink2);}
+.tiny{font-size:12px;color:var(--ink2);}
+a{color:var(--accent);}
+button{font:inherit;cursor:pointer;}
+.card{
+background:var(--surface);border:1px solid var(--line);border-radius:14px;
+box-shadow:var(--shadow);padding:16px;margin-bottom:14px;
+}
+.card.flush{padding:0;overflow:hidden;}
+.statusbar{margin:4px 0 14px;}
+.date-line{font-size:14px;color:var(--ink2);}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.chip{
+background:var(--accent-soft);color:var(--ink);border-radius:999px;
+padding:3px 11px;font-size:13px;font-weight:600;white-space:nowrap;
+}
+.chip.plain{background:var(--surface2);font-weight:500;}
+.chip.now{background:var(--accent);color:var(--accent-ink);}
+.goal{
+border-left:4px solid var(--accent);background:var(--surface);
+border-radius:0 12px 12px 0;padding:12px 14px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.goal.g-title{font-weight:700;font-size:15px;}
+/* tasks */
+.task{
+display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;
+background:none;border:none;border-bottom:1px solid var(--line);
+padding:12px 16px;color:var(--ink);
+}
+.task:last-child{border-bottom:none;}
+.task .box{
+flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);
+margin-top:2px;display:flex;align-items:center;justify-content:center;
+font-size:16px;color:transparent;background:var(--surface);
+}
+.task.done .box{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.task.done .t-name{color:var(--ink2);text-decoration:line-through;text-decoration-thickness:1px;}
+.task .t-name{font-weight:600;font-size:15px;}
+.task .t-desc{font-size:13px;color:var(--ink2);}
+.task .t-badge{
+flex:none;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;margin-top:3px;
+background:var(--warn-bg);color:var(--warn);white-space:nowrap;
+}
+.task .t-badge.info{background:var(--accent-soft);color:var(--ink);}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 2px;gap:8px;}
+.sec-head .time{font-size:13px;color:var(--ink2);}
+.prog{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;margin:10px 16px 14px;}
+.prog>div{height:100%;background:var(--accent);border-radius:99px;transition:width.25s;}
+.all-done{padding:16px;text-align:center;color:var(--ink2);font-size:14px;}
+.btn{
+display:inline-block;border:none;border-radius:10px;padding:11px 18px;
+background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;text-align:center;
+}
+.btn.sub{background:var(--surface2);color:var(--ink);}
+.btn.danger{background:none;color:var(--danger);border:1.5px solid var(--danger);}
+.btn.block{display:block;width:100%;}
+.btn:disabled{opacity:.45;cursor:default;}
+.btn.sm{padding:7px 13px;font-size:13px;border-radius:8px;}
+/* seg */
+.seg{display:flex;gap:8px;flex-wrap:wrap;}
+.seg button{
+border:1.5px solid var(--line);background:var(--surface);color:var(--ink);
+border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;
+}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.seg-label{font-size:13px;color:var(--ink2);font-weight:600;margin:10px 0 6px;}
+/* timer */
+.timer-display{text-align:center;padding:6px 0 2px;}
+.timer-phase{font-size:15px;font-weight:700;color:var(--ink2);min-height:1.6em;}
+.timer-phase.work{color:var(--accent);}
+.timer-phase.rest{color:var(--warn);}
+.timer-sec{font-size:64px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
+.timer-sub{font-size:13px;color:var(--ink2);}
+.timer-btns{display:flex;gap:10px;margin-top:12px;}
+.timer-btns .btn{flex:1;}
+/* stages */
+.stage-row{
+display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;
+background:none;border:none;border-bottom:1px solid var(--line);
+padding:10px 2px;color:var(--ink);
+}
+.stage-row:last-child{border-bottom:none;}
+.stage-row .s-num{
+flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);
+display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink2);margin-top:2px;
+}
+.stage-row.now .s-num{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.stage-row.now .s-name{font-weight:700;}
+.stage-row .s-name{font-size:15px;}
+.stage-row .s-target{font-size:13px;color:var(--ink2);}
+.stage-row .s-here{
+flex:none;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;margin-top:3px;
+background:var(--accent);color:var(--accent-ink);white-space:nowrap;
+}
+.ex-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+.vid-jump{
+background:none;border:none;color:#0b6fa4;font-size:13px;font-weight:700;
+text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap;
+}
+/* videos */
+.vid-thumb{position:relative;border-radius:10px;overflow:hidden;background:#000;cursor:pointer;}
+.vid-thumb img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;opacity:.92;}
+.vid-thumb .play{
+position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+font-size:34px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);
+}
+.vid-frame{width:100%;aspect-ratio:16/9;border:0;border-radius:10px;display:block;background:#000;}
+.vid-card.flash{outline:3px solid var(--accent);outline-offset:2px;}
+.vid-title{font-weight:700;font-size:15px;margin-top:8px;}
+/* photos */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.photo-cell{position:relative;border-radius:10px;overflow:hidden;background:var(--surface2);aspect-ratio:3/4;}
+.photo-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-cell .p-date{
+position:absolute;left:0;right:0;bottom:0;font-size:11px;color:#fff;
+background:rgba(0,0,0,.55);padding:3px 6px;
+}
+.photo-cell.sel{outline:3px solid var(--accent);outline-offset:-3px;}
+.photo-cell .p-del{
+position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;
+background:rgba(0,0,0,.55);color:#fff;border:none;font-size:14px;line-height:1;
+display:flex;align-items:center;justify-content:center;padding:0;
+}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.compare figure{margin:0;}
+.compare img{width:100%;border-radius:10px;display:block;aspect-ratio:3/4;object-fit:cover;background:var(--surface2);}
+.compare figcaption{font-size:13px;color:var(--ink2);text-align:center;margin-top:4px;}
+/* guide */
+details.guide{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:10px;overflow:hidden;}
+details.guide summary{padding:13px 16px;font-weight:700;font-size:15px;cursor:pointer;list-style:none;}
+details.guide summary::-webkit-details-marker{display:none;}
+details.guide .g-body{padding:0 16px 14px;}
+.redflag{background:var(--danger-bg);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
+.redflag .a-title{font-weight:700;color:var(--danger);}
+ul.tight{margin:4px 0 10px;padding-left:20px;}
+ul.tight li{margin-bottom:4px;}
+input[type="date"]{
+font:inherit;color:var(--ink);background:var(--surface);
+border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;width:100%;
+}
+label.f{display:block;font-weight:600;font-size:14px;margin:12px 0 6px;}
+/* tabbar */
+.tabbar{
+position:fixed;left:0;right:0;bottom:0;z-index:20;
+background:var(--surface);border-top:1px solid var(--line);
+display:flex;padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar button{
+flex:1;background:none;border:none;color:var(--ink2);
+padding:9px 2px 7px;font-size:12px;font-weight:600;line-height:1.3;
+}
+.tabbar button .ic{display:block;font-size:20px;line-height:1.1;}
+.tabbar button.on{color:var(--accent);}
+.tabpage{display:none;}
+.tabpage.on{display:block;}
+.hidden{display:none!important;}
+.row-between{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.mt{margin-top:10px;}
+.mb{margin-bottom:10px;}
+.toast{
+position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));
+background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;
+font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88vw;text-align:center;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="statusbar">
+<div>
+<h1>どこでも筋トレ</h1>
+<div class="date-line" id="todayDate"></div>
+<div class="chips">
+<span class="chip" id="dayChip">開始から 1日目</span>
+<span class="chip plain" id="phaseChip">慣らし期間</span>
+<span class="chip plain" id="clearChip">通算クリア 0日</span>
+</div>
+</div>
+</div>
+
+<!-- ============ 今日タブ ============ -->
+<div class="tabpage on" id="page-today">
+<div class="card hidden" id="photoDueCard">
+<div class="row-between">
+<div>
+<div style="font-weight:700;">📷 今月の定点写真がまだです</div>
+<div class="small">変化は写真で見るのがこのプランのルールです。月に1回、同じ場所・同じ光で撮りましょう。</div>
+</div>
+<button type="button" class="btn sm" id="photoDueBtn">写真を撮る</button>
+</div>
+</div>
+
+<div id="restView" class="hidden">
+<div class="goal">
+<div class="g-title">今日は休養日です 🌿</div>
+<p class="small" style="margin:4px 0 0;">休むことも設計のうちです。ローテーションは進まないので、明日は今日のメニューの続きから再開できます。散歩やストレッチは自由にどうぞ。</p>
+</div>
+<button type="button" class="btn sub block" id="undoRestBtn">やっぱり今日やる</button>
+</div>
+
+<div id="menuView">
+<div class="card flush">
+<div class="sec-head">
+<div>
+<div style="font-weight:700;font-size:17px;" id="menuName">A 押す日</div>
+<div class="small" id="menuDesc">胸・肩・三頭</div>
+</div>
+<div class="time" id="menuModeLabel">サーキット2周</div>
+</div>
+<div style="padding:0 16px;">
+<div class="chips" id="rotChips"></div>
+<p class="tiny" id="phaseNote" style="margin:8px 0 0;"></p>
+</div>
+<div class="prog"><div id="menuProg" style="width:0%"></div></div>
+<div id="taskList"></div>
+<div class="all-done hidden" id="allDoneMsg">🎉 今日の分は完了です。おつかれさまでした。<br>次回は次のメニューに進みます。</div>
+</div>
+
+<div class="row-between mb">
+<button type="button" class="btn sub sm" id="miniBtn">忙しい日：5分だけ版にする</button>
+<button type="button" class="btn sub sm" id="restBtn">今日は休む</button>
+</div>
+
+<div class="card">
+<h3>⏱ サーキットタイマー</h3>
+<p class="small">メニューに沿って「動く→休む」を自動で区切ります。音とバイブで合図します（音はタイマー開始時に有効になります）。</p>
+<div class="seg-label">ワーク（動く時間）</div>
+<div class="seg" id="workSeg">
+<button type="button" data-work="30">30秒</button>
+<button type="button" data-work="40" class="on">40秒</button>
+</div>
+<div class="seg-label">周回数</div>
+<div class="seg" id="roundSeg">
+<button type="button" data-rounds="1">1周</button>
+<button type="button" data-rounds="2" class="on">2周</button>
+<button type="button" data-rounds="3">3周</button>
+</div>
+<div class="timer-display">
+<div class="timer-phase" id="tmPhase">準備ができたらスタート</div>
+<div class="timer-sec" id="tmSec">40</div>
+<div class="timer-sub" id="tmSub">—</div>
+</div>
+<div class="timer-btns">
+<button type="button" class="btn" id="tmStartBtn">スタート</button>
+<button type="button" class="btn sub" id="tmResetBtn">リセット</button>
+</div>
+</div>
+
+<div class="card">
+<h3>はじめる前に：ウォームアップ（2〜3分）</h3>
+<p class="small" style="margin-bottom:0;">その場足踏み → 肩回し・首回し → 手首・肘の屈伸 → 足首回し → 膝の屈伸 → 軽い椅子スクワット数回。冷えた関節にいきなり負荷をかけないことが、壊さないための第一歩です。</p>
+</div>
+</div>
+</div>
+
+<!-- ============ 種目・段階タブ ============ -->
+<div class="tabpage" id="page-ex">
+<div class="goal">
+<div class="g-title">最初の関門：ジェシーズトレの「クリアすべき5種目」</div>
+<p class="small" style="margin:4px 0 0;">数ヶ月かけて取りにいく目標です。届いたら、それが段階アップの合図です。</p>
+<div id="gateList"></div>
+</div>
+<p class="small">段階は<strong>1つずつ</strong>。正しいフォームで目標をこなせたら次へ。痛みが出たら1つ戻ります。各行をタップすると「今のレベル」を変えられます（今日タブに反映されます）。</p>
+<div id="exList"></div>
+</div>
+
+<!-- ============ 動画タブ ============ -->
+<div class="tabpage" id="page-video">
+<p class="small">ジェシーズトレ（Shinさん）と吉川凌司さんの参考動画です。サムネイルをタップすると、その場で再生できます。フォームに迷ったら、まず動画で確認しましょう。</p>
+<div id="videoList"></div>
+</div>
+
+<!-- ============ 写真タブ ============ -->
+<div class="tabpage" id="page-photo">
+<div class="card">
+<h3>📷 体の定点写真</h3>
+<p class="small">進捗の判断は、数字ではなく<strong>月1回の定点写真</strong>で見ます。同じ場所・同じ光・同じ距離で撮ると変化が分かります。</p>
+<p class="small" id="photoMonthStatus"></p>
+<input type="file" id="photoInput" accept="image/*" class="hidden" />
+<button type="button" class="btn block" id="photoAddBtn">写真を追加する</button>
+<p class="tiny mt">写真は<strong>この端末の中（IndexedDB）にだけ保存</strong>され、外部に送信されることはありません。</p>
+</div>
+<div class="card hidden" id="compareCard">
+<div class="row-between">
+<h3 style="margin:0;">並べて比べる</h3>
+<button type="button" class="btn sub sm" id="compareClearBtn">選択を外す</button>
+</div>
+<div class="compare mt" id="compareView"></div>
+<p class="tiny mt">下の一覧で写真を2枚タップすると、ここに並びます（前月と今月など）。</p>
+</div>
+<div id="photoGrid" class="photo-grid"></div>
+<p class="small hidden" id="photoEmpty">まだ写真がありません。最初の1枚が「基準」になります。</p>
+</div>
+
+<!-- ============ ガイドタブ ============ -->
+<div class="tabpage" id="page-guide">
+<div class="redflag">
+<div class="a-title">⚠ 安全基準（最優先）</div>
+<ul class="tight">
+<li>筋肉の張り・熱くなる感じ ＝ 正常。そのまま続けて大丈夫です。</li>
+<li>関節（肩・肘・膝・腰）の<strong>鋭い痛み・チクッとした痛み・引っかかり感 ＝ その種目は即中止</strong>。その日はその部位を終了します。</li>
+<li>翌日も痛みが残る場合は、次回その種目の段階を1つ下げます。数日続く・悪化する場合は無理に続けず、まず休みます。<strong>プランより身体が優先</strong>です。</li>
+</ul>
+</div>
+
+<details class="guide">
+<summary>進み方：段階は1つずつ（クリア制）</summary>
+<div class="g-body">
+<ul class="tight">
+<li>各種目に「段階」があります。正しいフォームで目標（回数・秒数）をこなせたら、次へ<strong>1つだけ</strong>進みます。調子がいい日でも2段飛ばしはしません。</li>
+<li>特に懸垂への近道は一番の怪我のもとです（吉川凌司さん）。斜め懸垂から順に進みます。</li>
+<li>最初の2週間は「慣らし期間」。いちばん軽い段階だけで、フォームと習慣を作ります。「気持ちよく終わる」が唯一のルールです。</li>
+<li>1週間空いたら、再開時は段階を1つ下げて慣らし直します。「ゼロから」ではなく「1つ戻る」だけです。</li>
+</ul>
+</div>
+</details>
+
+<details class="guide">
+<summary>メニューの回し方（A→B→Cの順番制）</summary>
+<div class="g-body">
+<ul class="tight">
+<li>曜日ではなく<strong>順番</strong>で回します。出張や予定で崩れても、続きから再開できます。</li>
+<li>A 押す日（胸・肩・三頭）／ B 引く日（背中・二頭・体幹）／ C 脚・腹の日。</li>
+<li>基本は40秒動く＋20秒休むのサーキット2周（約10分）。時間のある日はタイマーを3周に。忙しい日は「5分だけ版」（1周）でOKです。</li>
+<li>同じ部位は中1〜2日空けます（50代の回復ペース）。週3日が基本形です。</li>
+<li>鉄棒がない日の「引く」は、背中（床）の種目で置き換えて大丈夫です。ドア枠やカーテンレールには絶対にぶら下がらないでください。</li>
+</ul>
+</div>
+</details>
+
+<details class="guide">
+<summary>食事と睡眠（バキバキへの土台）</summary>
+<div class="g-body">
+<ul class="tight">
+<li><strong>タンパク質は毎食「手のひら1枚分」</strong>の肉・魚・卵・大豆製品が目安。量りは使いません。特にトレーニングした日の食事で意識します。</li>
+<li>筋肉は寝ている間に作られます。寝る直前の激しい追い込みは避け、夜にやる日は軽めで終えます。</li>
+<li>進捗の判断は月1回の定点写真。体重や回数の数字では管理しません。</li>
+</ul>
+</div>
+</details>
+
+<details class="guide">
+<summary>部位ごとの配慮</summary>
+<div class="g-body">
+<ul class="tight">
+<li><strong>肩</strong>：ディップスは深く下げすぎない（肩がすくむ位置まで）。パイク系で痛みが出たら保持（ホールド）だけにします。</li>
+<li><strong>腰</strong>：プッシュアップは体を一直線に。腰が落ちたら膝つきに戻ります。レッグレイズで腰が反って痛む場合は膝を曲げて行います。</li>
+<li><strong>膝</strong>：スクワットは痛みのない深さまで。ランジは浅めから。跳ぶ種目は当面入れません（ハーフバーピーは任意・最終段階だけ）。</li>
+<li><strong>血圧</strong>：息を止めて力まないこと。動作中は呼吸を続けます。逆立ち系はこのプランでは扱いません。</li>
+</ul>
+</div>
+</details>
+
+<div class="card">
+<h3>毎日の3つのアプリ</h3>
+<p class="small">一日の型は<strong>「朝の流れ：顔ケア → 筋トレ → タイ語 最小セット」</strong>。3つとも「最小セットだけでもやる」が合言葉です。筋トレはその真ん中。忙しい日は5分だけ版でつなぎます。</p>
+<a class="btn sub block" href="https://tasukarutaoka-cpu.github.io/tasukaru-apps/face/" target="_blank" rel="noopener" style="text-decoration:none;">🧴 顔ケアアプリを開く（朝のはじまり）</a>
+<a class="btn sub block mt" href="https://tasukarutaoka-cpu.github.io/tasukaru-apps/thai/" target="_blank" rel="noopener" style="text-decoration:none;">🇹🇭 タイ語アプリを開く（締めの最小セット）</a>
+<p class="tiny mt">この筋トレアプリが3つの真ん中です。終わったらタイ語の最小セットで一日を締めましょう。</p>
+</div>
+
+<div class="card">
+<h3>アプリの設定</h3>
+<label class="f" for="startDateInput">開始日（慣らし期間の計算に使います）</label>
+<input type="date" id="startDateInput" />
+<button type="button" class="btn sub block mt" id="startDateBtn">開始日を変更する</button>
+<button type="button" class="btn danger block mt" id="resetAllBtn">記録をすべて消す（チェック・段階・写真）</button>
+<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.09-1</p>
+</div>
+</div>
+</div>
+
+<nav class="tabbar" id="tabbar">
+<button type="button" data-tab="today" class="on"><span class="ic">🏋</span>今日</button>
+<button type="button" data-tab="ex"><span class="ic">📈</span>種目・段階</button>
+<button type="button" data-tab="video"><span class="ic">▶️</span>動画</button>
+<button type="button" data-tab="photo"><span class="ic">📷</span>写真</button>
+<button type="button" data-tab="guide"><span class="ic">📖</span>ガイド</button>
+</nav>
+
+<script>
+
+/* ================= データ ================= */
+var EXERCISES=[
+{id:'pushup',part:'胸・押す',name:'プッシュアップ',clear:'通常プッシュアップ 20回',videos:['RgZdENDg5pM','l_JieXLuWG8'],
+ stages:[
+  {n:'壁プッシュアップ',t:'15〜20回'},
+  {n:'台プッシュアップ',t:'15回'},
+  {n:'膝つきプッシュアップ',t:'15回'},
+  {n:'通常プッシュアップ',t:'10回 → 20回'},
+  {n:'足上げプッシュアップ',t:'10〜15回'},
+  {n:'ダイヤモンド／アーチャープッシュアップ',t:'各10回前後'},
+  {n:'擬似プランシェ寄りプッシュアップ',t:'無理のない範囲で'}
+ ]},
+{id:'pike',part:'肩',name:'パイク系（肩）',clear:'パイクプッシュアップ 10〜15回',videos:['QDrjL8H8FNo'],
+ stages:[
+  {n:'パイクホールド（保持）',t:'20〜30秒'},
+  {n:'パイクプッシュアップ',t:'5回 → 10〜15回'},
+  {n:'足上げパイクプッシュアップ',t:'無理のない範囲で'}
+ ]},
+{id:'diamond',part:'腕（三頭）',name:'ダイヤモンド／ナロー',clear:'ダイヤモンドプッシュアップ 10回',videos:[],
+ stages:[
+  {n:'膝つきナロープッシュアップ',t:'10〜15回'},
+  {n:'ナロープッシュアップ',t:'10〜15回'},
+  {n:'ダイヤモンドプッシュアップ',t:'8〜10回'},
+  {n:'ベンチディップス（椅子・足は床）',t:'8〜12回 ※深く下げすぎない'}
+ ]},
+{id:'pull',part:'背中・引く',name:'引く（斜め懸垂〜懸垂）',clear:'斜め懸垂（脚まっすぐ）8〜12回',videos:['P5ul1lLJYDo'],note:'バーがある場所だけ。ない日は「背中（床）」で置き換えてOK',
+ stages:[
+  {n:'斜め懸垂・高いバー＋膝曲げ',t:'8〜12回'},
+  {n:'斜め懸垂・脚まっすぐ',t:'8〜12回'},
+  {n:'斜め懸垂・低いバー',t:'8〜12回'},
+  {n:'ぶら下がり30秒 ＋ ネガティブ懸垂',t:'5秒かけて下ろす × 5回'},
+  {n:'懸垂',t:'1回 → 5回 → 8〜12回'}
+ ]},
+{id:'backfloor',part:'背中（床）',name:'背中（床種目）',clear:'バックエクステンション 15回×2セットを楽に',videos:['4hej03FsgiQ'],
+ stages:[
+  {n:'バックエクステンション',t:'15回'},
+  {n:'グッドモーニング',t:'12〜15回'},
+  {n:'リバースプランク（保持）',t:'20〜30秒'},
+  {n:'バックエクステンション ＋ グッドモーニング',t:'各12〜15回'}
+ ]},
+{id:'squat',part:'脚',name:'スクワット',clear:'自重スクワット 50回',videos:['l_JieXLuWG8'],
+ stages:[
+  {n:'椅子スクワット',t:'15回'},
+  {n:'自重スクワット',t:'20回 → 50回'},
+  {n:'ランジ',t:'片脚10回ずつ（浅めから）'},
+  {n:'ブルガリアンスクワット（椅子）',t:'片脚10〜12回'},
+  {n:'アシスティッドピストルスクワット（補助あり）',t:'片脚5回'},
+  {n:'ピストルスクワット寄り',t:'無理のない範囲で'}
+ ]},
+{id:'hip',part:'脚・お尻',name:'ヒップリフト',clear:'片脚ヒップリフト 片脚12回',videos:[],
+ stages:[
+  {n:'ヒップリフト',t:'15回'},
+  {n:'ヒップリフト ＋ カーフレイズ（壁つき）',t:'各15〜20回'},
+  {n:'片脚ヒップリフト',t:'片脚10〜12回'}
+ ]},
+{id:'plank',part:'体幹',name:'プランク',clear:'プランク 60秒',videos:['l_JieXLuWG8'],
+ stages:[
+  {n:'膝つきプランク',t:'20秒'},
+  {n:'プランク',t:'30秒'},
+  {n:'プランク',t:'60秒'},
+  {n:'サイドプランク',t:'片側30秒ずつ'},
+  {n:'ショルダータップ（プランク姿勢）',t:'左右10回ずつ'}
+ ]},
+{id:'crunch',part:'腹',name:'クランチ系',clear:'リーチアップクランチ 30回',videos:['ahwPqHru94o','l_JieXLuWG8'],
+ stages:[
+  {n:'リーチアップクランチ',t:'15回'},
+  {n:'リーチアップクランチ',t:'30回'},
+  {n:'バイシクルクランチ',t:'左右10回ずつ'},
+  {n:'レッグレイズ（膝を曲げて）',t:'15回'},
+  {n:'レッグレイズ',t:'15〜20回'},
+  {n:'ハンギングニーレイズ（鉄棒の日）',t:'8〜12回・ゆっくり'}
+ ]},
+{id:'cardio',part:'全身・持久',name:'全身（持久）',clear:'その場足踏み 45秒を楽に',videos:['J91BwHLy1-U','LyXgcozBAYA'],
+ stages:[
+  {n:'その場足踏み（速め）',t:'45秒'},
+  {n:'跳ばないHIIT系の動き',t:'45秒'},
+  {n:'ハーフバーピー',t:'45秒 ※膝に痛みがなく、やりたい場合だけ'}
+ ]}
+];
+var MENUS=[
+{key:'A',name:'A 押す日',desc:'胸・肩・三頭',items:['pushup','pike','diamond','plank','cardio']},
+{key:'B',name:'B 引く日',desc:'背中・二頭・体幹',items:['pull','backfloor','plank','crunch','cardio']},
+{key:'C',name:'C 脚・腹の日',desc:'脚・腹',items:['squat','hip','crunch','plank','cardio']}
+];
+var VIDEOS=[
+{id:'l_JieXLuWG8',ch:'ジェシーズトレ',title:'〖まずはこれ〗筋トレ初心者がクリアするべき自宅トレ5種目',ex:['pushup','squat','crunch','plank','cardio']},
+{id:'RgZdENDg5pM',ch:'ジェシーズトレ',title:'〖初心者必見〗家で出来る基本のプッシュアップガイド',ex:['pushup']},
+{id:'wYqTN9UHlAA',ch:'ジェシーズトレ',title:'〖初心者必見〗自宅で出来る全身トレ5種目メニュー',ex:[]},
+{id:'QDrjL8H8FNo',ch:'ジェシーズトレ',title:'〖1ヶ月自宅トレプログラム〗大胸筋と肩を鍛える月曜日',ex:['pushup','pike']},
+{id:'4hej03FsgiQ',ch:'ジェシーズトレ',title:'〖1ヶ月自宅トレプログラム〗背中と体幹を鍛える水曜日',ex:['pull','backfloor','plank']},
+{id:'LyXgcozBAYA',ch:'ジェシーズトレ',title:'〖1ヶ月自宅トレプログラム〗全身の脂肪を燃やす金曜日',ex:['cardio']},
+{id:'ZPSes03R1XU',ch:'ジェシーズトレ',title:'〖全身これだけ〗15分自宅サーキットトレーニング',ex:[]},
+{id:'J91BwHLy1-U',ch:'ジェシーズトレ',title:'〖1日9分〗自宅で跳ばずに全身を絞るHIITトレーニング',ex:['cardio']},
+{id:'mNXZ-9dOe8s',ch:'ジェシーズトレ',title:'〖もし〗僕が自宅で全身鍛えるならこれで決まり！',ex:[]},
+{id:'ahwPqHru94o',ch:'ジェシーズトレ',title:'〖寝る前に絞る〗低負荷で腹筋を追い込むサーキットトレーニング',ex:['crunch']},
+{id:'5ID-6lB_vSk',ch:'吉川凌司',title:'〖初心者必見〗Calisthenics（自重トレーニング）完全ガイド',ex:[]},
+{id:'P5ul1lLJYDo',ch:'吉川凌司',title:'初心者でもあきらめないで❗カリステニクス・ルーティン',ex:['pull','pushup']},
+{id:'ucxbF5E-pt0',ch:'吉川凌司',title:'〖Day3〗週3日で全身を鍛えるならこのトレーニングだけ',ex:[]}
+];
+var GATES=[
+{ex:'pushup',label:'プッシュアップ',target:'20回'},
+{ex:'squat',label:'スクワット',target:'50回'},
+{ex:'crunch',label:'リーチアップクランチ',target:'30回'},
+{ex:'plank',label:'プランクホールド',target:'60秒'},
+{ex:'cardio',label:'全身持久（ハーフバーピー45秒 ※当面は足踏み45秒で代替）',target:'45秒'}
+];
+function exById(id){ for(var i=0;i<EXERCISES.length;i++){ if(EXERCISES[i].id===id) return EXERCISES[i]; } return null; }
+function menuByKey(k){ for(var i=0;i<MENUS.length;i++){ if(MENUS[i].key===k) return MENUS[i]; } return MENUS[0]; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ================= 状態 ================= */
+var LS_KEY='workout.browser.v1';
+var state=null;
+function pad2(n){ return ('0'+n).slice(-2); }
+function dkey(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function todayKey(){ return dkey(new Date()); }
+function parseKey(k){ var p=k.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+function diffDays(a,b){ return Math.round((parseKey(b)-parseKey(a))/86400000); }
+function defaultState(){ return {startDate:todayKey(),levels:{},rotation:0,logs:{}}; }
+function loadState(){
+ try{
+  var raw=localStorage.getItem(LS_KEY);
+  if(raw){
+   state=JSON.parse(raw);
+   if(!state.logs) state.logs={};
+   if(!state.levels) state.levels={};
+   if(typeof state.rotation!=='number') state.rotation=0;
+   if(!state.startDate) state.startDate=todayKey();
+   return;
+  }
+ }catch(e){}
+ state=defaultState(); saveState();
+}
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+function levelOf(id){ var v=state.levels[id]; return (typeof v==='number')?v:0; }
+function dayNum(){ return diffDays(state.startDate, todayKey())+1; }
+function isNarashi(){ return dayNum()<=14; }
+function shownStageIdx(id){ return isNarashi()?0:levelOf(id); }
+function clearCount(){ var n=0; for(var k in state.logs){ if(state.logs[k] && state.logs[k].done) n++; } return n; }
+
+function todayLog(create){
+ var t=todayKey(); var log=state.logs[t];
+ if(!log && create){
+  log={menu:MENUS[state.rotation].key,checks:{},mini:false,rest:false,done:false,adv:false};
+  state.logs[t]=log; saveState();
+ }
+ return log||null;
+}
+
+/* ================= 共通UI ================= */
+function toast(msg){
+ var old=document.querySelector('.toast'); if(old) old.remove();
+ var d=document.createElement('div'); d.className='toast'; d.textContent=msg;
+ document.body.appendChild(d);
+ setTimeout(function(){ d.remove(); },2300);
+}
+function switchTab(name){
+ document.querySelectorAll('.tabpage').forEach(function(p){ p.classList.remove('on'); });
+ var pg=document.getElementById('page-'+name); if(pg) pg.classList.add('on');
+ document.querySelectorAll('.tabbar button').forEach(function(b){
+  b.classList.toggle('on', b.getAttribute('data-tab')===name);
+ });
+ window.scrollTo(0,0);
+}
+
+/* ================= 今日タブ ================= */
+function renderHeader(){
+ var d=new Date();
+ var wdays=['日','月','火','水','木','金','土'];
+ document.getElementById('todayDate').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+wdays[d.getDay()]+'）';
+ document.getElementById('dayChip').textContent='開始から '+dayNum()+'日目';
+ var pc=document.getElementById('phaseChip');
+ if(isNarashi()){ pc.textContent='慣らし期間（あと '+(14-dayNum()+1)+'日）'; }
+ else{ pc.textContent='本編（A→B→C ローテーション）'; }
+ document.getElementById('clearChip').textContent='通算クリア '+clearCount()+'日';
+}
+function renderToday(){
+ renderHeader();
+ var log=todayLog(true);
+ var restView=document.getElementById('restView');
+ var menuView=document.getElementById('menuView');
+ if(log.rest){
+  restView.classList.remove('hidden'); menuView.classList.add('hidden');
+  return;
+ }
+ restView.classList.add('hidden'); menuView.classList.remove('hidden');
+ var menu=menuByKey(log.menu);
+ document.getElementById('menuName').textContent=menu.name;
+ document.getElementById('menuDesc').textContent=menu.desc;
+ /* ローテーションのチップ */
+ var rotHtml='';
+ MENUS.forEach(function(m){
+  var cls=(m.key===log.menu)?'chip now':'chip plain';
+  rotHtml+='<span class="'+cls+'">'+esc(m.name)+'</span>';
+ });
+ document.getElementById('rotChips').innerHTML=rotHtml;
+ /* モード表示 */
+ var modeLabel=document.getElementById('menuModeLabel');
+ var phaseNote=document.getElementById('phaseNote');
+ var miniBtn=document.getElementById('miniBtn');
+ if(log.mini){
+  modeLabel.textContent='5分だけ版（サーキット1周）';
+  miniBtn.textContent='通常版に戻す（サーキット2周）';
+ }else{
+  modeLabel.textContent=isNarashi()?'サーキット1周':'サーキット2周';
+  miniBtn.textContent='忙しい日：5分だけ版にする';
+ }
+ if(isNarashi()){
+  phaseNote.textContent='慣らし期間：いちばん軽い段階だけでOK。「気持ちよく終わる」が唯一のルールです。';
+ }else if(menu.key==='B'){
+  phaseNote.textContent='鉄棒がない日は「引く」を「背中（床）」で置き換えて大丈夫です。';
+ }else{
+  phaseNote.textContent='';
+ }
+ /* タスク一覧 */
+ var list=document.getElementById('taskList');
+ var html=''; var doneCount=0;
+ menu.items.forEach(function(id){
+  var ex=exById(id); if(!ex) return;
+  var si=shownStageIdx(id);
+  var st=ex.stages[si];
+  var done=!!log.checks[id];
+  if(done) doneCount++;
+  var badge=isNarashi()
+   ? '<span class="t-badge info">慣らし：最軽量</span>'
+   : '<span class="t-badge info">段階 '+(si+1)+'/'+ex.stages.length+'</span>';
+  html+='<button type="button" class="task'+(done?' done':'')+'" data-check="'+id+'">'
+   +'<span class="box">✓</span>'
+   +'<span style="flex:1;"><span class="t-name">'+esc(st.n)+'</span><br>'
+   +'<span class="t-desc">'+esc(ex.name)+'｜目安：'+esc(st.t)+(ex.note?'｜'+esc(ex.note):'')+'</span></span>'
+   +badge+'</button>';
+ });
+ list.innerHTML=html;
+ list.querySelectorAll('[data-check]').forEach(function(b){
+  b.addEventListener('click', function(){ toggleCheck(b.getAttribute('data-check')); });
+ });
+ var pct=menu.items.length?Math.round(doneCount/menu.items.length*100):0;
+ document.getElementById('menuProg').style.width=pct+'%';
+ document.getElementById('allDoneMsg').classList.toggle('hidden', !(doneCount===menu.items.length && menu.items.length>0));
+ tmRefreshLabels();
+}
+function toggleCheck(id){
+ var log=todayLog(true);
+ log.checks[id]=!log.checks[id];
+ var menu=menuByKey(log.menu);
+ var allDone=menu.items.every(function(x){ return !!log.checks[x]; });
+ if(allDone && !log.done){
+  log.done=true;
+  if(!log.adv){ state.rotation=(state.rotation+1)%MENUS.length; log.adv=true; }
+  toast('🎉 今日の分が完了しました');
+ }else if(!allDone && log.done){
+  log.done=false;
+  if(log.adv){ state.rotation=(state.rotation+MENUS.length-1)%MENUS.length; log.adv=false; }
+ }
+ saveState(); renderToday();
+}
+function bindToday(){
+ document.getElementById('miniBtn').addEventListener('click', function(){
+  var log=todayLog(true); log.mini=!log.mini; saveState(); renderToday();
+  toast(log.mini?'5分だけ版にしました（1周でOK）':'通常版に戻しました');
+ });
+ document.getElementById('restBtn').addEventListener('click', function(){
+  var log=todayLog(true); log.rest=true; saveState(); renderToday();
+  toast('今日は休養日です。ローテーションは進みません');
+ });
+ document.getElementById('undoRestBtn').addEventListener('click', function(){
+  var log=todayLog(true); log.rest=false; saveState(); renderToday();
+ });
+ document.getElementById('photoDueBtn').addEventListener('click', function(){ switchTab('photo'); });
+}
+
+/* ================= サーキットタイマー ================= */
+var TM={phase:'idle',round:1,idx:0,remain:40,rounds:2,work:40,rest:20,intId:null,endAt:0};
+var AC=null;
+function tone(freq,ms,delay){
+ try{
+  if(!AC) return;
+  var t0=AC.currentTime+(delay||0);
+  var o=AC.createOscillator(); var g=AC.createGain();
+  o.type='sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(0.25,t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+ms/1000);
+  o.connect(g); g.connect(AC.destination);
+  o.start(t0); o.stop(t0+ms/1000+0.05);
+ }catch(e){}
+}
+function signal(kind){
+ if(navigator.vibrate){
+  if(kind==='work') navigator.vibrate(200);
+  else if(kind==='rest') navigator.vibrate([100,60,100]);
+  else if(kind==='finish') navigator.vibrate([300,100,300]);
+ }
+ if(kind==='work'){ tone(880,180,0); }
+ else if(kind==='rest'){ tone(440,140,0); }
+ else if(kind==='finish'){ tone(660,160,0); tone(660,160,0.22); tone(990,320,0.44); }
+}
+function tmItems(){
+ var log=todayLog(false);
+ var menu=menuByKey(log?log.menu:MENUS[state.rotation].key);
+ return menu.items.map(function(id){
+  var ex=exById(id); var si=shownStageIdx(id);
+  return ex.stages[si].n;
+ });
+}
+function tmLabel(){
+ if(TM.phase==='idle') return {main:'準備ができたらスタート',cls:'',sec:TM.work,sub:'—'};
+ if(TM.phase==='done') return {main:'🎉 おつかれさまでした',cls:'work',sec:0,sub:'タイマー終了。やった分はチェックしましょう'};
+ var eff=(TM.phase==='paused')?(TM.pausedPhase||'work'):TM.phase;
+ var pre=(TM.phase==='paused')?'⏸ 一時停止中｜':'';
+ var items=tmItems();
+ if(eff==='work'){
+  return {main:pre+'💪 '+items[TM.idx],cls:'work',sec:TM.remain,
+   sub:(TM.round)+'周目 / 全'+TM.rounds+'周 ・ 種目 '+(TM.idx+1)+'/'+items.length};
+ }
+ var nx=(TM.idx+1<items.length)?items[TM.idx+1]:items[0];
+ return {main:pre+'😮‍💨 休憩（次：'+nx+'）',cls:'rest',sec:TM.remain,
+  sub:(TM.round)+'周目 / 全'+TM.rounds+'周 ・ 次の種目に備えましょう'};
+}
+function tmRefreshLabels(){
+ var l=tmLabel();
+ var ph=document.getElementById('tmPhase');
+ ph.textContent=l.main; ph.className='timer-phase'+(l.cls?' '+l.cls:'');
+ document.getElementById('tmSec').textContent=l.sec;
+ document.getElementById('tmSub').textContent=l.sub;
+ document.getElementById('tmStartBtn').textContent=
+  (TM.phase==='work'||TM.phase==='rest')?'一時停止':(TM.phase==='paused'?'再開する':'スタート');
+}
+function tmStartPhase(phase){
+ TM.phase=phase;
+ TM.remain=(phase==='work')?TM.work:TM.rest;
+ TM.endAt=Date.now()+TM.remain*1000;
+ signal(phase);
+ tmRefreshLabels();
+}
+function tmTick(){
+ var left=Math.max(0,Math.round((TM.endAt-Date.now())/1000));
+ TM.remain=left;
+ if(left>0){ tmRefreshLabels(); return; }
+ var items=tmItems();
+ if(TM.phase==='work'){
+  var lastItem=(TM.idx>=items.length-1);
+  var lastRound=(TM.round>=TM.rounds);
+  if(lastItem && lastRound){
+   TM.phase='done'; tmStopInterval(); signal('finish'); tmRefreshLabels(); return;
+  }
+  tmStartPhase('rest');
+ }else if(TM.phase==='rest'){
+  if(TM.idx>=items.length-1){ TM.idx=0; TM.round++; } else { TM.idx++; }
+  tmStartPhase('work');
+ }
+}
+function tmStopInterval(){ if(TM.intId){ clearInterval(TM.intId); TM.intId=null; } }
+function tmToggle(){
+ if(TM.phase==='work'||TM.phase==='rest'){
+  TM.remain=Math.max(0,Math.round((TM.endAt-Date.now())/1000));
+  tmStopInterval(); TM.phase='paused'; tmRefreshLabels(); return;
+ }
+ try{ if(!AC){ var Ctx=window.AudioContext||window.webkitAudioContext; if(Ctx) AC=new Ctx(); } if(AC && AC.state==='suspended') AC.resume(); }catch(e){}
+ if(TM.phase==='paused'){
+  /* 一時停止していたフェーズに戻す：remainからフェーズを復元できないため、ワーク扱いで再開する */
+  TM.phase=(TM.pausedPhase==='rest')?'rest':'work';
+  TM.endAt=Date.now()+TM.remain*1000;
+ }else{
+  TM.round=1; TM.idx=0;
+  TM.phase='work'; TM.remain=TM.work; TM.endAt=Date.now()+TM.remain*1000;
+  signal('work');
+ }
+ TM.intId=setInterval(tmTick,200);
+ tmRefreshLabels();
+}
+function tmReset(){
+ tmStopInterval();
+ TM.phase='idle'; TM.round=1; TM.idx=0; TM.remain=TM.work;
+ tmRefreshLabels();
+}
+function bindTimer(){
+ var origToggle=tmToggle;
+ tmToggle=function(){
+  if(TM.phase==='work'||TM.phase==='rest'){ TM.pausedPhase=TM.phase; }
+  origToggle();
+ };
+ document.getElementById('tmStartBtn').addEventListener('click', tmToggle);
+ document.getElementById('tmResetBtn').addEventListener('click', tmReset);
+ document.getElementById('workSeg').querySelectorAll('button').forEach(function(b){
+  b.addEventListener('click', function(){
+   document.getElementById('workSeg').querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); });
+   b.classList.add('on'); TM.work=+b.getAttribute('data-work');
+   if(TM.phase==='idle'){ TM.remain=TM.work; tmRefreshLabels(); }
+  });
+ });
+ document.getElementById('roundSeg').querySelectorAll('button').forEach(function(b){
+  b.addEventListener('click', function(){
+   document.getElementById('roundSeg').querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); });
+   b.classList.add('on'); TM.rounds=+b.getAttribute('data-rounds'); tmRefreshLabels();
+  });
+ });
+}
+
+/* ================= 種目・段階タブ ================= */
+function renderGate(){
+ var html='';
+ GATES.forEach(function(g){
+  var ex=exById(g.ex); if(!ex) return;
+  var si=levelOf(g.ex);
+  html+='<div class="row-between" style="padding:7px 0;border-bottom:1px solid var(--line);">'
+   +'<div><strong>'+esc(g.label)+'</strong> <span class="small">目標：'+esc(g.target)+'</span></div>'
+   +'<span class="chip plain">現在：'+esc(ex.stages[si].n)+'</span></div>';
+ });
+ document.getElementById('gateList').innerHTML=html;
+}
+function renderEx(){
+ renderGate();
+ var html='';
+ EXERCISES.forEach(function(ex){
+  var lv=levelOf(ex.id);
+  html+='<div class="card"><div class="ex-head"><div>'
+   +'<span class="chip">'+esc(ex.part)+'</span> <strong style="font-size:16px;">'+esc(ex.name)+'</strong>'
+   +'</div>'
+   +(ex.videos.length?'<button type="button" class="vid-jump" data-vidjump="'+ex.videos[0]+'">▶ 動画で見る</button>':'')
+   +'</div>'
+   +'<p class="small" style="margin:6px 0 4px;">クリア基準：'+esc(ex.clear)+(ex.note?'｜'+esc(ex.note):'')+'</p>';
+  ex.stages.forEach(function(st,i){
+   html+='<button type="button" class="stage-row'+(i===lv?' now':'')+'" data-ex="'+ex.id+'" data-stage="'+i+'">'
+    +'<span class="s-num">'+(i+1)+'</span>'
+    +'<span style="flex:1;"><span class="s-name">'+esc(st.n)+'</span><br><span class="s-target">目安：'+esc(st.t)+'</span></span>'
+    +(i===lv?'<span class="s-here">今ここ</span>':'')
+    +'</button>';
+  });
+  html+='</div>';
+ });
+ var box=document.getElementById('exList');
+ box.innerHTML=html;
+ box.querySelectorAll('[data-ex]').forEach(function(b){
+  b.addEventListener('click', function(){
+   var id=b.getAttribute('data-ex'); var idx=+b.getAttribute('data-stage');
+   state.levels[id]=idx; saveState();
+   renderEx(); renderToday();
+   var ex=exById(id);
+   toast(ex.name+' の段階を「'+ex.stages[idx].n+'」にしました');
+  });
+ });
+ box.querySelectorAll('[data-vidjump]').forEach(function(b){
+  b.addEventListener('click', function(){ jumpToVideo(b.getAttribute('data-vidjump')); });
+ });
+}
+
+/* ================= 動画タブ ================= */
+function renderVideos(){
+ var html='';
+ VIDEOS.forEach(function(v){
+  var exNames=v.ex.map(function(id){ var e=exById(id); return e?e.name:''; }).filter(Boolean).join('・');
+  html+='<div class="card" id="vid-'+v.id+'">'
+   +'<div class="vid-thumb" data-play="'+v.id+'"><img src="https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg" alt="" loading="lazy"><span class="play">▶</span></div>'
+   +'<div class="vid-title">'+esc(v.title)+'</div>'
+   +'<div class="chips"><span class="chip plain">'+esc(v.ch)+'</span>'
+   +(exNames?'<span class="chip plain">種目：'+esc(exNames)+'</span>':'')
+   +'</div></div>';
+ });
+ var box=document.getElementById('videoList');
+ box.innerHTML=html;
+ box.querySelectorAll('[data-play]').forEach(function(el){
+  el.addEventListener('click', function(){
+   var id=el.getAttribute('data-play');
+   var ifr=document.createElement('iframe');
+   ifr.className='vid-frame';
+   ifr.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';
+   ifr.setAttribute('allow','accelerometer; autoplay; encrypted-media; picture-in-picture');
+   ifr.setAttribute('allowfullscreen','');
+   ifr.title='YouTube video player';
+   el.replaceWith(ifr);
+  });
+ });
+}
+function jumpToVideo(vidId){
+ switchTab('video');
+ setTimeout(function(){
+  var card=document.getElementById('vid-'+vidId);
+  if(card){
+   card.scrollIntoView({behavior:'smooth',block:'center'});
+   card.classList.add('flash');
+   setTimeout(function(){ card.classList.remove('flash'); },1800);
+  }
+ },60);
+}
+
+/* ================= 写真（IndexedDB） ================= */
+var DB=null;
+var photos=[]; /* {id, ts, url} 表示用 */
+var photoUrls=[];
+var cmpSel=[];
+function openDB(){
+ return new Promise(function(res,rej){
+  if(!window.indexedDB){ rej(new Error('IndexedDB非対応')); return; }
+  var rq=indexedDB.open('workoutapp',1);
+  rq.onupgradeneeded=function(){ rq.result.createObjectStore('photos',{keyPath:'id',autoIncrement:true}); };
+  rq.onsuccess=function(){ DB=rq.result; res(); };
+  rq.onerror=function(){ rej(rq.error); };
+ });
+}
+function dbTx(mode,fn){
+ return new Promise(function(res,rej){
+  var tx=DB.transaction('photos',mode);
+  var store=tx.objectStore('photos');
+  var out=fn(store);
+  tx.oncomplete=function(){ res(out && out._result); };
+  tx.onerror=function(){ rej(tx.error); };
+  if(out && typeof out==='object'){ out.onsuccess=function(){ out._result=out.result; }; }
+ });
+}
+function dbAddPhoto(blob,ts){
+ return dbTx('readwrite',function(store){ return store.add({ts:ts,blob:blob}); });
+}
+function dbAllPhotos(){
+ return new Promise(function(res,rej){
+  var rq=DB.transaction('photos','readonly').objectStore('photos').getAll();
+  rq.onsuccess=function(){ res(rq.result||[]); };
+  rq.onerror=function(){ rej(rq.error); };
+ });
+}
+function dbDeletePhoto(id){
+ return dbTx('readwrite',function(store){ return store.delete(id); });
+}
+function dbClearPhotos(){
+ return dbTx('readwrite',function(store){ return store.clear(); });
+}
+function fmtDate(ts){
+ var d=new Date(ts);
+ return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();
+}
+function hasPhotoThisMonth(){
+ var now=new Date();
+ return photos.some(function(p){
+  var d=new Date(p.ts);
+  return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+ });
+}
+function loadPhotos(){
+ if(!DB){ updatePhotoDue(); return; }
+ dbAllPhotos().then(function(rows){
+  photoUrls.forEach(function(u){ URL.revokeObjectURL(u); });
+  photoUrls=[];
+  rows.sort(function(a,b){ return b.ts-a.ts; });
+  photos=rows.map(function(r){
+   var url=URL.createObjectURL(r.blob); photoUrls.push(url);
+   return {id:r.id,ts:r.ts,url:url};
+  });
+  cmpSel=cmpSel.filter(function(id){ return photos.some(function(p){ return p.id===id; }); });
+  renderPhotos(); updatePhotoDue();
+ }).catch(function(){ updatePhotoDue(); });
+}
+function updatePhotoDue(){
+ var due=!hasPhotoThisMonth();
+ document.getElementById('photoDueCard').classList.toggle('hidden', !due);
+ var st=document.getElementById('photoMonthStatus');
+ if(st){
+  st.innerHTML=due
+   ? '今月（'+(new Date().getMonth()+1)+'月）の写真は<strong>まだ登録がありません</strong>。'
+   : '今月（'+(new Date().getMonth()+1)+'月）の写真は登録済みです ✓';
+ }
+}
+function renderPhotos(){
+ var grid=document.getElementById('photoGrid');
+ document.getElementById('photoEmpty').classList.toggle('hidden', photos.length>0);
+ var html='';
+ photos.forEach(function(p){
+  html+='<div class="photo-cell'+(cmpSel.indexOf(p.id)>=0?' sel':'')+'" data-photo="'+p.id+'">'
+   +'<img src="'+p.url+'" alt="">'
+   +'<button type="button" class="p-del" data-del="'+p.id+'" aria-label="削除">×</button>'
+   +'<div class="p-date">'+fmtDate(p.ts)+'</div></div>';
+ });
+ grid.innerHTML=html;
+ grid.querySelectorAll('[data-photo]').forEach(function(cell){
+  cell.addEventListener('click', function(){
+   var id=+cell.getAttribute('data-photo');
+   var i=cmpSel.indexOf(id);
+   if(i>=0){ cmpSel.splice(i,1); }
+   else{
+    cmpSel.push(id);
+    if(cmpSel.length>2) cmpSel.shift();
+   }
+   renderPhotos();
+  });
+ });
+ grid.querySelectorAll('[data-del]').forEach(function(b){
+  b.addEventListener('click', function(ev){
+   ev.stopPropagation();
+   if(!confirm('この写真を削除しますか？')) return;
+   var id=+b.getAttribute('data-del');
+   dbDeletePhoto(id).then(function(){
+    cmpSel=cmpSel.filter(function(x){ return x!==id; });
+    loadPhotos(); toast('写真を削除しました');
+   });
+  });
+ });
+ /* 比較ビュー */
+ var card=document.getElementById('compareCard');
+ if(cmpSel.length===2){
+  card.classList.remove('hidden');
+  var sel=cmpSel.map(function(id){ return photos.filter(function(p){ return p.id===id; })[0]; }).filter(Boolean);
+  sel.sort(function(a,b){ return a.ts-b.ts; });
+  document.getElementById('compareView').innerHTML=sel.map(function(p){
+   return '<figure><img src="'+p.url+'" alt=""><figcaption>'+fmtDate(p.ts)+'</figcaption></figure>';
+  }).join('');
+ }else{
+  card.classList.add('hidden');
+ }
+}
+function fileToScaledBlob(file){
+ return new Promise(function(res){
+  var url=URL.createObjectURL(file);
+  var img=new Image();
+  img.onload=function(){
+   try{
+    var max=1600;
+    var w=img.naturalWidth, h=img.naturalHeight;
+    var s=Math.min(1, max/Math.max(w,h));
+    var c=document.createElement('canvas');
+    c.width=Math.round(w*s); c.height=Math.round(h*s);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);
+    if(c.toBlob){ c.toBlob(function(b){ res(b||file); },'image/jpeg',0.85); }
+    else res(file);
+   }catch(e){ res(file); }
+  };
+  img.onerror=function(){ URL.revokeObjectURL(url); res(file); };
+  img.src=url;
+ });
+}
+function bindPhotos(){
+ var input=document.getElementById('photoInput');
+ document.getElementById('photoAddBtn').addEventListener('click', function(){ input.click(); });
+ input.addEventListener('change', function(){
+  var f=input.files && input.files[0];
+  input.value='';
+  if(!f) return;
+  if(!DB){ toast('写真の保存準備ができていません'); return; }
+  fileToScaledBlob(f).then(function(blob){
+   return dbAddPhoto(blob, Date.now());
+  }).then(function(){
+   loadPhotos(); toast('写真を追加しました');
+  }).catch(function(){ toast('写真の保存に失敗しました'); });
+ });
+ document.getElementById('compareClearBtn').addEventListener('click', function(){
+  cmpSel=[]; renderPhotos();
+ });
+}
+
+/* ================= ガイド・設定 ================= */
+function bindGuide(){
+ var inp=document.getElementById('startDateInput');
+ inp.value=state.startDate;
+ document.getElementById('startDateBtn').addEventListener('click', function(){
+  if(!inp.value){ toast('日付を選んでください'); return; }
+  state.startDate=inp.value; saveState();
+  renderToday(); renderEx();
+  toast('開始日を変更しました');
+ });
+ document.getElementById('resetAllBtn').addEventListener('click', function(){
+  if(!confirm('チェック・段階・写真の記録をすべて消します。よろしいですか？')) return;
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  var done=function(){
+   state=defaultState(); saveState();
+   cmpSel=[];
+   document.getElementById('startDateInput').value=state.startDate;
+   loadPhotos(); renderToday(); renderEx();
+   toast('記録をすべて消しました');
+  };
+  if(DB){ dbClearPhotos().then(done).catch(done); } else done();
+ });
+}
+
+/* ================= 初期化 ================= */
+document.querySelectorAll('.tabbar button').forEach(function(b){
+ b.addEventListener('click', function(){ switchTab(b.getAttribute('data-tab')); });
+});
+loadState();
+renderToday();
+renderEx();
+renderVideos();
+bindToday();
+bindTimer();
+bindPhotos();
+bindGuide();
+tmRefreshLabels();
+openDB().then(function(){ loadPhotos(); }).catch(function(){ updatePhotoDue(); });
+</script>
+</body>
+</html>
