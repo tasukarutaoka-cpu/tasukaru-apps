@@ -81,10 +81,16 @@ border-radius:0 12px 12px 0;padding:12px 14px;margin-bottom:14px;box-shadow:var(
 /* tasks */
 .task{
 display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;
-background:none;border:none;border-bottom:1px solid var(--line);
-padding:12px 16px;color:var(--ink);
+background:none;border:none;
+padding:12px 16px;color:var(--ink);cursor:pointer;
 }
-.task:last-child{border-bottom:none;}
+.task-wrap{border-bottom:1px solid var(--line);}
+.task-wrap:last-child{border-bottom:none;}
+.vid-btn{
+flex:none;background:var(--accent-soft);color:var(--accent);border:1.5px solid var(--accent);
+border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700;margin-top:2px;white-space:nowrap;
+}
+.task-vid{padding:0 16px 14px;}
 .task .box{
 flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);
 margin-top:2px;display:flex;align-items:center;justify-content:center;
@@ -386,6 +392,17 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 </details>
 
 <details class="guide">
+<summary>動画の見方（いつ見る？）</summary>
+<div class="g-body">
+<ul class="tight">
+<li><strong>初めての種目と、段階が上がったとき</strong>は、事前に動画を<strong>通して見て</strong>、フォームの全体像をつかんでから始めます。</li>
+<li><strong>普段は</strong>、今日のメニューを始める直前に、その日の種目の動画だけ確認すれば十分です。</li>
+<li>今日タブでは、各メニューの種目に「▶ 動画」ボタンがあり、その場で開いて確認してから筋トレに入れます（もう一度タップすると閉じます）。全動画の一覧は動画タブにあります。</li>
+</ul>
+</div>
+</details>
+
+<details class="guide">
 <summary>食事と睡眠（バキバキへの土台）</summary>
 <div class="g-body">
 <ul class="tight">
@@ -422,7 +439,7 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <input type="date" id="startDateInput" />
 <button type="button" class="btn sub block mt" id="startDateBtn">開始日を変更する</button>
 <button type="button" class="btn danger block mt" id="resetAllBtn">記録をすべて消す（チェック・段階・写真）</button>
-<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.09-1</p>
+<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.09-2</p>
 </div>
 </div>
 </div>
@@ -663,15 +680,27 @@ function renderToday(){
   var badge=isNarashi()
    ? '<span class="t-badge info">慣らし：最軽量</span>'
    : '<span class="t-badge info">段階 '+(si+1)+'/'+ex.stages.length+'</span>';
-  html+='<button type="button" class="task'+(done?' done':'')+'" data-check="'+id+'">'
+  var hasVid=ex.videos && ex.videos.length>0;
+  html+='<div class="task-wrap">'
+   +'<div class="task'+(done?' done':'')+'" data-check="'+id+'" role="button">'
    +'<span class="box">✓</span>'
    +'<span style="flex:1;"><span class="t-name">'+esc(st.n)+'</span><br>'
    +'<span class="t-desc">'+esc(ex.name)+'｜目安：'+esc(st.t)+(ex.note?'｜'+esc(ex.note):'')+'</span></span>'
-   +badge+'</button>';
+   +badge
+   +(hasVid?'<button type="button" class="vid-btn" data-vid="'+id+'">▶ 動画</button>':'')
+   +'</div>'
+   +(hasVid?'<div class="task-vid hidden" id="tvid-'+id+'"></div>':'')
+   +'</div>';
  });
  list.innerHTML=html;
  list.querySelectorAll('[data-check]').forEach(function(b){
   b.addEventListener('click', function(){ toggleCheck(b.getAttribute('data-check')); });
+ });
+ list.querySelectorAll('[data-vid]').forEach(function(b){
+  b.addEventListener('click', function(ev){
+   ev.stopPropagation();
+   toggleTaskVideo(b.getAttribute('data-vid'), b);
+  });
  });
  var pct=menu.items.length?Math.round(doneCount/menu.items.length*100):0;
  document.getElementById('menuProg').style.width=pct+'%';
@@ -692,6 +721,36 @@ function toggleCheck(id){
   if(log.adv){ state.rotation=(state.rotation+MENUS.length-1)%MENUS.length; log.adv=false; }
  }
  saveState(); renderToday();
+}
+function toggleTaskVideo(id, btn){
+ var panel=document.getElementById('tvid-'+id);
+ if(!panel) return;
+ var ex=exById(id);
+ if(!ex || !ex.videos || !ex.videos.length) return;
+ if(!panel.classList.contains('hidden')){
+  panel.classList.add('hidden'); panel.innerHTML='';
+  if(btn) btn.textContent='▶ 動画';
+  return;
+ }
+ /* 他に開いているプレーヤーがあれば閉じる */
+ document.querySelectorAll('.task-vid').forEach(function(p){
+  if(p!==panel && !p.classList.contains('hidden')){ p.classList.add('hidden'); p.innerHTML=''; }
+ });
+ document.querySelectorAll('[data-vid]').forEach(function(b){ b.textContent='▶ 動画'; });
+ var note=document.createElement('p');
+ note.className='tiny';
+ note.style.margin='0 0 6px';
+ note.textContent='参考動画：'+ex.name+'（フォームを確認してから始めましょう）';
+ var ifr=document.createElement('iframe');
+ ifr.className='vid-frame';
+ ifr.src='https://www.youtube-nocookie.com/embed/'+ex.videos[0]+'?autoplay=1&rel=0';
+ ifr.setAttribute('allow','accelerometer; autoplay; encrypted-media; picture-in-picture');
+ ifr.setAttribute('allowfullscreen','');
+ ifr.title='YouTube video player';
+ panel.appendChild(note);
+ panel.appendChild(ifr);
+ panel.classList.remove('hidden');
+ if(btn) btn.textContent='✕ 閉じる';
 }
 function bindToday(){
  document.getElementById('miniBtn').addEventListener('click', function(){
