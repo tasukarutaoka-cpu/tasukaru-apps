@@ -301,6 +301,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div id="threeList"></div>
 <div class="prog"><div id="threeProg" style="width:0%"></div></div>
 <div id="threeCelebration"></div>
+<div id="threeDots"></div>
 </div>
 
 <div class="card" id="photoDueCard">
@@ -716,7 +717,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="card">
 <h2>記録について</h2>
 <p class="small">チェック・状態・写真の記録は、すべてこのブラウザの中に保存されています。ブラウザのデータを消すと記録も消えます。大事な写真はスマホの写真アプリにも残しておいてください。</p>
-<p class="tiny">アプリの版：2026.11.09-2（「今日の3つ」を追加）</p>
+<p class="tiny">アプリの版：2026.11.09-3（直近7日の達成ドットを追加）</p>
 <button type="button" class="btn danger block" id="resetBtn">すべての記録を消して最初からにする</button>
 </div>
 </div>
@@ -947,6 +948,33 @@ if(doneCount===3){
 cel.innerHTML='<div style="padding:2px 16px 16px;text-align:center;"><div style="font-weight:700;font-size:16px;">✨ 今日も3つとも完了です</div><div class="small">顔ケア・タイ語・筋トレ、全部にふれられました。</div></div>';
 } else {
 cel.innerHTML="";
+}
+// 直近7日の達成ドット（今日を含む）。顔ケアは自動連動と同じ基準（朝・夜ルーティン全チェック）
+var dots=$("threeDots");
+if(dots){
+var WD=["日","月","火","水","木","金","土"];
+var cells="";
+for(var i=6;i>=0;i--){
+var d=addDays(new Date(),-i);
+var kk=dateKey(d);
+var L=state.logs[kk];
+var cnt=0;
+if(L){
+var fOk=true;
+amTasks().forEach(function(t){ if(!L.am || !L.am[t.id]) fOk=false; });
+pmTasks().forEach(function(t){ if(!L.pm || !L.pm[t.id]) fOk=false; });
+if(fOk) cnt++;
+if(L.three && L.three.thai) cnt++;
+if(L.three && L.three.workout) cnt++;
+}
+var ch, st;
+if(cnt>=3){ ch="●"; st="color:var(--accent);"; }
+else if(cnt>0){ ch="◐"; st="color:var(--accent);opacity:.55;"; }
+else { ch="○"; st="color:var(--ink);opacity:.3;"; }
+var todayMark=(i===0)? "font-weight:700;" : "";
+cells+='<span style="display:inline-flex;flex-direction:column;align-items:center;gap:1px;min-width:26px;" title="'+kk+" "+cnt+'/3"><span class="tiny" style="'+todayMark+'">'+WD[d.getDay()]+'</span><span style="font-size:15px;line-height:1;'+st+'">'+ch+"</span></span>";
+}
+dots.innerHTML='<div style="display:flex;align-items:flex-end;gap:2px;padding:0 16px 14px;"><span class="tiny" style="margin-right:6px;padding-bottom:1px;">直近7日</span>'+cells+"</div>";
 }
 }
 
