@@ -295,6 +295,14 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 
 <!-- 今日タブ -->
 <div class="tabpage on" id="page-today">
+<div class="card flush">
+<div class="sec-head"><h2>今日の3つ</h2><span class="time" id="threeCount">今日 0/3</span></div>
+<p class="small" style="padding:0 16px;margin:4px 0 0;">美容（顔ケア）・タイ語・筋トレ。毎日全部に、少しでいいのでふれるのがコツです。顔ケアは朝・夜のルーティンを終えると自動で付きます。</p>
+<div id="threeList"></div>
+<div class="prog"><div id="threeProg" style="width:0%"></div></div>
+<div id="threeCelebration"></div>
+</div>
+
 <div class="card" id="photoDueCard">
 <div class="row-between">
 <div>
@@ -708,7 +716,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="card">
 <h2>記録について</h2>
 <p class="small">チェック・状態・写真の記録は、すべてこのブラウザの中に保存されています。ブラウザのデータを消すと記録も消えます。大事な写真はスマホの写真アプリにも残しておいてください。</p>
-<p class="tiny">アプリの版：2026.11.09-1（「モテ日課」チェックを追加）</p>
+<p class="tiny">アプリの版：2026.11.09-2（「今日の3つ」を追加）</p>
 <button type="button" class="btn danger block" id="resetBtn">すべての記録を消して最初からにする</button>
 </div>
 </div>
@@ -782,6 +790,7 @@ if(!state.logs[k].cond) state.logs[k].cond={ red:-1, dry:-1, puff:-1, eye:-1};
 if(!state.logs[k].inner) state.logs[k].inner={};
 if(!state.logs[k].body) state.logs[k].body={};
 if(!state.logs[k].mote) state.logs[k].mote={};
+if(!state.logs[k].three) state.logs[k].three={ thai:false, workout:false};
 return state.logs[k];
 }
 
@@ -889,6 +898,58 @@ var done=w.retinol;
 $("weekProg").style.width=Math.round(done/3*100)+"%";
 }
 
+/* ---------- 今日の3つ（顔ケア・タイ語・筋トレ） ---------- */
+function renderThree(){
+var el=$("threeList"); if(!el) return;
+var log=dayLog(todayKey());
+if(!log.three) log.three={ thai:false, workout:false};
+el.innerHTML="";
+var amLeft=amTasks().filter(function(t){ return !log.am[t.id]; }).length;
+var pmLeft=pmTasks().filter(function(t){ return !log.pm[t.id]; }).length;
+var faceDone = (amLeft===0 && pmLeft===0);
+var items=[
+{ id:"face", name:"顔ケア（美容）", time:"約5分", auto:true, done:faceDone,
+desc: faceDone? "今日の朝・夜ケアは完了です" : ("朝・夜のルーティンを全部終えると自動で付きます（朝あと"+amLeft+"つ・夜あと"+pmLeft+"つ）") },
+{ id:"thai", name:"タイ語（最小セット）", time:"5〜10分", done:!!log.three.thai,
+desc:"今日の最小セットだけでもOKです",
+url:"https://tasukarutaoka-cpu.github.io/tasukaru-apps/thai/", linkLabel:"タイ語アプリを開く" },
+{ id:"workout", name:"筋トレ", time:"5〜15分", done:!!log.three.workout,
+desc:"短い日は5分だけでもOKです",
+url:"https://tasukarutaoka-cpu.github.io/tasukaru-apps/workout/", linkLabel:"筋トレアプリを開く" }
+];
+var doneCount=0;
+items.forEach(function(it){
+if(it.done) doneCount++;
+var b=document.createElement("button");
+b.type="button"; b.className="task"+(it.done?" done":"");
+b.innerHTML='<span class="box">✓</span><span style="flex:1"><span class="t-name">'+esc(it.name)+"</span>"+
+(it.desc? '<div class="t-desc">'+esc(it.desc)+"</div>": "")+
+(it.url? '<div><span class="vid-link" data-open="'+esc(it.url)+'">▶ '+esc(it.linkLabel)+"</span></div>": "")+
+'</span><span class="t-badge info">'+esc(it.time)+"</span>";
+var lk=b.querySelector(".vid-link");
+if(lk){ lk.addEventListener("click", function(ev){ ev.stopPropagation(); window.open(lk.getAttribute("data-open"), "_blank"); }); }
+b.addEventListener("click", function(){
+if(it.auto){
+toast(faceDone? "顔ケアは今日の分が完了しています" : "顔ケアは、朝・夜のルーティンを全部終えると自動でチェックが付きます");
+return;
+}
+var L=dayLog(todayKey());
+if(!L.three) L.three={ thai:false, workout:false};
+L.three[it.id]=!L.three[it.id];
+save(); renderThree();
+});
+el.appendChild(b);
+});
+$("threeCount").textContent="今日 "+doneCount+"/3";
+$("threeProg").style.width=Math.round(doneCount/3*100)+"%";
+var cel=$("threeCelebration");
+if(doneCount===3){
+cel.innerHTML='<div style="padding:2px 16px 16px;text-align:center;"><div style="font-weight:700;font-size:16px;">✨ 今日も3つとも完了です</div><div class="small">顔ケア・タイ語・筋トレ、全部にふれられました。</div></div>';
+} else {
+cel.innerHTML="";
+}
+}
+
 /* ---------- 今日タブ描画 ---------- */
 function renderToday(){
 var k=todayKey();
@@ -918,6 +979,7 @@ renderCond(log);
 renderAdvice(log);
 renderHistory();
 renderPhotoDue();
+renderThree();
 }
 var showDone={am:false,pm:false,inner:false,body:false};
 function taskButton(which, t, done){
