@@ -255,12 +255,9 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 </button>
 
 <h2>使う製品の準備チェック</h2>
-<p class="small">選んだプランに必要な製品です。各製品のリンクから購入できます。全部にチェックが入るとスタートできます。（チェックはこの端末に保存されます）</p>
+<p class="small">「顔ケアの一本道」に必要なもの、全部で7品です。各製品のリンクから購入できます。全部にチェックが入るとスタートできます。（チェックはこの端末に保存されます）</p>
 <div id="prepList"></div>
 <p class="small" id="prepStatus"></p>
-<h3 class="mt">任意（あると良い・内側ケアのサプリ）</h3>
-<p class="small">サプリは必須ではありません。食事が土台で、こちらは補助です。スタートの条件にも含まれません。</p>
-<div id="prepOptList"></div>
 
 <h3 class="mt">体づくりの器具（任意）</h3>
 <p class="small">筋トレ用の器具です。スタートの条件には含まれません。買ったものからチェックしてください。同じリストが「体づくり」タブにもあります。</p>
@@ -357,7 +354,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <p class="small">迷わないための固定ルートです。中身はこれだけをやり続けます。</p>
 <ul class="small" style="margin:6px 0 0;padding-left:18px;line-height:1.9;">
 <li><b>朝（約7分）</b>：泡洗顔 → 保湿 → リフトロジー（計2分）→ 眼輪筋トレーニング → 側頭筋ほぐし → 日焼け止め</li>
-<li><b>夜</b>：泡洗顔 → 保湿 → レチノール（週2〜3回）→ コラーゲンペプチド（寝る前の飲み物に）→ スマホ控えめ → 睡眠</li>
+<li><b>夜</b>：泡洗顔 → 保湿 → レチノール（週2〜3回）→ コラーゲンペプチド＋ビタミンC（寝る前の飲み物に）→ スマホ控えめ → 睡眠</li>
 <li><b>内側</b>：毎食、タンパク質を手のひら1枚分</li>
 <li><b>月1回</b>：定点写真で変化を見る</li>
 <li><b>足さないもの</b>：新しい美顔器は買わない／腸活サプリ・白湯などの追加習慣は入れない／特定の推奨商品や講座には寄せない</li>
@@ -861,7 +858,7 @@ return [
 { id:"moist", name:"お風呂上がり5分以内に保湿", desc:"1分。ワセリンを薄く。肌が乾く前に塗るのがコツ", time:"1分"},
 { id:"phone", name:"寝る30分前にスマホを置く", desc:"7時間眠れる時刻に就寝するのが目安", time:""},
 { id:"cheek", name:"頬の表情筋トレーニング（任意）", desc:"1分。口を「お」にして頬を斜め上に引き上げ、10秒キープ×3回", time:"1分"},
-{ id:"collagen", name:"コラーゲンペプチド（寝る前の飲み物に）", desc:"粉末を寝る前の飲み物に溶かして飲む。無味・コラーゲンペプチド100%の汎用品でOK", time:""}
+{ id:"collagen", name:"コラーゲンペプチド＋ビタミンC（寝る前の飲み物に）", desc:"コラーゲン粉末を寝る前の飲み物に溶かし、ビタミンCサプリも一緒に。どちらも汎用品でOK", time:""}
 ];
 }
 
@@ -1265,12 +1262,13 @@ var PREP_KEY="facecare.browser.prep.v1";
 var PREP_ITEMS=[
 {id:"cleanser", plan:"all", role:"泡洗顔（朝晩）", name:"洗顔料（泡で出るタイプが楽です）", price:"今お使いのものでOK。無い場合はドラッグストアで", url:"", shop:""},
 {id:"vaseline", plan:"all", role:"保湿（朝晩）", name:"ワセリン（白色ワセリン）", price:"ドラッグストアで数百円〜", url:"", shop:""},
-{id:"biore", plan:"all", role:"日焼け止め（朝・最重要）", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", price:"70g 約1,011円〜（リンク先はAmazon限定100g）", url:"https://www.amazon.co.jp/dp/B0DS7WX8QS", shop:"Amazonで見る"}
+{id:"biore", plan:"all", role:"日焼け止め（朝・最重要）", name:"ビオレUV アクアリッチ ウォータリーエッセンス（花王）", price:"70g 約1,011円〜（リンク先はAmazon限定100g）", url:"https://www.amazon.co.jp/dp/B0DS7WX8QS", shop:"Amazonで見る"},
+{id:"retinol", plan:"all", role:"レチノール（夜・週2〜3回）", name:"資生堂 エリクシール レチノパワー リンクルクリーム ba", price:"S 15g 6,490円（約1ヶ月）／L 22g 8,800円（約1.5ヶ月）", url:"https://www.amazon.co.jp/dp/B0CJLJZPKS", shop:"Amazonで見る"},
+{id:"lift", plan:"all", role:"美顔器（朝・リフトロジー）", name:"ヤーマン リフトロジー（所有済み）", price:"お持ちのものです。新しく買う必要はありません", url:"", shop:""},
+{id:"collagen", plan:"all", role:"コラーゲンペプチド（内側・必須）", name:"コラーゲンペプチド粉末（無味・コラーゲンペプチド100%の汎用品でOK）", price:"粉末タイプ。魚由来にこだわらなくて大丈夫です", url:"https://www.amazon.co.jp/s?k=%E3%82%B3%E3%83%A9%E3%83%BC%E3%82%B2%E3%83%B3%E3%83%9A%E3%83%97%E3%83%81%E3%83%89+%E7%B2%89%E6%9C%AB", shop:"Amazonで探す"},
+{id:"vitc", plan:"all", role:"ビタミンC（内側・夜のセット）", name:"ビタミンCサプリ（汎用品でOK）", price:"コラーゲン合成に必須。夜のコラーゲンと一緒に摂ります", url:"https://www.amazon.co.jp/s?k=%E3%83%93%E3%82%BF%E3%83%9F%E3%83%B3C+%E3%82%B5%E3%83%97%E3%83%AA", shop:"Amazonで探す"}
 ];
-var PREP_OPT=[
-{id:"collagen", role:"コラーゲンペプチド（内側・任意）", name:"明治 アミノコラーゲン プレミアム 196g（約28日分）", price:"約2,900円〜", url:"https://www.amazon.co.jp/dp/B0070SUSC0", shop:"Amazonで見る"},
-{id:"vitc", role:"ビタミンC（内側・任意）", name:"DHC 持続型ビタミンC 60日分", price:"価格は販売ページで確認", url:"https://www.amazon.co.jp/dp/B09FL527SL", shop:"Amazonで見る"}
-];
+var PREP_OPT=[];
 var prepState={};
 try{ prepState=JSON.parse(localStorage.getItem(PREP_KEY)||"{}")||{}; }catch(e){ prepState={}; }
 function savePrep(){ try{ localStorage.setItem(PREP_KEY, JSON.stringify(prepState)); }catch(e){} }
@@ -1329,7 +1327,7 @@ function renderPrep(){
   var req=prepRequired();
   var done=req.filter(function(it){ return prepState[it.id]; }).length;
   var btn=$("startBtn"), st=$("prepStatus");
-  if(st){ st.textContent = done>=req.length? "準備完了です。スタートできます！" : ("あと "+(req.length-done)+" 品で準備完了です（"+done+"/"+req.length+"）"); }
+  if(st){ st.textContent = done>=req.length? "全部そろいました。スタートできます！" : ("あと "+(req.length-done)+" 品で全部そろいます（"+done+"/"+req.length+"）"); }
   if(btn){ btn.disabled = done<req.length; }
 }
 
