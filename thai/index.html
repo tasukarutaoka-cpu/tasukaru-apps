@@ -318,6 +318,24 @@
       .dash-row:last-child { border-bottom: none; }
       .dash-row .dt { font-size: 14px; line-height: 1.5; }
       .dash-row .btn { flex-shrink: 0; }
+      .mset-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 2px; font-size: 15px; }
+      .mset-count { font-weight: 700; color: #1d7a4c; }
+      .mset-row { display: flex; gap: 10px; align-items: center; padding: 7px 0; }
+      .mset-box { width: 30px; height: 30px; flex-shrink: 0; border: 2px solid #b9c2cc; border-radius: 8px; background: #fff; font-size: 18px; line-height: 1; color: #fff; cursor: pointer; padding: 0; }
+      .mset-box.on { background: #2f9e6e; border-color: #2f9e6e; }
+      .mset-tx { flex: 1; }
+      .mset-lb { font-size: 15px; font-weight: 600; }
+      .mset-lb.done { color: #1d7a4c; text-decoration: line-through; }
+      .mset-sub { font-size: 12px; color: #666; }
+      .mset-note { font-size: 12px; color: #888; margin: 2px 0 6px; }
+      .mset-done { background: #e5f6ec; border: 1px solid #9fd8b4; border-radius: 10px; padding: 10px 12px; font-weight: 700; color: #1d7a4c; text-align: center; margin: 6px 0 8px; }
+      .d7-wrap { display: flex; gap: 8px; }
+      .d7 { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+      .d7-dot { font-size: 15px; line-height: 1; }
+      .d7-dot.full { color: #2f9e6e; }
+      .d7-dot.part { color: #e8a33d; }
+      .d7-dot.none { color: #c3cad1; }
+      .d7-wd { font-size: 10px; color: #888; }
       .meet-item h3 { margin: 0 0 4px; font-size: 16px; }
       .meet-item .meta { font-size: 13px; color: #444; line-height: 1.7; margin: 0; }
       .tc-box { margin-top: 6px; }
@@ -402,7 +420,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.08-1（発音記号（IPA）を、カタカナ読みが表示される箇所に小さく併記。表示のオン・オフは「表示の設定：発音記号（IPA）」で切り替え可能。以下は前版までの変更点：フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
+        <p>アプリの版：2026.11.09-1（「今日やること」をチェックリスト式に強化：最小セット3項目（復習クイズ／ステージ／今日のフレーズ）がチェックボックス表示になり、学習完了で自動チェック、手でタップしてのチェックも可能に。全部そろうと「今日のタイ語、完了です」を表示。直近7日の達成ドットも追加。以下は前版までの変更点：発音記号（IPA）を、カタカナ読みが表示される箇所に小さく併記。表示のオン・オフは「表示の設定：発音記号（IPA）」で切り替え可能。フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
       </footer>
     </div>
 
@@ -3647,10 +3665,18 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         var d = streakStore.days[ds] || {};
         var isToday = ds === todayStr();
         return {
-          review: !!(d.r || (isToday && stageStore.weak.length === 0)),
-          stage: !!(d.s || (isToday && allStagesPassed())),
-          today: !!d.t
+          review: !!(d.r || d.mr || (isToday && stageStore.weak.length === 0)),
+          stage: !!(d.s || d.ms || (isToday && allStagesPassed())),
+          today: !!(d.t || d.mt)
         };
+      }
+      /* チェックボックスの手動チェック（学習の自動記録と同じ日次レコードに m+kind で保存） */
+      function toggleManual(kind) {
+        var t = todayStr();
+        var d = streakStore.days[t] || {};
+        var k = "m" + kind;
+        if (d[k]) delete d[k]; else d[k] = 1;
+        streakStore.days[t] = d; saveStreak();
       }
       function minSetDone(ds) { var s = minSetState(ds); return s.review && s.stage && s.today; }
       function streakDays() {
@@ -3670,8 +3696,31 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         var h = '<div class="card" style="border:2px solid #2f9e6e;padding:14px;">' +
           '<p style="margin:0 0 4px;font-weight:bold;font-size:17px;">📍 今日やること</p>';
         var ms = minSetState(todayStr()); var sd = streakDays();
-        h += '<div class="dash-row"><div class="dt">' + (minSetDone(todayStr()) ? '🎉 <strong>今日の分は完了です</strong>（最小セット達成）' : '⏱ <strong>今日の最小セット</strong>（5〜10分）：復習クイズ ' + (ms.review ? '✓' : '…') + ' ／ ステージ ' + (ms.stage ? '✓' : '…') + ' ／ 今日のフレーズ ' + (ms.today ? '✓' : '…')) + '</div></div>';
+        var msN = (ms.review ? 1 : 0) + (ms.stage ? 1 : 0) + (ms.today ? 1 : 0);
+        h += '<div class="mset-head"><span>✅ <strong>今日のタイ語</strong>（最小セット・5〜10分）</span><span class="mset-count">' + msN + ' / 3</span></div>';
+        function msetRow(kind, done, label, sub) {
+          return '<div class="mset-row"><button type="button" class="mset-box' + (done ? ' on' : '') + '" data-mset="' + kind + '" aria-label="' + label + 'のチェック">' + (done ? '✓' : '') + '</button>' +
+            '<div class="mset-tx"><div class="mset-lb' + (done ? ' done' : '') + '">' + label + '</div><div class="mset-sub">' + sub + '</div></div></div>';
+        }
+        h += msetRow("r", ms.review, '🔁 復習クイズ', stageStore.weak.length > 0 ? '苦手リスト ' + stageStore.weak.length + ' 件を片づける' : '苦手リストは空です（自動でOK）');
+        h += msetRow("s", ms.stage, '📖 ステージを進める', nx > 0 ? 'つぎはステージ' + nx + '「' + STAGES[nx - 1].title + '」に合格する' : '6ステージ全部合格です（自動でOK）');
+        h += msetRow("t", ms.today, '🗣 今日のフレーズ', dueN > 0 ? '復習 ' + dueN + ' 件＋フレーズの練習を終える' : '「今日の練習」でフレーズを練習する');
+        h += '<p class="mset-note">学習すると自動でチェックが付きます。終わったらチェックボックスをタップしてもOKです。</p>';
+        if (msN === 3) h += '<div class="mset-done">🎉 今日のタイ語、完了です！（最小セット達成）</div>';
         h += '<div class="dash-row"><div class="dt">🔥 ' + (sd > 0 ? '<strong>' + sd + '日</strong> 連続で最小セット達成中' : '今日から連続記録をスタート') + '</div></div>';
+        var dots = '';
+        var wds = ["日", "月", "火", "水", "木", "金", "土"];
+        for (var di = 6; di >= 0; di--) {
+          var ds2 = shiftDayStr(todayStr(), -di);
+          var st2 = minSetState(ds2);
+          var n2 = (st2.review ? 1 : 0) + (st2.stage ? 1 : 0) + (st2.today ? 1 : 0);
+          var pp2 = ds2.split("-");
+          var wd2 = wds[new Date(+pp2[0], +pp2[1] - 1, +pp2[2]).getDay()];
+          var glyph, cls;
+          if (n2 === 3) { glyph = '●'; cls = 'full'; } else if (n2 > 0) { glyph = '◐'; cls = 'part'; } else { glyph = '○'; cls = 'none'; }
+          dots += '<span class="d7"><span class="d7-dot ' + cls + '">' + glyph + '</span><span class="d7-wd">' + (di === 0 ? '今日' : wd2) + '</span></span>';
+        }
+        h += '<div class="dash-row"><div class="dt">📅 直近7日</div><div class="d7-wrap">' + dots + '</div></div>';
         h += '<div class="dash-row"><div class="dt">' + (stageStore.weak.length > 0 ? '🔁 <strong>復習クイズ</strong>（苦手リスト ' + stageStore.weak.length + ' 件）' : '🔁 復習クイズ（苦手リストは空です）') + '</div>' +
           (stageStore.weak.length > 0 ? '<button type="button" class="btn primary" data-dash="review">▶ はじめる</button>' : '') + '</div>';
         h += '<div class="dash-row"><div class="dt">' + (nx > 0 ? '📖 <strong>つぎのステージ</strong>：ステージ' + nx + '「' + STAGES[nx - 1].title + '」' : '📖 もじ入門の6ステージは全部合格です 🎉') + '</div>' +
@@ -3692,6 +3741,12 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
       }
       function wireDash(el) {
         if (!el) return;
+        el.querySelectorAll("[data-mset]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            toggleManual(b.getAttribute("data-mset"));
+            renderCourse();
+          });
+        });
         el.querySelectorAll("[data-dash]").forEach(function (b) {
           b.addEventListener("click", function () {
             var k = b.getAttribute("data-dash");
