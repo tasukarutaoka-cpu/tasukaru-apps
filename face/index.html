@@ -351,6 +351,19 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <h2>継続の記録</h2>
 <div id="historyArea"></div>
 </div>
+
+<div class="card">
+<h2>顔ケアの一本道</h2>
+<p class="small">迷わないための固定ルートです。中身はこれだけをやり続けます。</p>
+<ul class="small" style="margin:6px 0 0;padding-left:18px;line-height:1.9;">
+<li><b>朝（約7分）</b>：泡洗顔 → 保湿 → リフトロジー（計2分）→ 眼輪筋トレーニング → 側頭筋ほぐし → 日焼け止め</li>
+<li><b>夜</b>：泡洗顔 → 保湿 → レチノール（週2〜3回）→ コラーゲンペプチド（寝る前の飲み物に）→ スマホ控えめ → 睡眠</li>
+<li><b>内側</b>：毎食、タンパク質を手のひら1枚分</li>
+<li><b>月1回</b>：定点写真で変化を見る</li>
+<li><b>足さないもの</b>：新しい美顔器は買わない／腸活サプリ・白湯などの追加習慣は入れない／特定の推奨商品や講座には寄せない</li>
+<li><b>見直し</b>：中身の変更は3か月後の定点写真で一括判定。それまで新しいものは足さない</li>
+</ul>
+</div>
 </div>
 
 <!-- モテ日課タブ -->
@@ -717,7 +730,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <div class="card">
 <h2>記録について</h2>
 <p class="small">チェック・状態・写真の記録は、すべてこのブラウザの中に保存されています。ブラウザのデータを消すと記録も消えます。大事な写真はスマホの写真アプリにも残しておいてください。</p>
-<p class="tiny">アプリの版：2026.11.09-4（朝ルーティンにリフトロジーを追加）</p>
+<p class="tiny">アプリの版：2026.11.09-5（夜ルーティンにコラーゲンを追加・「顔ケアの一本道」ガイドを追加）</p>
 <button type="button" class="btn danger block" id="resetBtn">すべての記録を消して最初からにする</button>
 </div>
 </div>
@@ -847,7 +860,8 @@ return [
 { id:"foam", name:"泡洗顔", desc:"2分。日焼け止めと皮脂を落とす。こすらない・熱い湯は使わない", time:"2分"},
 { id:"moist", name:"お風呂上がり5分以内に保湿", desc:"1分。ワセリンを薄く。肌が乾く前に塗るのがコツ", time:"1分"},
 { id:"phone", name:"寝る30分前にスマホを置く", desc:"7時間眠れる時刻に就寝するのが目安", time:""},
-{ id:"cheek", name:"頬の表情筋トレーニング（任意）", desc:"1分。口を「お」にして頬を斜め上に引き上げ、10秒キープ×3回", time:"1分"}
+{ id:"cheek", name:"頬の表情筋トレーニング（任意）", desc:"1分。口を「お」にして頬を斜め上に引き上げ、10秒キープ×3回", time:"1分"},
+{ id:"collagen", name:"コラーゲンペプチド（寝る前の飲み物に）", desc:"粉末を寝る前の飲み物に溶かして飲む。無味・コラーゲンペプチド100%の汎用品でOK", time:""}
 ];
 }
 
@@ -963,7 +977,7 @@ var cnt=0;
 if(L){
 var fOk=true;
 amTasks().forEach(function(t){ if(t.id==="lift" && kk<"2026-11-09") return; if(!L.am || !L.am[t.id]) fOk=false; }); // リフトロジーは2026-11-09導入。それ以前の日は必須にしない（過去日の判定を壊さないため）
-pmTasks().forEach(function(t){ if(!L.pm || !L.pm[t.id]) fOk=false; });
+pmTasks().forEach(function(t){ if(t.id==="collagen" && kk<"2026-11-09") return; if(!L.pm || !L.pm[t.id]) fOk=false; }); // コラーゲンは2026-11-09導入。それ以前の日は必須にしない
 if(fOk) cnt++;
 if(L.three && L.three.thai) cnt++;
 if(L.three && L.three.workout) cnt++;
