@@ -268,6 +268,18 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <p class="tiny" style="margin:7px 0 0;">✓ 完了 ／ 半分色＝途中まで進んだ日 ／ 休＝計画どおりの休み（途切れた扱いにはなりません） ／ ○ 未着手</p>
 </div>
 
+<div class="card" id="stepCard">
+<div class="row-between">
+<div style="font-weight:700;font-size:16px;" id="stepName">ステップ1｜土台づくり</div>
+<span class="chip" id="stepWeekChip">1週目</span>
+</div>
+<p class="small" id="stepDesc" style="margin:6px 0 10px;"></p>
+<div id="stepVideoBox"></div>
+<div class="chips" id="stepChips" style="margin-top:10px;"></div>
+<button type="button" class="btn sub block mt" id="stepNextBtn">次のステップへ進む</button>
+<button type="button" class="btn sub block mt hidden" id="stepPrevBtn">1つ前のステップに戻る</button>
+</div>
+
 <div id="restView" class="hidden">
 <div class="goal">
 <div class="g-title">今日は休養日です 🌿</div>
@@ -385,7 +397,7 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <h3>🛤 筋トレの一本道</h3>
 <p class="small">やることは<strong>これだけ</strong>と決めています。迷ったらここに戻ってください。新しい種目・器具・メニューは足しません。</p>
 <ul class="tight">
-<li><strong>型は1つ</strong>：最初の2週間は慣らし（軽い段階・5〜10分）。その後は A 押す日 → B 引く日 → C 脚・腹の日 を<strong>順番</strong>で回すだけ。曜日固定はしません。</li>
+<li><strong>型は1つ（ステップ制）</strong>：進み方は「動画＋期間」で決まります。ステップ1（3週間）＝ジェシー式5種目を最軽量で／ステップ2（4週間）＝全身5種目メニュー／ステップ3（4週間）＝部位別プログラムを A→B→C の順番で／ステップ4＝15分サーキットで継続。期間が終わったら次のステップへ進みます。</li>
 <li><strong>時間の形</strong>：基本は10〜15分。時間のある日は30分版、忙しい日は5分だけ版。「今日は休む」も正式な選択肢です。</li>
 <li><strong>段階の上げ方</strong>：種目はこのアプリの10種目だけ。正しいフォームで10〜15回×約3セットできたら、次へ<strong>1つだけ</strong>上げる。飛ばしません。</li>
 <li><strong>安全の線</strong>：関節の鋭い痛みは即中止。翌日も残れば1段戻す。懸垂は公園の鉄棒など、安全なバーがある場所だけ。</li>
@@ -403,18 +415,20 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <ul class="tight">
 <li>各種目に「段階」があります。正しいフォームで目標（回数・秒数）をこなせたら、次へ<strong>1つだけ</strong>進みます。調子がいい日でも2段飛ばしはしません。</li>
 <li>特に懸垂への近道は一番の怪我のもとです（吉川凌司さん）。斜め懸垂から順に進みます。</li>
-<li>最初の2週間は「慣らし期間」。いちばん軽い段階だけで、フォームと習慣を作ります。「気持ちよく終わる」が唯一のルールです。</li>
+<li>最初の2週間はステップ1の前半＝「慣らし期間」。いちばん軽い段階だけで、フォームと習慣を作ります。「気持ちよく終わる」が唯一のルールです。</li>
 <li>1週間空いたら、再開時は段階を1つ下げて慣らし直します。「ゼロから」ではなく「1つ戻る」だけです。</li>
 </ul>
 </div>
 </details>
 
 <details class="guide">
-<summary>メニューの回し方（A→B→Cの順番制）</summary>
+<summary>進み方：ステップ制（動画＋期間で進む）</summary>
 <div class="g-body">
 <ul class="tight">
-<li>曜日ではなく<strong>順番</strong>で回します。出張や予定で崩れても、続きから再開できます。</li>
-<li>A 押す日（胸・肩・三頭）／ B 引く日（背中・二頭・体幹）／ C 脚・腹の日。</li>
+<li><strong>ステップ1（3週間）</strong>：ジェシー式「まずはこれ」5種目を、いちばん軽い段階で回します。最初の2週間は慣らし期間です。</li>
+<li><strong>ステップ2（4週間）</strong>：ジェシー式「全身トレ5種目メニュー」の動画に付いて行います。各種目の段階は種目タブで調整できます。</li>
+<li><strong>ステップ3（4週間）</strong>：部位別プログラムに入ります。A 押す日（胸・肩・三頭）／ B 引く日（背中・二頭・体幹）／ C 脚・腹の日 を、曜日ではなく<strong>順番</strong>で回します。出張や予定で崩れても、続きから再開できます。</li>
+<li><strong>ステップ4（継続）</strong>：15分サーキットを軸に続けます。</li>
 <li>基本は40秒動く＋20秒休むのサーキット2周（約10分）。時間のある日はタイマーを3周に。忙しい日は「5分だけ版」（1周）でOKです。</li>
 <li>同じ部位は中1〜2日空けます（50代の回復ペース）。週3日が基本形です。</li>
 <li>鉄棒がない日の「引く」は、背中（床）の種目で置き換えて大丈夫です。ドア枠やカーテンレールには絶対にぶら下がらないでください。</li>
@@ -470,7 +484,7 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <input type="date" id="startDateInput" />
 <button type="button" class="btn sub block mt" id="startDateBtn">開始日を変更する</button>
 <button type="button" class="btn danger block mt" id="resetAllBtn">記録をすべて消す（チェック・段階・写真）</button>
-<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.09-5</p>
+<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.14-step</p>
 </div>
 </div>
 </div>
@@ -487,7 +501,7 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 
 /* ================= データ ================= */
 var EXERCISES=[
-{id:'pushup',part:'胸・押す',name:'プッシュアップ',clear:'通常プッシュアップ 20回',videos:['RgZdENDg5pM','l_JieXLuWG8'],
+{id:'pushup',part:'胸・押す',name:'プッシュアップ',clear:'通常プッシュアップ 20回',videos:['RgZdENDg5pM'],
  stages:[
   {n:'壁プッシュアップ',t:'15〜20回'},
   {n:'台プッシュアップ',t:'15回'},
@@ -525,7 +539,7 @@ var EXERCISES=[
   {n:'リバースプランク（保持）',t:'20〜30秒'},
   {n:'バックエクステンション ＋ グッドモーニング',t:'各12〜15回'}
  ]},
-{id:'squat',part:'脚',name:'スクワット',clear:'自重スクワット 50回',videos:['l_JieXLuWG8'],
+{id:'squat',part:'脚',name:'スクワット',clear:'自重スクワット 50回',videos:[],
  stages:[
   {n:'椅子スクワット',t:'15回'},
   {n:'自重スクワット',t:'20回 → 50回'},
@@ -540,7 +554,7 @@ var EXERCISES=[
   {n:'ヒップリフト ＋ カーフレイズ（壁つき）',t:'各15〜20回'},
   {n:'片脚ヒップリフト',t:'片脚10〜12回'}
  ]},
-{id:'plank',part:'体幹',name:'プランク',clear:'プランク 60秒',videos:['l_JieXLuWG8'],
+{id:'plank',part:'体幹',name:'プランク',clear:'プランク 60秒',videos:[],
  stages:[
   {n:'膝つきプランク',t:'20秒'},
   {n:'プランク',t:'30秒'},
@@ -548,7 +562,7 @@ var EXERCISES=[
   {n:'サイドプランク',t:'片側30秒ずつ'},
   {n:'ショルダータップ（プランク姿勢）',t:'左右10回ずつ'}
  ]},
-{id:'crunch',part:'腹',name:'クランチ系',clear:'リーチアップクランチ 30回',videos:['ahwPqHru94o','l_JieXLuWG8'],
+{id:'crunch',part:'腹',name:'クランチ系',clear:'リーチアップクランチ 30回',videos:['ahwPqHru94o'],
  stages:[
   {n:'リーチアップクランチ',t:'15回'},
   {n:'リーチアップクランチ',t:'30回'},
@@ -557,7 +571,7 @@ var EXERCISES=[
   {n:'レッグレイズ',t:'15〜20回'},
   {n:'ハンギングニーレイズ（鉄棒の日）',t:'8〜12回・ゆっくり'}
  ]},
-{id:'cardio',part:'全身・持久',name:'全身（持久）',clear:'その場足踏み 45秒を楽に',videos:['J91BwHLy1-U','LyXgcozBAYA'],
+{id:'cardio',part:'全身・持久',name:'全身（持久）',clear:'その場足踏み 45秒を楽に',videos:['J91BwHLy1-U'],
  stages:[
   {n:'その場足踏み（速め）',t:'45秒'},
   {n:'跳ばないHIIT系の動き',t:'45秒'},
@@ -592,7 +606,49 @@ var GATES=[
 {ex:'cardio',label:'全身持久（ハーフバーピー45秒 ※当面は足踏み45秒で代替）',target:'45秒'}
 ];
 function exById(id){ for(var i=0;i<EXERCISES.length;i++){ if(EXERCISES[i].id===id) return EXERCISES[i]; } return null; }
-function menuByKey(k){ for(var i=0;i<MENUS.length;i++){ if(MENUS[i].key===k) return MENUS[i]; } return MENUS[0]; }
+var FIVE_MENU={key:'F',name:'全身5種目',desc:'プッシュアップ・スクワット・腹筋・体幹・全身持久',items:['pushup','squat','crunch','plank','cardio']};
+function menuByKey(k){ if(k==='F') return FIVE_MENU; for(var i=0;i<MENUS.length;i++){ if(MENUS[i].key===k) return MENUS[i]; } return MENUS[0]; }
+function videoById(id){ for(var i=0;i<VIDEOS.length;i++){ if(VIDEOS[i].id===id) return VIDEOS[i]; } return null; }
+
+/* ================= ステップ方式（2026-11-14〜） =================
+   進み方は「動画＋期間」で決まります。今のステップの動画に付いて行い、
+   期間（週数）が終わったら次のステップへ進みます。 */
+var STEPS=[
+{n:1,name:'ステップ1｜土台づくり',weeks:3,video:'l_JieXLuWG8',mode:'five',menuTitle:'今日のメニュー（5種目・最軽量）',
+ desc:'ジェシー式の「まずはこれ」5種目を、いちばん軽い段階で回します。最初の2週間は慣らし期間です。フォームと習慣を作る期間で、「気持ちよく終わる」が目標です。'},
+{n:2,name:'ステップ2｜全身メニュー',weeks:4,video:'wYqTN9UHlAA',mode:'five',menuTitle:'今日のメニュー（全身5種目）',
+ desc:'ジェシー式の全身5種目メニューに、動画に付いて取り組みます。週3回が目安です。各種目の段階は、種目タブで今の自分のレベルに合わせておいてください。'},
+{n:3,name:'ステップ3｜部位別プログラム',weeks:4,video:null,mode:'split',menuTitle:'',
+ desc:'ジェシー式「1ヶ月自宅トレプログラム」の3本を、A 押す日 → B 引く日 → C 脚・腹の日 の順番で回します。今日のメニューの動画が上に表示されます。'},
+{n:4,name:'ステップ4｜15分サーキット',weeks:0,video:'ZPSes03R1XU',mode:'five',menuTitle:'今日のメニュー（15分サーキット）',
+ desc:'「全身これだけ」15分サーキットを軸に継続します。ここが現在の最終ステップです。月1回の定点写真で見直しましょう。'}
+];
+var MENU_VIDEO={A:'QDrjL8H8FNo',B:'4hej03FsgiQ',C:'LyXgcozBAYA'};
+function stepDef(){ return STEPS[(state && state.step? state.step:1)-1] || STEPS[0]; }
+function stepWeek(){ if(!state || !state.stepStart) return 1; var w=Math.floor(diffDays(state.stepStart, todayKey())/7)+1; return w<1?1:w; }
+function stepDue(){ var d=stepDef(); return d.weeks>0 && stepWeek()>d.weeks; }
+function stepDaysLeft(){ var d=stepDef(); if(d.weeks<=0) return 0; var left=d.weeks*7-diffDays(state.stepStart, todayKey()); return left<0?0:left; }
+function todayVideoId(){
+ var d=stepDef();
+ if(d.mode==='split'){
+  var log=todayLog(false);
+  var key=log?log.menu:MENUS[state.rotation].key;
+  return MENU_VIDEO[key]||null;
+ }
+ return d.video;
+}
+function todayVideoTitle(){
+ var id=todayVideoId(); if(!id) return '';
+ var v=videoById(id); return v?v.title:'';
+}
+/* 種目の動画：専用動画があればそれ、なければ今のステップ（または今日のメニュー）の動画 */
+var taskVidMap={};
+function vidFor(id){
+ var ex=exById(id);
+ if(ex && ex.videos && ex.videos.length) return {id:ex.videos[0], own:true};
+ var v=todayVideoId();
+ return v?{id:v, own:false}:null;
+}
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 /* ================= 状態 ================= */
@@ -603,7 +659,7 @@ function dkey(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.get
 function todayKey(){ return dkey(new Date()); }
 function parseKey(k){ var p=k.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
 function diffDays(a,b){ return Math.round((parseKey(b)-parseKey(a))/86400000); }
-function defaultState(){ return {startDate:todayKey(),levels:{},rotation:0,logs:{}}; }
+function defaultState(){ return {startDate:todayKey(),levels:{},rotation:0,logs:{},step:1,stepStart:todayKey()}; }
 function loadState(){
  try{
   var raw=localStorage.getItem(LS_KEY);
@@ -613,6 +669,8 @@ function loadState(){
    if(!state.levels) state.levels={};
    if(typeof state.rotation!=='number') state.rotation=0;
    if(!state.startDate) state.startDate=todayKey();
+   if(typeof state.step!=='number' || state.step<1 || state.step>STEPS.length) state.step=1;
+   if(!state.stepStart) state.stepStart=state.startDate;
    return;
   }
  }catch(e){}
@@ -621,17 +679,35 @@ function loadState(){
 function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
 function levelOf(id){ var v=state.levels[id]; return (typeof v==='number')?v:0; }
 function dayNum(){ return diffDays(state.startDate, todayKey())+1; }
-function isNarashi(){ return dayNum()<=14; }
-function shownStageIdx(id){ return isNarashi()?0:levelOf(id); }
+function isNarashi(){ return state.step===1 && stepWeek()<=2; }
+function shownStageIdx(id){ return state.step===1?0:levelOf(id); }
 function clearCount(){ var n=0; for(var k in state.logs){ if(state.logs[k] && state.logs[k].done) n++; } return n; }
 
 function todayLog(create){
  var t=todayKey(); var log=state.logs[t];
  if(!log && create){
-  log={menu:MENUS[state.rotation].key,checks:{},mini:false,rest:false,done:false,adv:false};
+  log={menu:(state.step===3?MENUS[state.rotation].key:'F'),checks:{},mini:false,rest:false,done:false,adv:false};
   state.logs[t]=log; saveState();
  }
  return log||null;
+}
+function setStep(n){
+ state.step=n; state.stepStart=todayKey();
+ if(n===3) state.rotation=0;
+ var log=state.logs[todayKey()];
+ if(log && !log.done){ delete state.logs[todayKey()]; }
+ saveState(); renderToday();
+}
+function advanceStep(){
+ if(state.step>=STEPS.length) return;
+ if(!stepDue() && !confirm('期間の途中です。それでも次のステップへ進みますか？')) return;
+ setStep(state.step+1);
+ toast(stepDef().name+' に進みました');
+}
+function backStep(){
+ if(state.step<=1) return;
+ setStep(state.step-1);
+ toast(stepDef().name+' に戻りました');
 }
 
 /* ================= 共通UI ================= */
@@ -657,8 +733,8 @@ function renderHeader(){
  document.getElementById('todayDate').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+wdays[d.getDay()]+'）';
  document.getElementById('dayChip').textContent='開始から '+dayNum()+'日目';
  var pc=document.getElementById('phaseChip');
- if(isNarashi()){ pc.textContent='慣らし期間（あと '+(14-dayNum()+1)+'日）'; }
- else{ pc.textContent='本編（A→B→C ローテーション）'; }
+ var sd=stepDef();
+ pc.textContent=sd.name.split('｜')[0]+'（'+stepWeek()+'週目'+(sd.weeks>0?'／全'+sd.weeks+'週':'・継続')+'）';
  document.getElementById('clearChip').textContent='通算クリア '+clearCount()+'日';
 }
 function renderWeekDots(){
@@ -681,9 +757,57 @@ function renderWeekDots(){
  }
  box.innerHTML=html;
 }
+function renderStep(){
+ var sd=stepDef();
+ document.getElementById('stepName').textContent=sd.name;
+ document.getElementById('stepWeekChip').textContent=sd.weeks>0?(stepWeek()+'週目／全'+sd.weeks+'週'):(stepWeek()+'週目・継続');
+ document.getElementById('stepDesc').textContent=sd.desc;
+ /* 今日のステップ動画 */
+ var box=document.getElementById('stepVideoBox');
+ var vid=todayVideoId();
+ if(vid){
+  var v=videoById(vid);
+  box.innerHTML='<div class="vid-thumb" id="stepVidThumb"><img src="https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg" alt="" loading="lazy"><span class="play">▶</span></div>'
+   +'<div class="vid-title" style="font-size:14px;">今日の動画：'+esc(v?v.title:'')+'</div>';
+  var th=document.getElementById('stepVidThumb');
+  th.addEventListener('click', function(){
+   var ifr=document.createElement('iframe');
+   ifr.className='vid-frame';
+   ifr.src='https://www.youtube-nocookie.com/embed/'+vid+'?autoplay=1&rel=0';
+   ifr.setAttribute('allow','accelerometer; autoplay; encrypted-media; picture-in-picture');
+   ifr.setAttribute('allowfullscreen','');
+   ifr.title='YouTube video player';
+   th.replaceWith(ifr);
+  });
+ }else{
+  box.innerHTML='';
+ }
+ /* ステップ一覧チップ */
+ var ch='';
+ STEPS.forEach(function(s){
+  ch+='<span class="'+(s.n===sd.n?'chip now':'chip plain')+'">ステップ'+s.n+'</span>';
+ });
+ document.getElementById('stepChips').innerHTML=ch;
+ /* 進む・戻るボタン */
+ var nb=document.getElementById('stepNextBtn');
+ if(sd.n>=STEPS.length){
+  nb.classList.add('hidden');
+ }else{
+  nb.classList.remove('hidden');
+  if(stepDue()){
+   nb.className='btn block mt';
+   nb.textContent='🎉 期間が終わりました：次のステップへ進む';
+  }else{
+   nb.className='btn sub block mt';
+   nb.textContent='次のステップへ進む（あと '+stepDaysLeft()+'日）';
+  }
+ }
+ document.getElementById('stepPrevBtn').classList.toggle('hidden', sd.n<=1);
+}
 function renderToday(){
  renderHeader();
  renderWeekDots();
+ renderStep();
  var log=todayLog(true);
  var restView=document.getElementById('restView');
  var menuView=document.getElementById('menuView');
@@ -693,14 +817,22 @@ function renderToday(){
  }
  restView.classList.add('hidden'); menuView.classList.remove('hidden');
  var menu=menuByKey(log.menu);
- document.getElementById('menuName').textContent=menu.name;
- document.getElementById('menuDesc').textContent=menu.desc;
- /* ローテーションのチップ */
+ var sd2=stepDef();
+ if(menu.key==='F'){
+  document.getElementById('menuName').textContent=sd2.menuTitle;
+  document.getElementById('menuDesc').textContent=menu.desc;
+ }else{
+  document.getElementById('menuName').textContent=menu.name;
+  document.getElementById('menuDesc').textContent=menu.desc;
+ }
+ /* ローテーションのチップ（ステップ3だけ A/B/C を表示） */
  var rotHtml='';
- MENUS.forEach(function(m){
-  var cls=(m.key===log.menu)?'chip now':'chip plain';
-  rotHtml+='<span class="'+cls+'">'+esc(m.name)+'</span>';
- });
+ if(state.step===3){
+  MENUS.forEach(function(m){
+   var cls=(m.key===log.menu)?'chip now':'chip plain';
+   rotHtml+='<span class="'+cls+'">'+esc(m.name)+'</span>';
+  });
+ }
  document.getElementById('rotChips').innerHTML=rotHtml;
  /* モード表示 */
  var modeLabel=document.getElementById('menuModeLabel');
@@ -713,8 +845,14 @@ function renderToday(){
   modeLabel.textContent=isNarashi()?'サーキット1周':'サーキット2周';
   miniBtn.textContent='忙しい日：5分だけ版にする';
  }
- if(isNarashi()){
+ if(state.step===1 && stepWeek()<=2){
   phaseNote.textContent='慣らし期間：いちばん軽い段階だけでOK。「気持ちよく終わる」が唯一のルールです。';
+ }else if(state.step===1){
+  phaseNote.textContent='ステップ1の最終週です。5種目の形が安定してきたら、期間が終わり次第ステップ2へ進みます。';
+ }else if(state.step===2){
+  phaseNote.textContent='動画に付いてやる期間です。きつい種目は、種目タブで段階を下げて大丈夫です。';
+ }else if(state.step===4){
+  phaseNote.textContent='動画の15分サーキットに付いて実施します。跳ぶ動きは、その場足踏みに置き換えてください。';
  }else if(menu.key==='B'){
   phaseNote.textContent='鉄棒がない日は「引く」を「背中（床）」で置き換えて大丈夫です。';
  }else{
@@ -729,19 +867,20 @@ function renderToday(){
   var st=ex.stages[si];
   var done=!!log.checks[id];
   if(done) doneCount++;
-  var badge=isNarashi()
-   ? '<span class="t-badge info">慣らし：最軽量</span>'
+  var badge=(state.step===1)
+   ? '<span class="t-badge info">'+(isNarashi()?'慣らし：最軽量':'最軽量')+'</span>'
    : '<span class="t-badge info">段階 '+(si+1)+'/'+ex.stages.length+'</span>';
-  var hasVid=ex.videos && ex.videos.length>0;
+  var vf=vidFor(id);
+  taskVidMap[id]=vf;
   html+='<div class="task-wrap">'
    +'<div class="task'+(done?' done':'')+'" data-check="'+id+'" role="button">'
    +'<span class="box">✓</span>'
    +'<span style="flex:1;"><span class="t-name">'+esc(st.n)+'</span><br>'
    +'<span class="t-desc">'+esc(ex.name)+'｜目安：'+esc(st.t)+(ex.note?'｜'+esc(ex.note):'')+'</span></span>'
    +badge
-   +(hasVid?'<button type="button" class="vid-btn" data-vid="'+id+'">▶ 動画</button>':'')
+   +(vf?'<button type="button" class="vid-btn" data-vid="'+id+'">▶ 動画</button>':'')
    +'</div>'
-   +(hasVid?'<div class="task-vid hidden" id="tvid-'+id+'"></div>':'')
+   +(vf?'<div class="task-vid hidden" id="tvid-'+id+'"></div>':'')
    +'</div>';
  });
  list.innerHTML=html;
@@ -766,11 +905,11 @@ function toggleCheck(id){
  var allDone=menu.items.every(function(x){ return !!log.checks[x]; });
  if(allDone && !log.done){
   log.done=true;
-  if(!log.adv){ state.rotation=(state.rotation+1)%MENUS.length; log.adv=true; }
+  if(!log.adv){ if(state.step===3){ state.rotation=(state.rotation+1)%MENUS.length; } log.adv=true; }
   toast('🎉 今日の分が完了しました');
  }else if(!allDone && log.done){
   log.done=false;
-  if(log.adv){ state.rotation=(state.rotation+MENUS.length-1)%MENUS.length; log.adv=false; }
+  if(log.adv){ if(state.step===3){ state.rotation=(state.rotation+MENUS.length-1)%MENUS.length; } log.adv=false; }
  }
  saveState(); renderToday();
 }
@@ -778,7 +917,8 @@ function toggleTaskVideo(id, btn){
  var panel=document.getElementById('tvid-'+id);
  if(!panel) return;
  var ex=exById(id);
- if(!ex || !ex.videos || !ex.videos.length) return;
+ var vf=taskVidMap[id];
+ if(!ex || !vf) return;
  if(!panel.classList.contains('hidden')){
   panel.classList.add('hidden'); panel.innerHTML='';
   if(btn) btn.textContent='▶ 動画';
@@ -792,10 +932,12 @@ function toggleTaskVideo(id, btn){
  var note=document.createElement('p');
  note.className='tiny';
  note.style.margin='0 0 6px';
- note.textContent='参考動画：'+ex.name+'（フォームを確認してから始めましょう）';
+ note.textContent=vf.own
+  ? '参考動画：'+ex.name+'（フォームを確認してから始めましょう）'
+  : '参考動画：'+todayVideoTitle()+'（今のステップの動画です）';
  var ifr=document.createElement('iframe');
  ifr.className='vid-frame';
- ifr.src='https://www.youtube-nocookie.com/embed/'+ex.videos[0]+'?autoplay=1&rel=0';
+ ifr.src='https://www.youtube-nocookie.com/embed/'+vf.id+'?autoplay=1&rel=0';
  ifr.setAttribute('allow','accelerometer; autoplay; encrypted-media; picture-in-picture');
  ifr.setAttribute('allowfullscreen','');
  ifr.title='YouTube video player';
@@ -805,6 +947,8 @@ function toggleTaskVideo(id, btn){
  if(btn) btn.textContent='✕ 閉じる';
 }
 function bindToday(){
+ document.getElementById('stepNextBtn').addEventListener('click', advanceStep);
+ document.getElementById('stepPrevBtn').addEventListener('click', backStep);
  document.getElementById('miniBtn').addEventListener('click', function(){
   var log=todayLog(true); log.mini=!log.mini; saveState(); renderToday();
   toast(log.mini?'5分だけ版にしました（1周でOK）':'通常版に戻しました');
