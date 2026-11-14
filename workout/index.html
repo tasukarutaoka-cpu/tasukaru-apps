@@ -487,7 +487,7 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <input type="date" id="startDateInput" />
 <button type="button" class="btn sub block mt" id="startDateBtn">開始日を変更する</button>
 <button type="button" class="btn danger block mt" id="resetAllBtn">記録をすべて消す（チェック・段階・写真）</button>
-<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.14-step4</p>
+<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.14-step5</p>
 </div>
 </div>
 </div>
@@ -893,17 +893,13 @@ function renderToday(){
    : ((state.step===2)
    ? '<span class="t-badge info">最軽量</span>'
    : '<span class="t-badge info">段階 '+(si+1)+'/'+ex.stages.length+'</span>');
-  var vf=vidFor(id);
-  taskVidMap[id]=vf;
   html+='<div class="task-wrap">'
    +'<div class="task'+(done?' done':'')+'" data-check="'+id+'" role="button">'
    +'<span class="box">✓</span>'
    +'<span style="flex:1;"><span class="t-name">'+esc(isGate?gi.name:st.n)+'</span><br>'
    +'<span class="t-desc">'+(isGate?('ゴール：'+esc(gi.goal)+'｜今日はできる範囲でOK'+(gi.note?'｜'+esc(gi.note):'')):(esc(ex.name)+'｜目安：'+esc(st.t)+(ex.note?'｜'+esc(ex.note):'')))+'</span></span>'
    +badge
-   +(vf?'<button type="button" class="vid-btn" data-vid="'+id+'">▶ 動画</button>':'')
    +'</div>'
-   +(vf?'<div class="task-vid hidden" id="tvid-'+id+'"></div>':'')
    +'</div>';
  });
  list.innerHTML=html;
