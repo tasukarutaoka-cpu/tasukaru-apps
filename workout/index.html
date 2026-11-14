@@ -268,16 +268,36 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <p class="tiny" style="margin:7px 0 0;">✓ 完了 ／ 半分色＝途中まで進んだ日 ／ 休＝計画どおりの休み（途切れた扱いにはなりません） ／ ○ 未着手</p>
 </div>
 
-<div class="card" id="stepCard">
+<div class="card flush" id="stepCard">
+<div style="padding:16px 16px 0;">
 <div class="row-between">
-<div style="font-weight:700;font-size:16px;" id="stepName">ステップ1｜土台づくり</div>
+<div style="font-weight:700;font-size:17px;" id="stepName">ステップ1｜土台づくり</div>
 <span class="chip" id="stepWeekChip">1週目</span>
 </div>
 <p class="small" id="stepDesc" style="margin:6px 0 10px;"></p>
 <div id="stepVideoBox"></div>
+</div>
+<div id="stepMenuSection">
+<div class="sec-head" style="border-top:1px solid var(--line);margin-top:14px;">
+<div>
+<div style="font-weight:700;font-size:16px;" id="menuName">今日やること</div>
+<div class="small" id="menuDesc">プッシュアップ・スクワット・腹筋・体幹・全身持久</div>
+</div>
+<div class="time" id="menuModeLabel">サーキット1周</div>
+</div>
+<div style="padding:0 16px;">
+<div class="chips" id="rotChips"></div>
+<p class="tiny" id="phaseNote" style="margin:8px 0 0;"></p>
+</div>
+<div class="prog"><div id="menuProg" style="width:0%"></div></div>
+<div id="taskList"></div>
+<div class="all-done hidden" id="allDoneMsg">🎉 今日の分は完了です。おつかれさまでした。<br>次回は次のメニューに進みます。</div>
+</div>
+<div style="padding:2px 16px 16px;border-top:1px solid var(--line);">
 <div class="chips" id="stepChips" style="margin-top:10px;"></div>
 <button type="button" class="btn sub block mt" id="stepNextBtn">次のステップへ進む</button>
 <button type="button" class="btn sub block mt hidden" id="stepPrevBtn">1つ前のステップに戻る</button>
+</div>
 </div>
 
 <div id="restView" class="hidden">
@@ -289,23 +309,6 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 </div>
 
 <div id="menuView">
-<div class="card flush">
-<div class="sec-head">
-<div>
-<div style="font-weight:700;font-size:17px;" id="menuName">A 押す日</div>
-<div class="small" id="menuDesc">胸・肩・三頭</div>
-</div>
-<div class="time" id="menuModeLabel">サーキット2周</div>
-</div>
-<div style="padding:0 16px;">
-<div class="chips" id="rotChips"></div>
-<p class="tiny" id="phaseNote" style="margin:8px 0 0;"></p>
-</div>
-<div class="prog"><div id="menuProg" style="width:0%"></div></div>
-<div id="taskList"></div>
-<div class="all-done hidden" id="allDoneMsg">🎉 今日の分は完了です。おつかれさまでした。<br>次回は次のメニューに進みます。</div>
-</div>
-
 <div class="row-between mb">
 <button type="button" class="btn sub sm" id="miniBtn">忙しい日：5分だけ版にする</button>
 <button type="button" class="btn sub sm" id="restBtn">今日は休む</button>
@@ -484,7 +487,7 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <input type="date" id="startDateInput" />
 <button type="button" class="btn sub block mt" id="startDateBtn">開始日を変更する</button>
 <button type="button" class="btn danger block mt" id="resetAllBtn">記録をすべて消す（チェック・段階・写真）</button>
-<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.14-step</p>
+<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.14-step2</p>
 </div>
 </div>
 </div>
@@ -614,13 +617,13 @@ function videoById(id){ for(var i=0;i<VIDEOS.length;i++){ if(VIDEOS[i].id===id) 
    進み方は「動画＋期間」で決まります。今のステップの動画に付いて行い、
    期間（週数）が終わったら次のステップへ進みます。 */
 var STEPS=[
-{n:1,name:'ステップ1｜土台づくり',weeks:3,video:'l_JieXLuWG8',mode:'five',menuTitle:'今日のメニュー（5種目・最軽量）',
+{n:1,name:'ステップ1｜土台づくり',weeks:3,video:'l_JieXLuWG8',mode:'five',menuTitle:'今日やること（5種目・最軽量）',
  desc:'ジェシー式の「まずはこれ」5種目を、いちばん軽い段階で回します。最初の2週間は慣らし期間です。フォームと習慣を作る期間で、「気持ちよく終わる」が目標です。'},
-{n:2,name:'ステップ2｜全身メニュー',weeks:4,video:'wYqTN9UHlAA',mode:'five',menuTitle:'今日のメニュー（全身5種目）',
+{n:2,name:'ステップ2｜全身メニュー',weeks:4,video:'wYqTN9UHlAA',mode:'five',menuTitle:'今日やること（全身5種目）',
  desc:'ジェシー式の全身5種目メニューに、動画に付いて取り組みます。週3回が目安です。各種目の段階は、種目タブで今の自分のレベルに合わせておいてください。'},
 {n:3,name:'ステップ3｜部位別プログラム',weeks:4,video:null,mode:'split',menuTitle:'',
  desc:'ジェシー式「1ヶ月自宅トレプログラム」の3本を、A 押す日 → B 引く日 → C 脚・腹の日 の順番で回します。今日のメニューの動画が上に表示されます。'},
-{n:4,name:'ステップ4｜15分サーキット',weeks:0,video:'ZPSes03R1XU',mode:'five',menuTitle:'今日のメニュー（15分サーキット）',
+{n:4,name:'ステップ4｜15分サーキット',weeks:0,video:'ZPSes03R1XU',mode:'five',menuTitle:'今日やること（15分サーキット）',
  desc:'「全身これだけ」15分サーキットを軸に継続します。ここが現在の最終ステップです。月1回の定点写真で見直しましょう。'}
 ];
 var MENU_VIDEO={A:'QDrjL8H8FNo',B:'4hej03FsgiQ',C:'LyXgcozBAYA'};
@@ -768,7 +771,8 @@ function renderStep(){
  if(vid){
   var v=videoById(vid);
   box.innerHTML='<div class="vid-thumb" id="stepVidThumb"><img src="https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg" alt="" loading="lazy"><span class="play">▶</span></div>'
-   +'<div class="vid-title" style="font-size:14px;">今日の動画：'+esc(v?v.title:'')+'</div>';
+   +'<div class="vid-title" style="font-size:14px;">今日の動画：'+esc(v?v.title:'')+'</div>'
+   +'<p class="tiny" style="margin:4px 0 0;">この動画でフォームを確認して、下の「今日やること」を1つずつチェックしながら進めます。</p>';
   var th=document.getElementById('stepVidThumb');
   th.addEventListener('click', function(){
    var ifr=document.createElement('iframe');
@@ -811,11 +815,14 @@ function renderToday(){
  var log=todayLog(true);
  var restView=document.getElementById('restView');
  var menuView=document.getElementById('menuView');
+ var sms=document.getElementById('stepMenuSection');
  if(log.rest){
   restView.classList.remove('hidden'); menuView.classList.add('hidden');
+  if(sms) sms.classList.add('hidden');
   return;
  }
  restView.classList.add('hidden'); menuView.classList.remove('hidden');
+ if(sms) sms.classList.remove('hidden');
  var menu=menuByKey(log.menu);
  var sd2=stepDef();
  if(menu.key==='F'){
