@@ -346,7 +346,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <h2>顔ケアの一本道</h2>
 <p class="small">迷わないための固定ルートです。中身はこれだけをやり続けます。</p>
 <ul class="small" style="margin:6px 0 0;padding-left:18px;line-height:1.9;">
-<li><b>朝（約7分）</b>：泡洗顔 → リフトロジー（計2分。化粧水・乳液の上から）→ 保湿（ワセリン）→ 眼輪筋トレーニング → 側頭筋ほぐし → 日焼け止め</li>
+<li><b>朝（約8分）</b>：泡洗顔 → 化粧水・乳液 → リフトロジー（計2分）→ 保湿（ワセリン）→ 眼輪筋トレーニング → 側頭筋ほぐし → 日焼け止め</li>
 <li><b>夜</b>：泡洗顔 → 保湿 → レチノール（週2〜3回）→ コラーゲンペプチド＋ビタミンC（寝る前の飲み物に）→ スマホ控えめ → 睡眠</li>
 <li><b>内側</b>：毎食、タンパク質を手のひら1枚分</li>
 <li><b>月1回</b>：定点写真で変化を見る</li>
@@ -735,6 +735,7 @@ return (dow===1 || dow===3 || dow===5); // 月・水・金
 function amTasks(){
 return [
 { id:"foam", name:"泡洗顔", desc:"2分。泡でなでるだけ、こすらない。タオルは押さえるだけ", time:"2分"},
+{ id:"lotion", name:"化粧水・乳液", desc:"1分。リフトロジーの前に塗る水分役。今お使いのものでOK", time:"1分"},
 { id:"lift", name:"リフトロジー（半顔1分ずつ・計2分）", desc:"EMSは弱めから。化粧水・乳液など水分のあるものを塗った肌で使う。ワセリンの上では反応しません", time:"2分"},
 { id:"moist", name:"保湿（ワセリンを薄く）", desc:"1分。リフトロジーの後に、蓋として顔全体に薄く伸ばす。乾きやすい部分は少し多めに", time:"1分"},
 { id:"eye", name:"眼輪筋トレーニング", desc:"1分。下まぶた引き上げ5秒×5回＋目を閉じる・開く×5回。指は添えるだけ、引っ張らない", time:"1分", vid:"https://tarumi.self-lifting.jp/archives/under-eye-sagging-stretch-html.html"},
@@ -811,7 +812,7 @@ var amLeft=amTasks().filter(function(t){ return !log.am[t.id]; }).length;
 var pmLeft=pmTasks().filter(function(t){ return !log.pm[t.id]; }).length;
 var faceDone = (amLeft===0 && pmLeft===0);
 var items=[
-{ id:"face", name:"顔ケア（美容）", time:"約7分", auto:true, done:faceDone,
+{ id:"face", name:"顔ケア（美容）", time:"約8分", auto:true, done:faceDone,
 desc: faceDone? "今日の朝・夜ケアは完了です" : ("朝・夜のルーティンを全部終えると自動で付きます（朝あと"+amLeft+"つ・夜あと"+pmLeft+"つ）") },
 { id:"thai", name:"タイ語（最小セット）", time:"5〜10分", done:!!log.three.thai,
 desc:"今日の最小セットだけでもOKです",
@@ -899,7 +900,7 @@ if(streak>3650) break;
 $("streakChip").textContent="継続 "+streak+"日";
 $("phaseChip").textContent="開始 "+weekNum()+"週目";
 $("planChip").textContent="最小ルーティン";
-$("amTime").textContent="目安 約7分";
+$("amTime").textContent="目安 約8分";
 $("pmTime").textContent="目安 約4分";
 
 renderTaskList("am", amTasks(), log.am);
