@@ -233,7 +233,7 @@ flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:10px;padding
 <!-- ============ セットアップ ============ -->
 <section id="setupView" class="hidden">
 <h1>顔ケアをはじめましょう</h1>
-<p class="small">51歳・自宅ケア用に調べた内容をもとにした、続けるためのアプリです。合言葉は「朝7分・夜4分」。やることは根拠のあるものだけに絞ってあります。少ないから続く、を狙います。</p>
+<p class="small">51歳・自宅ケア用に調べた内容をもとにした、続けるためのアプリです。合言葉は「朝8分・夜5分」。やることは根拠のあるものだけに絞ってあります。少ないから続く、を狙います。</p>
 
 <div class="goal">
 <div class="g-title">目標：見た目マイナス20歳／目を大きく、二重に</div>
@@ -743,14 +743,24 @@ return [
 { id:"sun", name:"日焼け止め", desc:"2分。顔・首・耳に。鼻と額は重ね塗り。曇りの日も", time:"2分"}
 ];
 }
+function retinolToday(){
+var p=phase();
+if(p>=2) return isRetinolDay();
+var dow=new Date().getDay();
+return (dow===1 || dow===4); // 導入期（土台づくり〜定着期）も月・木の週2回
+}
 function pmTasks(){
-return [
+var tasks=[
 { id:"foam", name:"泡洗顔", desc:"2分。日焼け止めと皮脂を落とす。こすらない・熱い湯は使わない", time:"2分"},
-{ id:"moist", name:"お風呂上がり5分以内に保湿", desc:"1分。ワセリンを薄く。肌が乾く前に塗るのがコツ", time:"1分"},
-{ id:"phone", name:"寝る30分前にスマホを置く", desc:"7時間眠れる時刻に就寝するのが目安", time:""},
-{ id:"cheek", name:"頬の表情筋トレーニング（任意）", desc:"1分。口を「お」にして頬を斜め上に引き上げ、10秒キープ×3回", time:"1分"},
-{ id:"collagen", name:"コラーゲンペプチド＋ビタミンC（寝る前の飲み物に）", desc:"コラーゲン粉末を寝る前の飲み物に溶かし、ビタミンCサプリも一緒に。どちらも汎用品でOK", time:""}
+{ id:"moist", name:"お風呂上がり5分以内に保湿", desc:"1分。ワセリンを薄く。肌が乾く前に塗るのがコツ", time:"1分"}
 ];
+if(retinolToday()){
+tasks.push({ id:"retinol", name:"レチノールを塗る（エリクシール）", desc:"1分。今夜はレチノールの日です（週2〜3回）。エリクシール レチノパワー リンクルクリームを米粒大、目元・口元・額などシワが気になる部分に。保湿の上から塗って、もう一度保湿で挟むと刺激が出にくい。赤み・ヒリつきが出たら頻度を下げてください", time:"1分"});
+}
+tasks.push({ id:"cheek", name:"頬の表情筋トレーニング（任意）", desc:"1分。口を「お」にして頬を斜め上に引き上げ、10秒キープ×3回", time:"1分", vid:"https://www.youtube.com/watch?v=Wq1hamQiJoA"});
+tasks.push({ id:"collagen", name:"コラーゲンペプチド＋ビタミンC（寝る前の飲み物に）", desc:"コラーゲン粉末を寝る前の飲み物に溶かし、ビタミンCサプリも一緒に。どちらも汎用品でOK", time:""});
+tasks.push({ id:"phone", name:"寝る30分前にスマホを置く", desc:"7時間眠れる時刻に就寝するのが目安", time:""});
+return tasks;
 }
 
 /* ---------- 週次ケア（月曜はじまり） ---------- */
@@ -865,7 +875,7 @@ var cnt=0;
 if(L){
 var fOk=true;
 amTasks().forEach(function(t){ if(t.id==="lift" && kk<"2026-11-09") return; if(!L.am || !L.am[t.id]) fOk=false; }); // リフトロジーは2026-11-09導入。それ以前の日は必須にしない（過去日の判定を壊さないため）
-pmTasks().forEach(function(t){ if(t.id==="collagen" && kk<"2026-11-09") return; if(!L.pm || !L.pm[t.id]) fOk=false; }); // コラーゲンは2026-11-09導入。それ以前の日は必須にしない
+pmTasks().forEach(function(t){ if(t.id==="collagen" && kk<"2026-11-09") return; if(t.id==="retinol" && kk!==todayKey()) return; if(!L.pm || !L.pm[t.id]) fOk=false; }); // コラーゲンは2026-11-09導入。それ以前の日は必須にしない／レチノールは実施日のみ表示のため過去日では必須にしない
 if(fOk) cnt++;
 if(L.three && L.three.thai) cnt++;
 if(L.three && L.three.workout) cnt++;
@@ -901,7 +911,7 @@ $("streakChip").textContent="継続 "+streak+"日";
 $("phaseChip").textContent="開始 "+weekNum()+"週目";
 $("planChip").textContent="最小ルーティン";
 $("amTime").textContent="目安 約8分";
-$("pmTime").textContent="目安 約4分";
+$("pmTime").textContent="目安 約5分";
 
 renderTaskList("am", amTasks(), log.am);
 renderTaskList("pm", pmTasks(), log.pm);
@@ -926,6 +936,10 @@ b.addEventListener("click", function(){
 if(t.disabled){ toast(t.id==="retinol"? "今日はレチノールお休みの日です": "この項目は今日は対象外です"); return;}
 var log=dayLog(todayKey());
 var map = which==="am"? log.am: (which==="pm"? log.pm: log.inner);
+if(which==="pm" && t.id==="retinol"){
+var w=weekLog(); if(typeof w.retinol!=="number") w.retinol=0;
+w.retinol= done? Math.max(0, w.retinol-1): Math.min(3, w.retinol+1); // 今週のケアのレチノール回数と連動
+}
 var rerender = renderToday;
 if(done){ map[t.id]=false; save(); rerender(); }
 else { b.classList.add("leaving"); map[t.id]=true; save(); setTimeout(function(){ rerender(); },240); }
@@ -1015,7 +1029,7 @@ items.push({cls:"warn", title:"目の開きが悪い日", body:"まず蒸しタ�
 } else if(c.eye===0){
 items.push({cls:"normal", title:"目の開きが良い日です", body:"調子の良い日こそ、こすらない・引っ張らないを守るのが将来のたるみ予防になります。この状態を写真に残すのもおすすめです。"});
 }
-items.push({cls:"normal", title:"毎日の土台", body:"朝は「泡洗顔→保湿→眼輪筋・側頭筋→日焼け止め」、夜は「泡洗顔→保湿→スマホを置いて寝る」。これが土台です。週のケア（レチノール）は週2〜3回を目安に、無理なく続ければOKです。"});
+items.push({cls:"normal", title:"毎日の土台", body:"朝は「泡洗顔→保湿→眼輪筋・側頭筋→日焼け止め」、夜は「泡洗顔→保湿→（レチノールの日はレチノール）→スマホを置いて寝る」。これが土台です。週のケア（レチノール）は週2〜3回を目安に、無理なく続ければOKです。"});
 if(c.red===-1 && c.dry===-1 && c.puff===-1 && c.eye===-1){
 items.push({cls:"normal", title:"まずは状態を記録してみてください", body:"上の「今日の顔の状態」をタップすると、その日に合わせたアドバイスに切り替わります。"});
 }
