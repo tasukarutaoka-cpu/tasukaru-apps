@@ -487,7 +487,7 @@ font-size:14px;font-weight:600;z-index:40;box-shadow:var(--shadow);max-width:88v
 <input type="date" id="startDateInput" />
 <button type="button" class="btn sub block mt" id="startDateBtn">開始日を変更する</button>
 <button type="button" class="btn danger block mt" id="resetAllBtn">記録をすべて消す（チェック・段階・写真）</button>
-<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.14-step2</p>
+<p class="tiny mt">記録（チェック・段階）はこのブラウザの localStorage に、写真は IndexedDB に保存されます。別の端末やブラウザでは引き継がれません。アプリ版 2026.11.14-step3</p>
 </div>
 </div>
 </div>
@@ -617,13 +617,13 @@ function videoById(id){ for(var i=0;i<VIDEOS.length;i++){ if(VIDEOS[i].id===id) 
    進み方は「動画＋期間」で決まります。今のステップの動画に付いて行い、
    期間（週数）が終わったら次のステップへ進みます。 */
 var STEPS=[
-{n:1,name:'ステップ1｜土台づくり',weeks:3,video:'l_JieXLuWG8',mode:'five',menuTitle:'今日やること（5種目・最軽量）',
+{n:1,name:'ステップ1｜土台づくり',weeks:3,video:'l_JieXLuWG8',mode:'five',menuTitle:'今日やること（5種目・最軽量）',vlabel:'ゴールの動画',vnote:'この動画は「やるメニュー」ではなく、5種目のゴール（クリア基準）の解説です。初日から動画の通りにやる必要はありません。毎日やるのは、下のチェックリストだけです。',
  desc:'ジェシー式の「まずはこれ」5種目を、いちばん軽い段階で回します。最初の2週間は慣らし期間です。フォームと習慣を作る期間で、「気持ちよく終わる」が目標です。'},
-{n:2,name:'ステップ2｜全身メニュー',weeks:4,video:'wYqTN9UHlAA',mode:'five',menuTitle:'今日やること（全身5種目）',
+{n:2,name:'ステップ2｜全身メニュー',weeks:4,video:'wYqTN9UHlAA',mode:'five',menuTitle:'今日やること（全身5種目）',vlabel:'今日の動画',vnote:'この動画が今日のメニューです。動画に付いて行い、下のチェックで記録します。',
  desc:'ジェシー式の全身5種目メニューに、動画に付いて取り組みます。週3回が目安です。各種目の段階は、種目タブで今の自分のレベルに合わせておいてください。'},
-{n:3,name:'ステップ3｜部位別プログラム',weeks:4,video:null,mode:'split',menuTitle:'',
+{n:3,name:'ステップ3｜部位別プログラム',weeks:4,video:null,mode:'split',menuTitle:'',vlabel:'今日の動画',vnote:'今日のメニューの動画です。フォームを確認してから、下のチェックを進めてください。',
  desc:'ジェシー式「1ヶ月自宅トレプログラム」の3本を、A 押す日 → B 引く日 → C 脚・腹の日 の順番で回します。今日のメニューの動画が上に表示されます。'},
-{n:4,name:'ステップ4｜15分サーキット',weeks:0,video:'ZPSes03R1XU',mode:'five',menuTitle:'今日やること（15分サーキット）',
+{n:4,name:'ステップ4｜15分サーキット',weeks:0,video:'ZPSes03R1XU',mode:'five',menuTitle:'今日やること（15分サーキット）',vlabel:'今日の動画',vnote:'この動画が今日のメニューです。動画に付いて行い、下のチェックで記録します。',
  desc:'「全身これだけ」15分サーキットを軸に継続します。ここが現在の最終ステップです。月1回の定点写真で見直しましょう。'}
 ];
 var MENU_VIDEO={A:'QDrjL8H8FNo',B:'4hej03FsgiQ',C:'LyXgcozBAYA'};
@@ -771,8 +771,8 @@ function renderStep(){
  if(vid){
   var v=videoById(vid);
   box.innerHTML='<div class="vid-thumb" id="stepVidThumb"><img src="https://i.ytimg.com/vi/'+vid+'/hqdefault.jpg" alt="" loading="lazy"><span class="play">▶</span></div>'
-   +'<div class="vid-title" style="font-size:14px;">今日の動画：'+esc(v?v.title:'')+'</div>'
-   +'<p class="tiny" style="margin:4px 0 0;">この動画でフォームを確認して、下の「今日やること」を1つずつチェックしながら進めます。</p>';
+   +'<div class="vid-title" style="font-size:14px;">'+esc(sd.vlabel||'今日の動画')+'：'+esc(v?v.title:'')+'</div>'
+   +(sd.vnote?'<p class="tiny" style="margin:4px 0 0;">'+esc(sd.vnote)+'</p>':'');
   var th=document.getElementById('stepVidThumb');
   th.addEventListener('click', function(){
    var ifr=document.createElement('iframe');
