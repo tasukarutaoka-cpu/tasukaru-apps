@@ -420,7 +420,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.09-2（ホームの「今日やること」に「タイ語の一本道」カードを追加し、進め方を一本に固定：毎日は最小セット3つだけ（復習クイズ→ステージ→今日のフレーズ）、時間のある日はとことんで同じ3つを深く、教材はこのアプリだけ、見直しは月1回の読み合わせのときだけ。以下は前版までの変更点：「今日やること」をチェックリスト式に強化：最小セット3項目（復習クイズ／ステージ／今日のフレーズ）がチェックボックス表示になり、学習完了で自動チェック、手でタップしてのチェックも可能に。全部そろうと「今日のタイ語、完了です」を表示。直近7日の達成ドットも追加。さらに前の変更点：発音記号（IPA）を、カタカナ読みが表示される箇所に小さく併記。表示のオン・オフは「表示の設定：発音記号（IPA）」で切り替え可能。フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
+        <p>アプリの版：2026.11.15-1（カズ方式＝耳とモノマネ中心に戻しました：ステージの確認クイズは「最後まで受けたら合格」に変更し、声調の名前を当てる問題はステージクイズと復習クイズから外して、音を聞いて単語を聞き分ける問題に差し替え。声調の表とフレーズの声調チェックは「答え合わせ」専用として残しています。以下は前版までの変更点：2026.11.09-2（ホームの「今日やること」に「タイ語の一本道」カードを追加し、進め方を一本に固定：毎日は最小セット3つだけ（復習クイズ→ステージ→今日のフレーズ）、時間のある日はとことんで同じ3つを深く、教材はこのアプリだけ、見直しは月1回の読み合わせのときだけ。以下は前版までの変更点：「今日やること」をチェックリスト式に強化：最小セット3項目（復習クイズ／ステージ／今日のフレーズ）がチェックボックス表示になり、学習完了で自動チェック、手でタップしてのチェックも可能に。全部そろうと「今日のタイ語、完了です」を表示。直近7日の達成ドットも追加。さらに前の変更点：発音記号（IPA）を、カタカナ読みが表示される箇所に小さく併記。表示のオン・オフは「表示の設定：発音記号（IPA）」で切り替え可能。フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
       </footer>
     </div>
 
@@ -3484,7 +3484,7 @@
             });
             return h;
           },
-          quiz: function () { return pickN(TONE_WORDS, 4).map(function (w) { return qToneHear(w); }); }
+          quiz: function () { var idx = TONE_PAIRS.map(function (p, i) { return i; }); return pickN(idx, 4).map(function (pi) { return qPair(pi); }); }
         },
         {
           n: 3, title: "高子音（息のグループ）", desc: "息を強く出す音のグループ。声調記号がないと「上声（あがる）」になるのが特徴です。",
@@ -3521,7 +3521,7 @@
           quiz: function () { return pickN(VOWEL_PAIRS, 4).map(function (vp) { return qVowel(vp, Math.random() < 0.5); }); }
         },
         {
-          n: 6, title: "声調の決め方（3ステップ）", desc: "仕上げです。①文字のチームを見る → ②記号を見る → ③終わり方を見る、の順で声調が導けます。",
+          n: 6, title: "声調の決め方（3ステップ）", desc: "仕上げです。①文字のチームを見る → ②記号を見る → ③終わり方を見る、の順で声調が導けます。この表は答え合わせ用です。クイズは聞き分けだけなので、暗記しなくて大丈夫です。",
           learn: function () {
             return '<table class="tone-rule"><tr><th>チーム</th><th>記号なし</th><th>่（マイ・エーク）</th><th>้（マイ・トー）</th></tr>' +
               '<tr><th>まんなか（中子音）</th><td>中声</td><td>低声</td><td>下声</td></tr>' +
@@ -3529,7 +3529,7 @@
               '<tr><th>低い（低子音）</th><td>中声</td><td>下声</td><td>高声</td></tr></table>' +
               '<p class="small" style="margin:8px 0 0;">・プッ・トッ・クッと止まる音節は別ルール：まんなか・高いチームは低声、低いチームは「短いと高声、長いと下声」です。<br>・例外もあります（ห が前について型が変わる単語や、低子音の ้ で下声になる単語など）。迷ったら単語ごとに覚えるのが確実で、そのための確認がこのクイズです。</p>';
           },
-          quiz: function () { return pickN(STAGE6_WORDS, 5).map(function (it) { return qStage6(it); }); }
+          quiz: function () { var idx = TONE_PAIRS.map(function (p, i) { return i; }); return pickN(idx, 5).map(function (pi) { return qPair(pi); }); }
         }
       ];
       function nextStageNum() {
@@ -3554,7 +3554,7 @@
           '<p class="small" style="margin:0 0 4px;"><strong>高子音チーム</strong>：音を出すとき、息が「シュッ」と強く出る音です。例：<span class="thai" style="font-size:17px;">ข</span>（コー）、<span class="thai" style="font-size:17px;">ฉ</span>（チョー）、<span class="thai" style="font-size:17px;">ส</span>（ソー）、<span class="thai" style="font-size:17px;">ห</span>（ホー）。</p>' +
           '<p class="small" style="margin:0 0 6px;"><strong>低子音チーム</strong>：上の2つ以外の、残り全部です。例：<span class="thai" style="font-size:17px;">ค</span>（コー）、<span class="thai" style="font-size:17px;">ท</span>（トー）、<span class="thai" style="font-size:17px;">ม</span>（モー）。</p>' +
           '<p class="small" style="margin:0;"><strong>見分け方</strong>：①9文字の中にある？→中子音　②息が強い音？→高子音　③どちらでもない→低子音。この順番で考えます。</p></div>';
-h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステージごとに「小さく学ぶ → すぐ確認クイズ（全問正解で合格）」で進みます。合格は <strong>' + passedN + ' / 6</strong> ステージです。</p></div>';
+h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステージごとに「小さく学ぶ → すぐ確認クイズ（最後まで受けたら合格。間違えたものは苦手リストで復習）」で進みます。声調は耳で覚えるものなので、クイズで名前を当てる問題は出しません。合格は <strong>' + passedN + ' / 6</strong> ステージです。</p></div>';
         STAGES.forEach(function (s) {
           var passed = !!stageStore.passed[s.n];
           var isNext = s.n === nx;
@@ -3563,7 +3563,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
             (passed ? '<span class="stage-badge pass">合格 ✓</span>' : (isNext ? '<span class="stage-badge next">つぎはこれ</span>' : '<span class="stage-badge">未合格</span>')) + '</div>' +
             '<p class="small" style="margin:6px 0 8px;">' + s.desc + '</p>' +
             '<div>' + s.learn() + '</div>' +
-            '<div class="row-btns" style="margin-top:10px;"><button type="button" class="btn primary" data-stage-start="' + s.n + '">🎯 確認クイズ（' + (s.n === 6 ? 5 : 4) + '問・全問正解で合格）</button></div>' +
+            '<div class="row-btns" style="margin-top:10px;"><button type="button" class="btn primary" data-stage-start="' + s.n + '">🎯 確認クイズ（' + (s.n === 6 ? 5 : 4) + '問・最後まで受けたら合格）</button></div>' +
             '<div id="stageQuiz-' + s.n + '" style="margin-top:8px;"></div></div>';
         });
         return h;
@@ -3574,17 +3574,11 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         if (!s) return;
         var box = document.getElementById("stageQuiz-" + n);
         runQuiz(box, s.quiz(), function (ok, total) {
-          if (ok === total) {
-            stageStore.passed[n] = 1; saveStages(); markLearn("s");
-            renderScript();
-            var nb = document.getElementById("stageQuiz-" + n);
-            if (nb) nb.innerHTML = '<p class="tq-fb" style="color:var(--good);">🎉 全問正解！ ステージ' + n + '「' + s.title + '」合格です</p>';
-            toast("ステージ" + n + " 合格！");
-          } else {
-            box.innerHTML = '<p class="tq-fb" style="color:var(--bad);">' + ok + " / " + total + ' 正解。あと少しです。間違えたものは苦手リストに入りました。もう一度どうぞ。</p>' +
-              '<div class="row-btns"><button type="button" class="btn primary" data-stage-start="' + n + '">もう一度クイズ</button></div>';
-            wireStageButtons(box);
-          }
+          stageStore.passed[n] = 1; saveStages(); markLearn("s");
+          renderScript();
+          var nb = document.getElementById("stageQuiz-" + n);
+          if (nb) nb.innerHTML = '<p class="tq-fb" style="color:var(--good);">' + (ok === total ? '🎉 全問正解！ ' : 'おつかれさまでした。' + ok + " / " + total + ' 正解。') + '最後まで受けたので、ステージ' + n + '「' + s.title + '」合格です。' + (ok === total ? '' : '間違えたものは苦手リストに入りました。') + '</p>';
+          toast("ステージ" + n + " 合格！");
         });
       }
       function reviewQuestions() {
@@ -3592,7 +3586,18 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         return items.map(function (it) {
           if (it.kind === "tone") {
             var w = { w: it.w, kn: it.kn, ja: it.ja, t: it.t };
-            return Math.random() < 0.5 ? qToneSee(w) : qToneHear(w);
+            var others = TONE_WORDS.filter(function (x) { return x.w !== w.w && x.ja !== w.ja; });
+            var dist = others[Math.floor(Math.random() * others.length)];
+            return {
+              prompt: '<p class="small" style="text-align:center;margin:0;">音を聞いて、聞こえた単語はどっち？</p>',
+              playText: w.w, autoPlay: true,
+              choices: shuffle([
+                { label: w.w + "（" + w.ja + "）", ok: true },
+                { label: dist.w + "（" + dist.ja + "）", ok: false }
+              ]),
+              fb: "正解は " + w.w + "（" + w.kn + fbSlash(ipaOfWordObj(w)) + "／" + w.ja + "）です",
+              weak: weakToneItem(w)
+            };
           }
           if (it.kind === "pair") return qPair(it.pi);
           if (it.kind === "cons") {
