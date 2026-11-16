@@ -360,6 +360,7 @@
 
       <nav class="tabs" role="tablist" aria-label="練習メニュー">
         <button role="tab" data-view="course" aria-selected="true">コース</button>
+        <button role="tab" data-view="srs" aria-selected="false">暗記</button>
         <button role="tab" data-view="today" aria-selected="false">今日の練習</button>
         <button role="tab" data-view="scenes" aria-selected="false">場面から探す</button>
         <button role="tab" data-view="quiz" aria-selected="false">聞き取り</button>
@@ -378,6 +379,7 @@
 
       <main>
         <section class="view active" id="view-course"></section>
+        <section class="view" id="view-srs"></section>
         <section class="view" id="view-today"></section>
         <section class="view" id="view-scenes"></section>
         <section class="view" id="view-quiz"></section>
@@ -420,7 +422,7 @@
         </div>
         <p>学習の記録は、この端末のブラウザの中にだけ保存されます。別のスマホやパソコンでは記録は引き継がれません。</p>
         <button class="reset" id="resetBtn" type="button">記録をすべて消す</button>
-        <p>アプリの版：2026.11.15-1（カズ方式＝耳とモノマネ中心に戻しました：ステージの確認クイズは「最後まで受けたら合格」に変更し、声調の名前を当てる問題はステージクイズと復習クイズから外して、音を聞いて単語を聞き分ける問題に差し替え。声調の表とフレーズの声調チェックは「答え合わせ」専用として残しています。以下は前版までの変更点：2026.11.09-2（ホームの「今日やること」に「タイ語の一本道」カードを追加し、進め方を一本に固定：毎日は最小セット3つだけ（復習クイズ→ステージ→今日のフレーズ）、時間のある日はとことんで同じ3つを深く、教材はこのアプリだけ、見直しは月1回の読み合わせのときだけ。以下は前版までの変更点：「今日やること」をチェックリスト式に強化：最小セット3項目（復習クイズ／ステージ／今日のフレーズ）がチェックボックス表示になり、学習完了で自動チェック、手でタップしてのチェックも可能に。全部そろうと「今日のタイ語、完了です」を表示。直近7日の達成ドットも追加。さらに前の変更点：発音記号（IPA）を、カタカナ読みが表示される箇所に小さく併記。表示のオン・オフは「表示の設定：発音記号（IPA）」で切り替え可能。フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
+        <p>アプリの版：2026.11.16-1（カズ方式で作り直し：フレーズと単語分解の暗記が主軸。ホームのボタン1つで「今日のセッション」が始まり、復習→新しいフレーズ→仕上げが1本の流れで進みます。1枚の進め方は「聴く→マネする→確認する（意味と単語の部品）→マネする→覚えたら次」。間隔反復はフレーズだけが対象で、忘れかけた頃に自動で再出題。毎日の最小セットもセッション連動に変更しました。以下は前版までの変更点：2026.11.15-1（カズ方式＝耳とモノマネ中心に戻しました：ステージの確認クイズは「最後まで受けたら合格」に変更し、声調の名前を当てる問題はステージクイズと復習クイズから外して、音を聞いて単語を聞き分ける問題に差し替え。声調の表とフレーズの声調チェックは「答え合わせ」専用として残しています。以下は前版までの変更点：2026.11.09-2（ホームの「今日やること」に「タイ語の一本道」カードを追加し、進め方を一本に固定：毎日は最小セット3つだけ（復習クイズ→ステージ→今日のフレーズ）、時間のある日はとことんで同じ3つを深く、教材はこのアプリだけ、見直しは月1回の読み合わせのときだけ。以下は前版までの変更点：「今日やること」をチェックリスト式に強化：最小セット3項目（復習クイズ／ステージ／今日のフレーズ）がチェックボックス表示になり、学習完了で自動チェック、手でタップしてのチェックも可能に。全部そろうと「今日のタイ語、完了です」を表示。直近7日の達成ドットも追加。さらに前の変更点：発音記号（IPA）を、カタカナ読みが表示される箇所に小さく併記。表示のオン・オフは「表示の設定：発音記号（IPA）」で切り替え可能。フレーズの声調をタイ文字で決まる厳密な声調に置き換え、声調チェックを全フレーズに拡大。学習ストリークと「今日の分は完了」表示、とことんモード、LINE例文（作例）を追加。タイ文字のフォントを、丸のある教科書体 Sarabun に変更。音声の読み上げから絵文字を除外。通じるペア聞き分け（息・長さ・語尾）と「通じるための押さえどころ」カードを追加）</p>
       </footer>
     </div>
 
@@ -688,6 +690,7 @@
         var act = document.querySelector("section.view.active");
         if (!act) return;
         var name = act.id.replace("view-", "");
+        if (name === "srs") renderSrs();
         if (name === "today") renderToday();
         else if (name === "scenes") renderScenes();
         else if (name === "course") renderCourse();
@@ -1366,6 +1369,188 @@
         document.getElementById("progressCap").textContent = dueCount > 0
           ? "復習まちのフレーズが " + dueCount + " 件あります"
           : "今日の復習は片付いています";
+      }
+
+      /* ============ フレーズ暗記（カズ方式：聴く→マネ→確認→マネ→覚えたら次） ============ */
+      /* 間隔反復の対象はフレーズのみ。単語分解は「確認」で見る参照専用。進捗は専用キー thaiSrsV1 に保存し、既存の記録には触れない */
+      var SRS_KEY = "thaiSrsV1";
+      var SRS_DAYS = [1, 3, 7, 14, 30]; /* 言えたが続くほど次回までの間隔が空く */
+      var SRS_NEW_PER_DAY = 5;
+      var srsStore = { ph: {}, sess: null };
+      try {
+        var srsRaw = localStorage.getItem(SRS_KEY);
+        if (srsRaw) { var srsParsed = JSON.parse(srsRaw); if (srsParsed && srsParsed.ph) srsStore = srsParsed; }
+      } catch (e) {}
+      function srsSave() { try { localStorage.setItem(SRS_KEY, JSON.stringify(srsStore)); } catch (e) {} }
+      /* 提示順：まずこれだけ30 → 残りを場面順 */
+      var SRS_ORDER = [];
+      (function () {
+        var seen = {};
+        function push(id) { if (!seen[id] && essentPhrase(id)) { seen[id] = 1; SRS_ORDER.push(id); } }
+        ESSENT30.forEach(push);
+        PHRASES.forEach(function (p) { push(p.id); });
+        ESSENT_NEW.forEach(function (p) { push(p.id); });
+      })();
+      var SRS_TOTAL = SRS_ORDER.length;
+      function srsDueCount() {
+        var t = todayStr(), n = 0;
+        SRS_ORDER.forEach(function (id) { var r = srsStore.ph[id]; if (r && r.due <= t) n++; });
+        return n;
+      }
+      function srsNewLeft() {
+        var n = 0;
+        SRS_ORDER.forEach(function (id) { if (!srsStore.ph[id]) n++; });
+        return n;
+      }
+      function srsLearning() {
+        var n = 0;
+        SRS_ORDER.forEach(function (id) { if (srsStore.ph[id]) n++; });
+        return n;
+      }
+      /* 物差し：間隔を空けた復習でも「覚えた」が続いたフレーズ数 */
+      function srsMastered() {
+        var n = 0;
+        SRS_ORDER.forEach(function (id) { var r = srsStore.ph[id]; if (r && r.lv >= 2) n++; });
+        return n;
+      }
+      function srsPlay(id) {
+        var p = essentPhrase(id);
+        if (!p) return;
+        if (p.noAudio || !settings.voiceFile) { speakTh(p.th, 0.85); return; }
+        playAudio(audioURL(p.id), null);
+      }
+      function srsTag(p) {
+        if (ESSENT30.indexOf(p.id) >= 0) return "まずこれだけ30";
+        if (p.scene != null && SCENES[p.scene]) return SCENES[p.scene];
+        return "";
+      }
+      function srsPartsHTML(p) {
+        var ws = WORDS_BY_ID[p.id];
+        if (ws && ws.length) {
+          return '<div class="parts" style="text-align:left;">' + ws.map(function (w) {
+            return '<div><span class="pw thai">' + escHTML(w[0]) + '</span> <span class="b-kana">' + escHTML(w[1]) + '</span>（' + escHTML(w[2]) + '）</div>';
+          }).join("") + '</div>';
+        }
+        if (p.parts && p.parts.length) {
+          return '<div class="parts" style="text-align:left;">' + p.parts.map(function (w) {
+            return '<span class="pw b-kana">' + escHTML(w[0]) + '</span>（' + escHTML(w[1]) + '）';
+          }).join('・') + '</div>';
+        }
+        return "";
+      }
+      function srsBuildSess() {
+        var t = todayStr();
+        var q = [];
+        SRS_ORDER.forEach(function (id) { var r = srsStore.ph[id]; if (r && r.due <= t) q.push({ k: "pr", id: id }); });
+        var rEnd = q.length;
+        var news = [];
+        SRS_ORDER.forEach(function (id) { if (!srsStore.ph[id] && news.length < SRS_NEW_PER_DAY) news.push(id); });
+        news.forEach(function (id) { q.push({ k: "nl", id: id }); });
+        var sEnd = q.length;
+        news.forEach(function (id) { q.push({ k: "nf", id: id }); });
+        return { date: t, q: q, i: 0, st: 0, rEnd: rEnd, sEnd: sEnd };
+      }
+      /* パートを通過したら最小セットにチェックを付ける */
+      function srsCheckMarks() {
+        var s = srsStore.sess;
+        if (!s) return;
+        if (s.i >= s.rEnd) markLearn("r");
+        if (s.i >= s.sEnd) markLearn("s");
+        if (s.i >= s.q.length) markLearn("t");
+      }
+      function srsJudge(ok) {
+        var s = srsStore.sess;
+        if (!s || s.i >= s.q.length) return;
+        var item = s.q[s.i];
+        var t = todayStr();
+        if (item.k === "nl") {
+          if (ok) {
+            srsStore.ph[item.id] = { lv: 0, due: addDays(t, 1) };
+            s.i++;
+          }
+          /* まだ：同じカードでループをもう一度（記録はまだ付けない） */
+        } else {
+          var r = srsStore.ph[item.id] || { lv: 0, due: t };
+          if (ok) {
+            r.due = addDays(t, SRS_DAYS[Math.min(r.lv, SRS_DAYS.length - 1)]);
+            r.lv = Math.min(r.lv + 1, SRS_DAYS.length - 1);
+            s.i++;
+          } else {
+            r.lv = 0;
+            r.due = addDays(t, 1);
+            /* まだ：同じカードでループをもう一度 */
+          }
+          srsStore.ph[item.id] = r;
+        }
+        s.st = 0;
+        srsSave();
+        srsCheckMarks();
+        renderSrs();
+      }
+      function renderSrs() {
+        var el = document.getElementById("view-srs");
+        if (!el) return;
+        var t = todayStr();
+        if (!srsStore.sess || srsStore.sess.date !== t) {
+          srsStore.sess = srsBuildSess();
+          srsSave();
+        }
+        var s = srsStore.sess;
+        srsCheckMarks();
+        var measure = '<p class="small" style="text-align:center;margin:10px 0 0;">言えるフレーズ ' + srsMastered() + ' / ' + SRS_TOTAL + '（学習中 ' + srsLearning() + ' 本）</p>';
+        if (s.q.length === 0) {
+          el.innerHTML = '<div class="card done-box"><div class="face">今日のカードはありません</div><p>復習も新しいフレーズも、今日の分は片付いています。</p></div>' + measure;
+          return;
+        }
+        if (s.i >= s.q.length) {
+          el.innerHTML = '<div class="card done-box"><div class="face">🎉 今日のセッション完了です</div><p>復習・新しいフレーズ・仕上げまで、全部終わりました。おつかれさまでした。</p>' +
+            '<button type="button" class="btn primary" id="srsHomeBtn" style="width:100%;">ホームへもどる</button></div>' + measure;
+          var hb = document.getElementById("srsHomeBtn");
+          if (hb) hb.addEventListener("click", function () { switchView("course"); });
+          return;
+        }
+        var item = s.q[s.i];
+        var p = essentPhrase(item.id);
+        if (!p) { s.i++; srsSave(); renderSrs(); return; }
+        var partName = s.i < s.rEnd ? "復習" : (s.i < s.sEnd ? "新しいフレーズ" : "仕上げ");
+        var cap = '<div class="session-cap">' + partName + '　' + (s.i + 1) + ' / ' + s.q.length + ' 枚</div>';
+        if (s.st === 0) {
+          /* 聴く→マネする：音だけ。答えはまだ見せない */
+          el.innerHTML = cap +
+            '<div class="card" style="text-align:center;padding:30px 16px;">' +
+            '<p style="font-size:17px;margin:0 0 4px;">🎧 聴いて、声に出してマネしましょう</p>' +
+            '<p class="small" style="margin:0 0 14px;">意味はまだ見ません。音が先です。</p>' +
+            '<button type="button" class="btn primary" id="srsReplay" style="width:100%;min-height:60px;font-size:18px;">🔊 もう一度聴く</button>' +
+            '<button type="button" class="btn" id="srsConfirm" style="width:100%;min-height:56px;font-size:17px;margin-top:12px;">確認する</button>' +
+            '</div>' + measure;
+          document.getElementById("srsReplay").addEventListener("click", function () { srsPlay(item.id); });
+          document.getElementById("srsConfirm").addEventListener("click", function () {
+            srsStore.sess.st = 1; srsSave(); renderSrs();
+          });
+          setTimeout(function () { srsPlay(item.id); }, 60);
+          return;
+        }
+        /* 確認する→マネする：意味と部品を見て、もう一度声に出す */
+        var tag = srsTag(p);
+        el.innerHTML = cap +
+          '<div class="card">' +
+          (tag ? '<p class="small" style="margin:0 0 4px;">' + escHTML(tag) + '</p>' : '') +
+          '<div class="thai-text thai" style="font-size:26px;">' + escHTML(p.th) + '</div>' +
+          '<div>' + kanaHTML(p.kana, settings.kanaOff) + '</div>' +
+          '<p class="meaning" style="font-size:17px;">' + escHTML(p.ja) + '</p>' +
+          srsPartsHTML(p) +
+          (p.form ? '<p class="small" style="margin-top:8px;">型：' + escHTML(p.form) + '</p>' : '') +
+          (p.note ? '<div class="note">' + escHTML(p.note) + '</div>' : '') +
+          '<button type="button" class="btn primary" id="srsReplay2" style="width:100%;min-height:60px;font-size:18px;margin-top:12px;">🔊 もう一度聴く</button>' +
+          '<p class="small" style="text-align:center;margin:10px 0 0;">意味と部品が分かったら、もう一度声に出してマネしましょう</p>' +
+          '<div class="judge-row">' +
+          '<button type="button" class="btn again" id="srsStill">まだ</button>' +
+          '<button type="button" class="btn good" id="srsGot">覚えた</button>' +
+          '</div></div>' + measure;
+        document.getElementById("srsReplay2").addEventListener("click", function () { srsPlay(item.id); });
+        document.getElementById("srsGot").addEventListener("click", function () { srsJudge(true); });
+        document.getElementById("srsStill").addEventListener("click", function () { srsJudge(false); });
+        setTimeout(function () { srsPlay(item.id); }, 60);
       }
 
       /* ============ 場面から探す ============ */
@@ -3670,8 +3855,8 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         var d = streakStore.days[ds] || {};
         var isToday = ds === todayStr();
         return {
-          review: !!(d.r || d.mr || (isToday && stageStore.weak.length === 0)),
-          stage: !!(d.s || d.ms || (isToday && allStagesPassed())),
+          review: !!(d.r || d.mr || (isToday && srsDueCount() === 0)),
+          stage: !!(d.s || d.ms || (isToday && srsNewLeft() === 0)),
           today: !!(d.t || d.mt)
         };
       }
@@ -3707,9 +3892,11 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
           return '<div class="mset-row"><button type="button" class="mset-box' + (done ? ' on' : '') + '" data-mset="' + kind + '" aria-label="' + label + 'のチェック">' + (done ? '✓' : '') + '</button>' +
             '<div class="mset-tx"><div class="mset-lb' + (done ? ' done' : '') + '">' + label + '</div><div class="mset-sub">' + sub + '</div></div></div>';
         }
-        h += msetRow("r", ms.review, '🔁 復習クイズ', stageStore.weak.length > 0 ? '苦手リスト ' + stageStore.weak.length + ' 件を片づける' : '苦手リストは空です（自動でOK）');
-        h += msetRow("s", ms.stage, '📖 ステージを進める', nx > 0 ? 'つぎはステージ' + nx + '「' + STAGES[nx - 1].title + '」に合格する' : '6ステージ全部合格です（自動でOK）');
-        h += msetRow("t", ms.today, '🗣 今日のフレーズ', dueN > 0 ? '復習 ' + dueN + ' 件＋フレーズの練習を終える' : '「今日の練習」でフレーズを練習する');
+        h += msetRow("r", ms.review, '🔁 復習', srsDueCount() > 0 ? '期限のカード ' + srsDueCount() + ' 枚（セッションの最初に出ます）' : '今日の復習はありません（自動でOK）');
+        h += msetRow("s", ms.stage, '📖 新しいフレーズ', srsNewLeft() > 0 ? '残り ' + srsNewLeft() + ' 本から ' + Math.min(SRS_NEW_PER_DAY, srsNewLeft()) + ' 本（セッションの真ん中に出ます）' : '全部のフレーズを学習済みです（自動でOK）');
+        h += msetRow("t", ms.today, '🗣 仕上げ', 'セッションの最後に、今日の分をもう一度声に出します');
+        h += '<button type="button" class="btn primary" data-dash="srs" style="width:100%;min-height:58px;font-size:18px;margin:10px 0 2px;">▶ 今日のセッションをはじめる</button>';
+        h += '<div class="dash-row"><div class="dt">🗣 言えるフレーズ <strong>' + srsMastered() + ' / ' + SRS_TOTAL + '</strong>（学習中 ' + srsLearning() + ' 本）</div></div>';
         h += '<p class="mset-note">学習すると自動でチェックが付きます。終わったらチェックボックスをタップしてもOKです。</p>';
         if (msN === 3) h += '<div class="mset-done">🎉 今日のタイ語、完了です！（最小セット達成）</div>';
         h += '<div class="dash-row"><div class="dt">🔥 ' + (sd > 0 ? '<strong>' + sd + '日</strong> 連続で最小セット達成中' : '今日から連続記録をスタート') + '</div></div>';
@@ -3728,16 +3915,10 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         h += '<div class="dash-row"><div class="dt">📅 直近7日</div><div class="d7-wrap">' + dots + '</div></div>';
         h += '<div style="margin-top:10px;background:#f2f8f4;border:1px solid #bfe0cc;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.75;">' +
           '<div style="font-weight:bold;font-size:14px;">🛤 タイ語の一本道（これだけやる。他は足さない）</div>' +
-          '<div>・毎日：①復習クイズ → ②ステージ → ③今日のフレーズ（声に出す）。目安5〜10分</div>' +
-          '<div>・時間のある日：とことんモードで同じ3つを深く。別のことはしない</div>' +
+          '<div>・毎日：セッション1本だけ。①復習 → ②新しいフレーズ → ③仕上げ。目安5〜10分</div>' +
+          '<div>・1枚の進め方：聴く → マネする → 確認する（意味と単語の部品）→ マネする → 覚えたら次へ</div>' +
           '<div>・教材はこのアプリだけ。他の教材・アプリ・講座は足さない</div>' +
           '<div>・進め方の見直しは、月1回の読み合わせ（ジェンの文チェック）のときだけ</div></div>';
-        h += '<div class="dash-row"><div class="dt">' + (stageStore.weak.length > 0 ? '🔁 <strong>復習クイズ</strong>（苦手リスト ' + stageStore.weak.length + ' 件）' : '🔁 復習クイズ（苦手リストは空です）') + '</div>' +
-          (stageStore.weak.length > 0 ? '<button type="button" class="btn primary" data-dash="review">▶ はじめる</button>' : '') + '</div>';
-        h += '<div class="dash-row"><div class="dt">' + (nx > 0 ? '📖 <strong>つぎのステージ</strong>：ステージ' + nx + '「' + STAGES[nx - 1].title + '」' : '📖 もじ入門の6ステージは全部合格です 🎉') + '</div>' +
-          '<button type="button" class="btn primary" data-dash="stage">▶ はじめる</button></div>';
-        h += '<div class="dash-row"><div class="dt">🗣 <strong>今日のフレーズ</strong>' + (dueN > 0 ? '（復習が ' + dueN + ' 件来ています）' : '（今日の練習）') + '</div>' +
-          '<button type="button" class="btn primary" data-dash="today">▶ はじめる</button></div>';
         h += '<div class="dash-row"><div class="dt">🎉 <strong>直近の交流イベント</strong>：11月14日（土）18:00 日泰交流会（日本橋 PADA328）</div>' +
           '<button type="button" class="btn" data-dash="meet">詳細</button></div>';
         h += '<div class="dash-row"><div class="dt">💻 <strong>オンラインでタイ人と話す</strong>（カフェトーク等の実践先）</div>' +
@@ -3761,6 +3942,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         el.querySelectorAll("[data-dash]").forEach(function (b) {
           b.addEventListener("click", function () {
             var k = b.getAttribute("data-dash");
+            if (k === "srs") { switchView("srs"); return; }
             if (k === "today") { switchView("today"); return; }
             if (k === "meet") { switchView("meet"); return; }
             if (k === "endless") { switchView("endless"); return; }
@@ -3980,6 +4162,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
         });
         document.querySelectorAll("section.view").forEach(function (s) { s.classList.remove("active"); });
         document.getElementById("view-" + name).classList.add("active");
+        if (name === "srs") renderSrs();
         if (name === "today") renderToday();
         if (name === "scenes") renderScenes();
         if (name === "quiz") renderQuiz();
@@ -4002,7 +4185,7 @@ h += '<div class="card"><p style="margin:0;"><strong>進め方：</strong>ステ
       });
       document.getElementById("resetBtn").addEventListener("click", function () {
         if (document.getElementById("resetBtn").dataset.armed) {
-          store = { prog: {}, lastDay: "" }; save(); session = null; quiz = null; streakStore = { days: {} }; saveStreak();
+          store = { prog: {}, lastDay: "" }; save(); session = null; quiz = null; streakStore = { days: {} }; saveStreak(); srsStore = { ph: {}, sess: null }; srsSave();
           updateProgress(); renderToday();
           document.getElementById("resetBtn").textContent = "記録をすべて消す";
           delete document.getElementById("resetBtn").dataset.armed;
